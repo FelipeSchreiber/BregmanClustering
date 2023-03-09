@@ -615,14 +615,15 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         iteration = 0
         while convergence:
             new_memberships = self.assignments( X, Y )
-            
+            print(new_memberships)
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
             self.graph_means = self.computeGraphMeans( X, new_memberships )
             
             iteration += 1
-            if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
+            if np.allclose(new_memberships,self.predicted_memberships,rtol=0,atol=1e-03) or iteration >= self.n_iters:
                 convergence = False
             self.predicted_memberships = new_memberships
+            print(self.likelihood(X,Y,self.predicted_memberships))
         print( 'number of iterations : ', iteration)
         return self,init_labels
     
@@ -687,16 +688,25 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return self.predicted_memberships
     
     def computeAttributeMeans( self, Y, Z ):
-        z = frommembershipMatriceToVector( Z )
-        attribute_means = np.zeros( (self.n_clusters, Y.shape[1] )  )
-        for k in range( self.n_clusters ):
-            Y_k = Y[ z == k ]
-            attribute_means[k] = np.mean( Y_k, axis = 0 )
+        attribute_means = (Z.T@Y)/Z.sum(axis=0)[:,np.newaxis]
         return attribute_means
     
     def computeGraphMeans( self, X, Z ):
-        normalisation = np.linalg.pinv ( Z.T @ Z )
-        return normalisation @ Z.T @ X @ Z @ normalisation
+        N = X.shape[0]
+        B = np.zeros((self.n_clusters,self.n_clusters))##SBM Matrix
+        for l in range(self.n_clusters):
+            for k in range(self.n_clusters):
+                numerator = 0
+                denominator = 0
+                for i in range(N):
+                    for j in range(N):
+                        if j == i:
+                            continue
+                        product = Z[i,k]*Z[j,l]
+                        denominator += product 
+                        numerator += product*X[i,j]
+                B[l,k] = numerator/denominator
+        return B
     
     def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
         if distribution.lower() == 'bernoulli':
@@ -796,17 +806,33 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                 matrices[i][k] = self.getNetDivMatrix(X,B,i,k)
         return matrices
 
-
-    def assignments( self, X, Y ):
+    def update_assignments(self,X,Y,Z_old):
         N = X.shape[0]
         M = self.getNetDivMatrices(X,self.graph_means)
-        H = self.attribute_divergence( Y, self.attribute_means )
-        Z = np.zeros((N,self.n_clusters))
-        priors = np.mean(self.predicted_memberships,axis=0)
+        H = self.attribute_divergence( Y, self.attribute_means)
+        Z = np.zeros(H.shape)
+        I = np.zeros(H.shape)
+        priors = np.mean(Z_old,axis=0)
         for i in range(N):
             for k in range(self.n_clusters):
-                Z[i,k] = priors[k]*np.exp(-np.multiply(self.predicted_memberships,M[i][k]).sum() - H[i,k])
+                I[i,k] = np.multiply(Z_old,M[i][k]).sum()
+                # I[i,k] = M[i][k].sum()
+        # I = normalize(I, axis=1, norm='l2')
+        # H = normalize(H, axis=1, norm='l2')
+        Z = np.multiply(priors[np.newaxis,:],\
+			 	        np.exp(-H-I))
         return normalize(Z, axis=1, norm='l1')
+    
+    def assignments( self, X, Y ):
+        iter__ = 0
+        Z_old = self.predicted_memberships
+        while True:
+            iter__ += 1
+            Z_new = self.update_assignments(X,Y,Z_old)
+            if np.allclose(Z_new,Z_old,rtol=0,atol=1e-03) or iter__>10:
+                break
+            Z_old = Z_new
+        return Z_new
     
     def singleNodeAssignment( self, X, H, node ):
         L = np.zeros( self.n_clusters )
