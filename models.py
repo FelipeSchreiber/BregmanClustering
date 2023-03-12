@@ -815,12 +815,12 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         priors = np.mean(Z_old,axis=0)
         for i in range(N):
             for k in range(self.n_clusters):
-                I[i,k] = np.multiply(Z_old,M[i][k]).sum()
-                # I[i,k] = M[i][k].sum()
+                # I[i,k] = np.multiply(Z_old,M[i][k]).sum()
+                I[i,k] = M[i][k].sum()
         # I = normalize(I, axis=1, norm='l2')
         # H = normalize(H, axis=1, norm='l2')
         Z = np.multiply(priors[np.newaxis,:],\
-			 	        np.exp(-H-I))
+			 	        np.exp(-I))
         return normalize(Z, axis=1, norm='l1')
     
     def assignments( self, X, Y ):
@@ -833,18 +833,6 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                 break
             Z_old = Z_new
         return Z_new
-    
-    def singleNodeAssignment( self, X, H, node ):
-        L = np.zeros( self.n_clusters )
-        for k in range( self.n_clusters ):
-            Ztilde = self.predicted_memberships.copy()
-            Ztilde[ node, : ] = 0
-            Ztilde[ node, k ] = 1
-            M = Ztilde @ self.graph_means @ Ztilde.T
-            
-            L[ k ] = self.graph_divergence( X[ node,: ], M[ node,: ] ) + H[ node, k ] #+ np.sum( self.attribute_divergence( Y[ node ], self.attribute_means[ k ] ) )
-            #print( L[k] )
-        return np.argmin( L )
     
     def predict(self, X, Y):
         """
