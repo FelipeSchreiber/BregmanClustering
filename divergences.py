@@ -85,7 +85,13 @@ def euclidean_matrix ( X, means, Z ):
 
 def kullbackLeibler_binaryMatrix( X, M ):
     essai = np.where( X == 0, -np.log( 1-M ), np.log(X/M) )
-    return np.sum( essai )    
+    return np.sum( essai )
+
+def logistic_loss(X,M):
+    X_flatten = X.flatten()
+    M_flatten = M.flatten()
+    total = np.sum(X_flatten*np.log(X_flatten/M_flatten) + (1-X_flatten)*np.log((1-X_flatten)/(1-M_flatten)))
+    return total    
 
 
 # expose the vectorized version as the default one
