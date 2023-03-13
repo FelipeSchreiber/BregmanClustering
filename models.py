@@ -394,31 +394,22 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
         
         else:
-            # AIC_graph = 2*( self.n_clusters * (self.n_clusters +1) / 2 + self.n_clusters - 1 ) - np.log( self.likelihoodGraph( X, null_model = False ) )
-            # AIC_graph_nullModel = 2 * ( 1 ) - np.log( self.likelihoodGraph( X, null_model=True ) )
-            
-            # AIC_attribute = 2* ( 2 * self.n_clusters * Y.shape[1] + self.n_clusters-1 ) - np.log( self.likelihoodAttributes( Y, null_model=False ) )
-            # AIC_attribute_nullModel = 2 * (self.n_clusters * Y.shape[1] ) - np.log( self.likelihoodAttributes(Y, null_model=True ) )
-            
-            # likelihood_graphPrediction = self.likelihood( X, Y, self.memberships_from_graph )
-            # likelihood_attributePrediction = self.likelihood( X, Y, self.memberships_from_attributes )
-            
-            if (X<=0).any():
+            if (X<0).any():
                 X = pairwise_kernels(X,metric='rbf')
             U = SpectralEmbedding(n_components=self.n_clusters,\
 								affinity="precomputed")\
 								.fit_transform(X)
 		
-            net_null_model = GaussianMixture(n_components=1).fit(U)
-            null_net = net_null_model.aic(U)
-            net_model = GaussianMixture(n_components=self.n_clusters).fit(U)
-            fitted_net = net_model.aic(U)
+            net_null_model = GaussianMixture(n_components=1).fit(U.deepcopy())
+            null_net = net_null_model.aic(U.deepcopy())
+            net_model = GaussianMixture(n_components=self.n_clusters).fit(U.deepcopy())
+            fitted_net = net_model.aic(U.deepcopy())
             AIC_graph = fitted_net - null_net
             
-            att_null_model = GaussianMixture(n_components=1).fit(Y)
-            null_attributes = att_null_model.aic(Y)
-            att_model = GaussianMixture(n_components=self.n_clusters).fit(Y)
-            fitted_attributes = att_model.aic(Y)
+            att_null_model = GaussianMixture(n_components=1).fit(Y.deepcopy())
+            null_attributes = att_null_model.aic(Y.deepcopy())
+            att_model = GaussianMixture(n_components=self.n_clusters).fit(Y.deepcopy())
+            fitted_attributes = att_model.aic(Y.deepcopy())
             AIC_attribute = fitted_attributes - null_attributes
             
             #print( AIC_graph, AIC_graph_nullModel, AIC_attribute, AIC_attribute_nullModel )
@@ -437,8 +428,12 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
     
     def spectralClustering( self, X ):
-        sc = SpectralClustering( n_clusters = self.n_clusters, affinity = 'precomputed', assign_labels = 'kmeans' )
-        z_init = sc.fit_predict( X )
+        if (X<0).any():
+            X = pairwise_kernels(X,metric='rbf')
+        U = SpectralEmbedding(n_components=self.n_clusters,\
+								affinity="precomputed")\
+								.fit_transform(X)
+        z_init = GaussianMixture(n_components=self.n_clusters).fit_predict(U)
         Z = fromVectorToMembershipMatrice( z_init, n_clusters = self.n_clusters )
         self.predicted_memberships = Z
         return self.predicted_memberships
