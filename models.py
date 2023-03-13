@@ -412,14 +412,10 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             fitted_attributes = att_model.aic(Y.copy())
             AIC_attribute = fitted_attributes - null_attributes
             
-            #print( AIC_graph, AIC_graph_nullModel, AIC_attribute, AIC_attribute_nullModel )
             n = self.memberships_from_attributes.shape[ 0 ]
             print(  'graph : ', self.graphChernoffDivergence( X, self.memberships_from_graph ) )
             print( 'attributes', self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n )
-            #if AIC_graph - AIC_graph_nullModel < AIC_attribute - AIC_attribute_nullModel:
             if AIC_graph < AIC_attribute:
-            #if likelihood_graphPrediction > likelihood_attributePrediction:
-            #if self.graphChernoffDivergence( X, self.memberships_from_graph ) > self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
                 self.predicted_memberships = self.memberships_from_graph
                 print( 'Initialisation chosen from the graph')
             else:
