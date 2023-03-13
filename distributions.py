@@ -1,5 +1,6 @@
 import numpy as np
 
+## Given a specified tuple of desired mean and variance, obtain scale and shape for numpy.random.gamma
 def get_gamma_parameter(mean,variance):
     scale = variance/mean
     shape = mean/scale
