@@ -400,16 +400,16 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 								affinity="precomputed")\
 								.fit_transform(X)
 		
-            net_null_model = GaussianMixture(n_components=1).fit(U.deepcopy())
-            null_net = net_null_model.aic(U.deepcopy())
-            net_model = GaussianMixture(n_components=self.n_clusters).fit(U.deepcopy())
-            fitted_net = net_model.aic(U.deepcopy())
+            net_null_model = GaussianMixture(n_components=1).fit(U.copy())
+            null_net = net_null_model.aic(U.copy())
+            net_model = GaussianMixture(n_components=self.n_clusters).fit(U.copy())
+            fitted_net = net_model.aic(U.copy())
             AIC_graph = fitted_net - null_net
             
-            att_null_model = GaussianMixture(n_components=1).fit(Y.deepcopy())
-            null_attributes = att_null_model.aic(Y.deepcopy())
-            att_model = GaussianMixture(n_components=self.n_clusters).fit(Y.deepcopy())
-            fitted_attributes = att_model.aic(Y.deepcopy())
+            att_null_model = GaussianMixture(n_components=1).fit(Y.copy())
+            null_attributes = att_null_model.aic(Y.copy())
+            att_model = GaussianMixture(n_components=self.n_clusters).fit(Y.copy())
+            fitted_attributes = att_model.aic(Y.copy())
             AIC_attribute = fitted_attributes - null_attributes
             
             #print( AIC_graph, AIC_graph_nullModel, AIC_attribute, AIC_attribute_nullModel )
