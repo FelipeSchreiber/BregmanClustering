@@ -14,8 +14,9 @@ class BregmanBenchmark():
         self.weight_variance = weight_variance
         self.att_variance = att_variance
         self.n_clusters = P.shape[0]
-        self.weight_distribution,self.get_w_params,self.get_w_param = distributions_dict[weight_distribution]
-        self.att_distribution,self.get_att_params,self.get_att_param = distributions_dict[attributes_distribution]          
+        self.weight_distribution,f = distributions_dict[weight_distribution]
+        self.get_w_params = make_weight_params(f)
+        self.att_distribution,self.get_att_param = distributions_dict[attributes_distribution]          
         self.dims = dims
         self.radius=radius
     
@@ -26,7 +27,6 @@ class BregmanBenchmark():
         A = nx.to_numpy_array(G)
         ## Draw the means of the weight distributions for each pair of community interaction
         means = np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
-        ## Assume that each distribution has unit variance
         params = self.get_w_params(means,self.weight_variance,self.n_clusters)
         ## get weights
         X = np.zeros((N,N))

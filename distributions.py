@@ -30,8 +30,8 @@ def make_weight_params(f):
 	
 
 distributions_dict = {
-"gamma":(np.random.gamma,make_weight_params(get_gamma_parameter),get_gamma_parameter),
-"gaussian":(np.random.normal,make_weight_params(get_normal_parameter),get_normal_parameter),
-"wald":(np.random.wald,make_weight_params(get_wald_parameter),get_wald_parameter),
-"logistic":(np.random.logistic,make_weight_params(get_logistic_parameter),get_logistic_parameter)
+"gamma":(np.random.gamma,get_gamma_parameter),
+"gaussian":(np.random.normal,get_normal_parameter),
+"wald":(np.random.wald,get_wald_parameter),
+"logistic":(np.random.logistic,get_logistic_parameter)
 }
