@@ -1030,7 +1030,7 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
         attributes = np.hstack([net_divergence_total,att_divergence_total])
         if self.normalize_:
             attributes = self.scaler.fit_transform(attributes)
-        labels = GaussianMixture(n_components=self.n_clusters).fit_transform(attributes)
+        labels = GaussianMixture(n_components=self.n_clusters).fit_predict(attributes)
         #sc = SpectralClustering(n_clusters=self.n_clusters,affinity="rbf")
         #labels = sc.fit_predict(attributes)
         tau = fromVectorToMembershipMatrice(labels,n_clusters=self.n_clusters)
