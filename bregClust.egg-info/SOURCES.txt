@@ -1,0 +1,12 @@
+README.md
+setup.py
+bregClust.egg-info/PKG-INFO
+bregClust.egg-info/SOURCES.txt
+bregClust.egg-info/dependency_links.txt
+bregClust.egg-info/not-zip-safe
+bregClust.egg-info/top_level.txt
+src/WSBM.py
+src/__init__.py
+src/distributions.py
+src/divergences.py
+src/models.py
