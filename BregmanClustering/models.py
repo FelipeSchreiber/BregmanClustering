@@ -3,7 +3,7 @@
 """
 Created on Fri Feb 17 16:59:19 2023
 
-@author: maximilien
+@author: maximilien, Felipe Schreiber
 """
 
 import numpy as np
