@@ -12,6 +12,8 @@ https://github.com/juselara1/bregclus/blob/main/bregclus/divergences.py
 
 import numpy as np
 import functools
+import warnings
+warnings.filterwarnings("ignore")
 
 def distance_function_vec(func):
     """
