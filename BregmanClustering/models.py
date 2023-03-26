@@ -1029,7 +1029,7 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
         attributes = np.hstack([net_divergence_total,att_divergence_total])
         sc = SpectralClustering(n_clusters=self.n_clusters,affinity="cosine")
         labels = sc.fit_predict(attributes)
-        tau = fromVectorToMembershipMatrice(labels)
+        tau = fromVectorToMembershipMatrice(labels,n_clusters=self.n_clusters)
         return tau
 
     def M_Step(self,X,Y,tau):
