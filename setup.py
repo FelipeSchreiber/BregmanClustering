@@ -1,10 +1,10 @@
 import setuptools
 setuptools.setup(name='bregClust',
 version='0.1',
-description='A package for clustering attributed networks',
+description='An example package',
 url='#',
-author='Felipe Schreiber Fernandes',
+author='max',
 install_requires=[''],
-author_email='felipesc@cos.ufrj.br',
+author_email='',
 packages=setuptools.find_packages(),
 zip_safe=False)
