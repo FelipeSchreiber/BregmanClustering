@@ -818,7 +818,8 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'bregmanHardClustering', 
                  n_iters = 25, init_iters=100,
-                 normalize_=True, thresholding=True
+                 normalize_=True, thresholding=True,
+                 scaler = MinMaxScaler()
                 ):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
@@ -846,7 +847,7 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
         self.graph_initializer = graph_initializer
         self.attribute_initializer = attribute_initializer
         self.init_iters = init_iters
-        self.scaler = MinMaxScaler()
+        self.scaler = scaler
         self.graphDistribution = 'bernoulli'
         self.attributeDistribution = 'gaussian'
         self.normalize_ = normalize_
@@ -1029,8 +1030,9 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
         attributes = np.hstack([net_divergence_total,att_divergence_total])
         if self.normalize_:
             attributes = self.scaler.fit_transform(attributes)
-        sc = SpectralClustering(n_clusters=self.n_clusters,affinity="rbf")
-        labels = sc.fit_predict(attributes)
+        labels = GaussianMixture(n_components=self.n_clusters).fit_transform(attributes)
+        #sc = SpectralClustering(n_clusters=self.n_clusters,affinity="rbf")
+        #labels = sc.fit_predict(attributes)
         tau = fromVectorToMembershipMatrice(labels,n_clusters=self.n_clusters)
         return tau
 
