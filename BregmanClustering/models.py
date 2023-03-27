@@ -914,7 +914,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return U
     
     def computeAttributeMeans( self, Y, Z ):
-        attribute_means = self._np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * self._np.finfo(Z.dtype).eps)[:, np.newaxis]
+        attribute_means = self._np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * self._np.finfo(Z.dtype).eps)[:, self._np.newaxis]
         return attribute_means
 
     def computeGraphMeans(self,X,tau):
@@ -941,7 +941,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
     def likelihoodGraph(self,X,Z):
         graph_mean = self.computeGraphMeans(X,Z)
-        return 1/2 * np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
+        return 1/2 * self._np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def initialize( self, X, Y ):
         if self.attribute_initializer == 'bregmanHardClustering':
@@ -997,7 +997,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         attribute_means = self.computeAttributeMeans( Y, Z )
         for a in range( self.n_clusters ):
             for b in range( a ):
-                div = lambda t : - t * (1-t)/2 * np.linalg.norm( attribute_means[a] - attribute_means[b] )
+                div = lambda t : - t * (1-t)/2 * self._np.linalg.norm( attribute_means[a] - attribute_means[b] )
                 minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
                 if - minDiv['fun'] < res:
                     res = - minDiv['fun']
@@ -1083,11 +1083,11 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             att_divergence_total = self.scaler.fit_transform(att_divergence_total)
             net_divergence_total = self.scaler.fit_transform(net_divergence_total)
         #print(att_divergence_total,net_divergence_total)
-        temp = pi[np.newaxis,:]*np.exp(-net_divergence_total -att_divergence_total)
+        temp = pi[self._np.newaxis,:]*self._np.exp(-net_divergence_total -att_divergence_total)
         if self.thresholding:
-            max_ = np.argmax(temp,axis=1)
-            tau = np.zeros((N,self.n_clusters))
-            tau[np.arange(N),max_] = np.ones(N)
+            max_ = self._np.argmax(temp,axis=1)
+            tau = self._np.zeros((N,self.n_clusters))
+            tau[self._np.arange(N),max_] = self._np.ones(N)
             return tau
         tau = normalize(temp,norm="l1",axis=1)
         return tau
@@ -1106,7 +1106,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         indices_ones : Non zero indices of the data matrix.
         n : Number of rows in the data matrix.
         """
-        old_ll = -np.inf
+        old_ll = -self._np.inf
         self.indices_ones = list(X.nonzero())
         self.N = X.shape[0]
         self.initialize(X,Y)
@@ -1117,7 +1117,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             print(iter_)
             new_tau = self.VE_step(X,Y,tau)
             self.attribute_means,self.graph_means = self.M_Step(X,Y,new_tau)
-            if np.allclose(tau,new_tau) or iter_ > self.n_iters:
+            if self._np.allclose(tau,new_tau) or iter_ > self.n_iters:
                 break
             iter_  += 1
             tau = new_tau
