@@ -948,7 +948,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             model = BregmanHard(n_clusters = self.n_clusters, divergence = self.attribute_divergence, initializer="kmeans++")
             #model = GaussianMixture(n_components=self.n_clusters)
             model.fit( Y.get() )
-            self.memberships_from_attributes = self._np.array(
+            self.memberships_from_attributes = cupy.array(
                 fromVectorToMembershipMatrice( model.predict( Y.get() ),\
                                                n_clusters = self.n_clusters )
             )
@@ -966,7 +966,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                               initializer="kmeans++")
             #model = GaussianMixture(n_components=self.n_clusters)
             model.fit(U)
-            self.memberships_from_graph = self._np.array(
+            self.memberships_from_graph = cupy.array(
                 fromVectorToMembershipMatrice( model.predict( U ),\
                                                n_clusters = self.n_clusters )
             )
