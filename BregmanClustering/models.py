@@ -832,7 +832,8 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                  n_iters = 25, init_iters=100,
                  normalize_=True, thresholding=True,
                  scaler = MinMaxScaler(),
-                 use_gpu=_DEFAULT_USE_GPU
+                 use_gpu=_DEFAULT_USE_GPU,
+                 gpu_index=None
                 ):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
@@ -869,6 +870,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.use_gpu = use_gpu
         self._np = np
         self._cupyx = sp
+        self.gpu_index = gpu_index
 
         if self.use_gpu and (
             not _CUPY_INSTALLED
