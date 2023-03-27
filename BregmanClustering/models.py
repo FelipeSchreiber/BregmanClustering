@@ -1120,7 +1120,9 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.initialize(X,Y)
         self.assignInitialLabels(X,Y)
         tau = self.predicted_memberships
-        iter_ = 0 
+        iter_ = 0
+        self.graph_means = cupy.array(self.graph_means)
+        self.attribute_means = cupy.array(self.attribute_means)
         while True:
             print(iter_)
             new_tau = self.VE_step(X,Y,tau)
