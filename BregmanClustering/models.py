@@ -952,6 +952,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                 fromVectorToMembershipMatrice( model.predict( Y.get() ),\
                                                n_clusters = self.n_clusters )
             )
+            print(type(Y),type(self.memberships_from_attributes))
             self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
             self.graph_means = self.computeGraphMeans(X,self.memberships_from_attributes)
         
