@@ -1068,9 +1068,10 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         Compute divergences for every pair X[i,j], mu[k,l]
         """
+        print(type(X),type(self.graph_means))
         net_divergences_elementwise = self._cupyx.spatial.distance.cdist(X.reshape(-1,1),\
                                              self.graph_means.reshape(-1,1),\
-                                             metric=self.graph_divergence)\
+                                             metric="euclidean")\
                                             .reshape((N,N,self.n_clusters,self.n_clusters))
         """
         net_divergences has shape N x N x K x K
@@ -1094,7 +1095,9 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             tau = self._np.zeros((N,self.n_clusters))
             tau[self._np.arange(N),max_] = self._np.ones(N)
             return tau
-        tau = normalize(temp,norm="l1",axis=1)
+        row_sums = tau.sum(axis=1)
+        tau = tau / row_sums[:, self._np.newaxis]
+        #tau = normalize(temp,norm="l1",axis=1)
         return tau
 
     def M_Step(self,X,Y,tau):
