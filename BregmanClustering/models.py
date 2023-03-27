@@ -1076,13 +1076,17 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         net_divergence_total = self._np.tensordot(tau, net_divergences_elementwise, axes=[(0,1),(1,3)])
         #print(net_divergence_total)
         att_divergence_total = self._cupyx.spatial.distance.cdist(Y,self.attribute_means)
-        attributes = self._np.hstack([net_divergence_total,att_divergence_total])
         if self.normalize_:
-            attributes = self.scaler.fit_transform(attributes)
-        labels = GaussianMixture(n_components=self.n_clusters).fit_predict(attributes)
-        #sc = SpectralClustering(n_clusters=self.n_clusters,affinity="rbf")
-        #labels = sc.fit_predict(attributes)
-        tau = fromVectorToMembershipMatrice(labels,n_clusters=self.n_clusters)
+            att_divergence_total = self.scaler.fit_transform(att_divergence_total)
+            net_divergence_total = self.scaler.fit_transform(net_divergence_total)
+        #print(att_divergence_total,net_divergence_total)
+        temp = pi[np.newaxis,:]*np.exp(-net_divergence_total -att_divergence_total)
+        if self.thresholding:
+            max_ = np.argmax(temp,axis=1)
+            tau = np.zeros((N,self.n_clusters))
+            tau[np.arange(N),max_] = np.ones(N)
+            return tau
+        tau = normalize(temp,norm="l1",axis=1)
         return tau
 
     def M_Step(self,X,Y,tau):
