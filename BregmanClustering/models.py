@@ -1073,7 +1073,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         print(type(X),type(self.graph_means))
         net_divergences_elementwise = self._cupyx.spatial.distance.cdist(X.reshape(-1,1),\
                                              self.graph_means.reshape(-1,1))\
-                                            .reshape((N,N,self.n_clusters,self.n_clusters))
+                                            .reshape(N,N,self.n_clusters,self.n_clusters)
         """
         net_divergences has shape N x N x K x K
         tau has shape N x K
