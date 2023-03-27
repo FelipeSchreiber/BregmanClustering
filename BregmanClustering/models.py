@@ -891,6 +891,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                 cupy.cuda.Device(self.gpu_index).use()
                 self._np = cupy
                 self._cupyx = cupyx
+                print("GPU ENABLED")
             else:
                 free_idx = GPUtil.getAvailable("memory", limit=10)
                 if not free_idx:
