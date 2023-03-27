@@ -904,6 +904,8 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                     self._cupyx = cupyx
                     gpu_number = free_idx[0]
                     cupy.cuda.Device(gpu_number).use()
+                    print("GPU ENABLED")
+
         
     def spectralEmbedding( self, X ):
         if (X<0).any():
