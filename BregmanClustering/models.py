@@ -3,8 +3,20 @@
 """
 Created on Fri Feb 17 16:59:19 2023
 
-@author: maximilien
+@author: maximilien, Felipe Schreiber Fernandes
+felipesc@cos.ufrj.br
 """
+
+try:
+    import cupy
+    import cupyx
+    import GPUtil
+
+    _CUPY_INSTALLED = True
+    _DEFAULT_USE_GPU = True
+except ImportError:
+    _CUPY_INSTALLED = False
+    _DEFAULT_USE_GPU = False
 
 import numpy as np
 import scipy as sp
@@ -812,14 +824,15 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         return frommembershipMatriceToVector( self.predicted_memberships)
     
-class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
+class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
                  graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'bregmanHardClustering', 
                  n_iters = 25, init_iters=100,
                  normalize_=True, thresholding=True,
-                 scaler = MinMaxScaler()
+                 scaler = MinMaxScaler(),
+                 use_gpu=_DEFAULT_USE_GPU
                 ):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
@@ -853,6 +866,42 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
         self.normalize_ = normalize_
         self.thresholding = thresholding
         
+        self.use_gpu = use_gpu
+        self._np = np
+        self._cupyx = sp
+
+        if self.use_gpu and (
+            not _CUPY_INSTALLED
+            or not _DEFAULT_USE_GPU
+            or not cupy.cuda.is_available()
+        ):
+            self.gpu_number = None
+            self.use_gpu = False
+            print(
+                "GPU not used as cupy library seems not to be installed or CUDA is not available"
+            )
+
+        if (
+            self.use_gpu
+            and _CUPY_INSTALLED
+            and _DEFAULT_USE_GPU
+            and cupy.cuda.is_available()
+        ):
+            if self.gpu_index != None:
+                cupy.cuda.Device(self.gpu_index).use()
+                self._np = cupy
+                self._cupyx = cupyx
+            else:
+                free_idx = GPUtil.getAvailable("memory", limit=10)
+                if not free_idx:
+                    self.use_gpu = False
+                    print("GPU not used as no gpu is free")
+                else:
+                    self._np = cupy
+                    self._cupyx = cupyx
+                    gpu_number = free_idx[0]
+                    cupy.cuda.Device(gpu_number).use()
+        
     def spectralEmbedding( self, X ):
         if (X<0).any():
             X = pairwise_kernels(X,metric='rbf')
@@ -862,33 +911,33 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
         return U
     
     def computeAttributeMeans( self, Y, Z ):
-        attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
+        attribute_means = self._np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * self._np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
 
     def computeGraphMeans(self,X,tau):
-        graph_means = np.zeros((self.n_clusters,self.n_clusters))
-        tau_sum = tau.sum(0)
-        weights = np.tensordot(tau, tau, axes=((), ()))
+        graph_means = self._np.zeros((self.n_clusters,self.n_clusters))
+        #tau_sum = tau.sum(0)
+        weights = self._np.tensordot(tau, tau, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
         desired output:
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
-        weights = np.transpose(weights,(1,3,0,2))
+        weights = self._np.transpose(weights,(1,3,0,2))
         for q in range(self.n_clusters):
             for l in range(self.n_clusters):
-                graph_means[q,l]=np.sum(weights[q,l]*X)/np.sum(weights[q,l])
+                graph_means[q,l]=self._np.sum(weights[q,l]*X)/self._np.sum(weights[q,l])
         #graph_means/=((tau_sum.reshape((-1, 1)) * tau_sum) - tau.T @ tau)
-        np.nan_to_num(graph_means,copy=False)
+        self._np.nan_to_num(graph_means,copy=False)
         return graph_means 
     
     def likelihoodAttributes(self,Y,Z):
         M = self.computeAttributeMeans(Y,Z)
-        total = np.sum( paired_distances(Y,Z@M) )
+        total = self._np.sum( paired_distances(Y,Z@M) )
         return total
 
     def likelihoodGraph(self,X,Z):
-        graph_mean = self.computeGMeans(X,Z)
+        graph_mean = self.computeGraphMeans(X,Z)
         return 1/2 * np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def initialize( self, X, Y ):
@@ -925,7 +974,7 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
     def graphChernoffDivergence( self, X, Z ):
         graph_means = self.computeGraphMeans( X , Z )
         n = Z.shape[ 0 ]
-        pi = np.zeros( self.n_clusters )
+        pi = self._np.zeros( self.n_clusters )
         for c in range( self.n_clusters ):
             cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
             pi[ c ] = len(cluster_c) / n
@@ -934,7 +983,7 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
             res = 10000
             for a in range( self.n_clusters ):
                 for b in range( a ):
-                    div = lambda t : - (1-t) * np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
+                    div = lambda t : - (1-t) * self._np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
                     minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
                     if - minDiv['fun'] < res:
                         res = - minDiv['fun']
@@ -989,7 +1038,7 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
     
     def assignInitialLabels( self, X, Y ):
         if self.initializer == 'random':
-            z =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
+            z =  self._np.random.randint( 0, self.n_clusters, size = X.shape[0] )
             self.predicted_memberships = fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
         
         elif self.initializer == "AIC":
@@ -1011,7 +1060,7 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
         """
         Compute divergences for every pair X[i,j], mu[k,l]
         """
-        net_divergences_elementwise = pairwise_distances(X.reshape(-1,1),\
+        net_divergences_elementwise = self._cupyx.spatial.distance.cdist(X.reshape(-1,1),\
                                              self.graph_means.reshape(-1,1),\
                                              metric=self.graph_divergence)\
                                             .reshape((N,N,self.n_clusters,self.n_clusters))
@@ -1024,10 +1073,10 @@ class SpectralBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin )
         "j" appears at axes 0 for tau and at axes 1 for net_divergence
         "l" appears at axes 1 for tau and at axes 3 for net_divergence
         """
-        net_divergence_total = np.tensordot(tau, net_divergences_elementwise, axes=[(0,1),(1,3)])
+        net_divergence_total = self._np.tensordot(tau, net_divergences_elementwise, axes=[(0,1),(1,3)])
         #print(net_divergence_total)
-        att_divergence_total = pairwise_distances(Y,self.attribute_means)
-        attributes = np.hstack([net_divergence_total,att_divergence_total])
+        att_divergence_total = self._cupyx.spatial.distance.cdist(Y,self.attribute_means)
+        attributes = self._np.hstack([net_divergence_total,att_divergence_total])
         if self.normalize_:
             attributes = self.scaler.fit_transform(attributes)
         labels = GaussianMixture(n_components=self.n_clusters).fit_predict(attributes)
