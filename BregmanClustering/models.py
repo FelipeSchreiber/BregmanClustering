@@ -929,7 +929,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         weights = self._np.transpose(weights,(1,3,0,2))
         for q in range(self.n_clusters):
             for l in range(self.n_clusters):
-                graph_means[q,l]=self._np.sum(weights[q,l]*X)/self._np.sum(weights[q,l])
+                graph_means[q,l] = self._np.sum(weights[q,l]*X)/self._np.sum(weights[q,l])
         #graph_means/=((tau_sum.reshape((-1, 1)) * tau_sum) - tau.T @ tau)
         self._np.nan_to_num(graph_means,copy=False)
         return graph_means 
@@ -947,8 +947,11 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         if self.attribute_initializer == 'bregmanHardClustering':
             model = BregmanHard(n_clusters = self.n_clusters, divergence = self.attribute_divergence, initializer="kmeans++")
             #model = GaussianMixture(n_components=self.n_clusters)
-            model.fit( Y )
-            self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
+            model.fit( Y.get() )
+            self.memberships_from_attributes = self._np.array(
+                fromVectorToMembershipMatrice( model.predict( Y.get() ),\
+                                               n_clusters = self.n_clusters )
+            )
             self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
             self.graph_means = self.computeGraphMeans(X,self.memberships_from_attributes)
         
@@ -956,17 +959,18 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             raise TypeError( 'The initializer provided for the attributes is not correct' )
             
         if self.graph_initializer == 'spectralClustering':
-            U = self.spectralEmbedding(X)
+            U = self.spectralEmbedding(X.get())
             model = BregmanHard(n_clusters = self.n_clusters,\
                               divergence = self.attribute_divergence,\
                               initializer="kmeans++")
             #model = GaussianMixture(n_components=self.n_clusters)
             model.fit(U)
-            self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
-                                                                            n_clusters = self.n_clusters )
+            self.memberships_from_graph = self._np.array(
+                fromVectorToMembershipMatrice( model.predict( U ),\
+                                               n_clusters = self.n_clusters )
+            )
             self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_graph )
             self.graph_means = self.computeGraphMeans(X, self.memberships_from_graph)
-            print(self.graph_means)
         else:
             raise TypeError( 'The initializer provided for the graph is not correct' )
     
@@ -987,7 +991,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             for a in range( self.n_clusters ):
                 for b in range( a ):
                     div = lambda t : - (1-t) * self._np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
-                    minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
+                    minDiv = self._cupyx.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
                     if - minDiv['fun'] < res:
                         res = - minDiv['fun']
         return res
@@ -998,7 +1002,7 @@ class GPUBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         for a in range( self.n_clusters ):
             for b in range( a ):
                 div = lambda t : - t * (1-t)/2 * self._np.linalg.norm( attribute_means[a] - attribute_means[b] )
-                minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
+                minDiv = self._cupyx.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
                 if - minDiv['fun'] < res:
                     res = - minDiv['fun']
 
