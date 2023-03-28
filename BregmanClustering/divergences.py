@@ -107,4 +107,3 @@ def _mahalanobis_vectorized(X, Y, cov):
 def _squared_manhattan_vectorized(X, Y):
     
     return np.sum(np.abs(np.expand_dims(X, axis=1)-Y), axis=-1)**2
-

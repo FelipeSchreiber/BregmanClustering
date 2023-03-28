@@ -11,6 +11,7 @@ import numpy as np
 import scipy as sp
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from .divergences import *
+from .phi import *
 from sklearn.metrics import adjusted_rand_score, accuracy_score
 from scipy.spatial.distance import hamming
 from sklearn.metrics.pairwise import pairwise_kernels, paired_distances, pairwise_distances
@@ -751,8 +752,10 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         #print(net_divergence_total)
         att_divergence_total = pairwise_distances(Y,self.attribute_means)
         if self.normalize_:
-            att_divergence_total = self.scaler.fit_transform(att_divergence_total)
-            net_divergence_total = self.scaler.fit_transform(net_divergence_total)
+            #att_divergence_total = self.scaler.fit_transform(att_divergence_total)
+            #net_divergence_total = self.scaler.fit_transform(net_divergence_total)
+            net_divergence_total -= phi_kl(X).sum(axis=1)[:,np.newaxis]
+            att_divergence_total -= phi_euclidean( Y ).sum(axis=1)[:,np.newaxis]
         #print(att_divergence_total,net_divergence_total)
         temp = pi[np.newaxis,:]*np.exp(-net_divergence_total -att_divergence_total)
         if self.thresholding:
