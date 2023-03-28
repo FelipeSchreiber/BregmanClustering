@@ -617,8 +617,8 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def initialize( self, X, Y ):
         if self.attribute_initializer == 'bregmanHardClustering':
-            model = BregmanHard(n_clusters = self.n_clusters, divergence = self.attribute_divergence, initializer="kmeans++")
-            #model = GaussianMixture(n_components=self.n_clusters)
+            #model = BregmanHard(n_clusters = self.n_clusters, divergence = self.attribute_divergence, initializer="kmeans++")
+            model = GaussianMixture(n_components=self.n_clusters,random_state=42)
             model.fit( Y )
             self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
             self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
@@ -629,10 +629,10 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             
         if self.graph_initializer == 'spectralClustering':
             U = self.spectralEmbedding(X)
-            model = BregmanHard(n_clusters = self.n_clusters,\
-                              divergence = self.attribute_divergence,\
-                              initializer="kmeans++")
-            #model = GaussianMixture(n_components=self.n_clusters)
+            # model = BregmanHard(n_clusters = self.n_clusters,\
+            #                   divergence = self.attribute_divergence,\
+            #                   initializer="kmeans++")
+            model = GaussianMixture(n_components=self.n_clusters,random_state=42)
             model.fit(U)
             self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
                                                                             n_clusters = self.n_clusters )
