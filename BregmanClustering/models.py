@@ -756,7 +756,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             #net_divergence_total = self.scaler.fit_transform(net_divergence_total)
             net_divergence_total -= phi_kl(X).sum(axis=1)[:,np.newaxis]
             att_divergence_total -= phi_euclidean( Y ).sum(axis=1)[:,np.newaxis]
-        #print(att_divergence_total,net_divergence_total)
+        print(att_divergence_total,net_divergence_total)
         temp = pi[np.newaxis,:]*np.exp(-net_divergence_total -att_divergence_total)
         if self.thresholding:
             max_ = np.argmax(temp,axis=1)
