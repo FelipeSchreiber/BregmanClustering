@@ -7,17 +7,6 @@ Created on Fri Feb 17 16:59:19 2023
 felipesc@cos.ufrj.br
 """
 
-try:
-    import cupy
-    import cupyx
-    import GPUtil
-
-    _CUPY_INSTALLED = True
-    _DEFAULT_USE_GPU = True
-except ImportError:
-    _CUPY_INSTALLED = False
-    _DEFAULT_USE_GPU = False
-
 import numpy as np
 import scipy as sp
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
