@@ -38,8 +38,6 @@ def frommembershipMatriceToVector( Z ):
         z[ i ] = np.argwhere( Z[i,:] != 0 )[0][0]
     
     return z
-    
-
 
 class BregmanGraphPartitioning( BaseEstimator, ClusterMixin ):
     
