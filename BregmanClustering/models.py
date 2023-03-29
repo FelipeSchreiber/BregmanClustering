@@ -665,6 +665,10 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             print( 'Initialisation chosen from the attributes' )
         return self
     
+    def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
+        if distribution.lower() == 'bernoulli':
+            return (1-t) * a + t *b - a**t * b**(1-t)
+
     def graphChernoffDivergence( self, X, Z ):
         graph_means = self.computeGraphMeans( X , Z )
         n = Z.shape[ 0 ]
