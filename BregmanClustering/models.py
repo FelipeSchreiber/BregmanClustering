@@ -546,7 +546,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
                  graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
                  initializer = 'chernoff', 
-                 graph_initializer = "spectralClustering", attribute_initializer = 'bregmanHardClustering', 
+                 graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
                  normalize_=True, thresholding=True
                 ):
@@ -621,80 +621,40 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return 1/2 * np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def initialize( self, X, Y ):
-        if self.attribute_initializer == 'bregmanHardClustering':
-            #model = BregmanHard(n_clusters = self.n_clusters, divergence = self.attribute_divergence, initializer="kmeans++")
-            model = GaussianMixture(n_components=self.n_clusters,random_state=42)
+        if self.attribute_initializer == 'GMM':
+            model = GaussianMixture(n_components=self.n_clusters)
             model.fit( Y )
             self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
-            self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
-            self.graph_means = self.computeGraphMeans(X,self.memberships_from_attributes)
-        
+            self.attribute_model_init = model
+            #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
         else:
             raise TypeError( 'The initializer provided for the attributes is not correct' )
             
         if self.graph_initializer == 'spectralClustering':
             U = self.spectralEmbedding(X)
-            # model = BregmanHard(n_clusters = self.n_clusters,\
-            #                   divergence = self.attribute_divergence,\
-            #                   initializer="kmeans++")
-            model = GaussianMixture(n_components=self.n_clusters,random_state=42)
+            model = GaussianMixture(n_components=self.n_clusters)
             model.fit(U)
             self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
                                                                             n_clusters = self.n_clusters )
-            self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_graph )
-            self.graph_means = self.computeGraphMeans(X, self.memberships_from_graph)
-            print(self.graph_means)
+            self.graph_model_init = model
+            #self.graph_means = self.computeGraphMeans(X,self.memberships_from_graph)
         else:
             raise TypeError( 'The initializer provided for the graph is not correct' )
     
-    def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
-        if distribution.lower() == 'bernoulli':
-            return (1-t) * a + t *b - a**t * b**(1-t)
-    
-    def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeGraphMeans( X , Z )
-        n = Z.shape[ 0 ]
-        pi = np.zeros( self.n_clusters )
-        for c in range( self.n_clusters ):
-            cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
-            pi[ c ] = len(cluster_c) / n
-            
-        if self.graphDistribution == 'bernoulli':
-            res = 10000
-            for a in range( self.n_clusters ):
-                for b in range( a ):
-                    div = lambda t : - (1-t) * np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
-                    minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                    if - minDiv['fun'] < res:
-                        res = - minDiv['fun']
-        return res
-    
-    def attributeChernoffDivergence( self, Y, Z ):
-        res = 10000
-        attribute_means = self.computeAttributeMeans( Y, Z )
-        for a in range( self.n_clusters ):
-            for b in range( a ):
-                div = lambda t : - t * (1-t)/2 * np.linalg.norm( attribute_means[a] - attribute_means[b] )
-                minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                if - minDiv['fun'] < res:
-                    res = - minDiv['fun']
-
-        return res
-    
     def AIC_initializer(self,X,Y):
         U = self.spectralEmbedding(X)
-        net_null_model = GaussianMixture(n_components=1).fit(U)
+        net_null_model = GaussianMixture(n_components=1,).fit(U)
         null_net = net_null_model.aic(U)
-        net_model = GaussianMixture(n_components=self.n_clusters).fit(U)
+        net_model = self.graph_model_init
         fitted_net = net_model.aic(U)
         AIC_graph = fitted_net - null_net
-            
+
         att_null_model = GaussianMixture(n_components=1).fit(Y)
         null_attributes = att_null_model.aic(Y)
-        att_model = GaussianMixture(n_components=self.n_clusters).fit(Y)
+        att_model = self.attribute_model_init
         fitted_attributes = att_model.aic(Y)
         AIC_attribute = fitted_attributes - null_attributes
-            
+        
         if AIC_graph < AIC_attribute:
             self.predicted_memberships = self.memberships_from_graph
             self.graph_init = True
@@ -703,10 +663,11 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = self.memberships_from_attributes
             self.graph_init = False
             print( 'Initialisation chosen from the attributes' )
+        return self
 
     def chernoff_initializer(self,X,Y):
         n = Y.shape[0]
-        if self.graphChernoffDivergence( X, self.memberships_from_graph ) >\
+        if self.graphChernoffDivergence( X, self.memberships_from_graph ) > \
                 self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
             self.predicted_memberships = self.memberships_from_graph
             self.graph_init = True
@@ -715,6 +676,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = self.memberships_from_attributes
             self.graph_init = False
             print( 'Initialisation chosen from the attributes' )         
+        return self
     
     def assignInitialLabels( self, X, Y ):
         if self.initializer == 'random':
@@ -727,6 +689,14 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         ## Chernoff divergence
         elif self.initializer == "chernoff":
             self.chernoff_initializer(X,Y)
+        
+    def spectralEmbedding(self, X ):
+        if (X<0).any():
+            X = pairwise_kernels(X,metric='rbf')
+        U = SpectralEmbedding(n_components=self.n_clusters,\
+								affinity="precomputed")\
+								.fit_transform(X)
+        return U
  
     def VE_step(self,X,Y,tau):
         """
@@ -776,7 +746,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         graph_means = self.computeGraphMeans(X,tau)
         return att_means,graph_means
     
-    def fit(self,X,Y):
+    def fit(self,X,Y,Z_init=None):
         """Perform one run of the SBM algorithm with one random initialization.
         Parameters
         ----------
@@ -788,8 +758,14 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         old_ll = -np.inf
         self.indices_ones = list(X.nonzero())
         self.N = X.shape[0]
-        self.initialize(X,Y)
-        self.assignInitialLabels(X,Y)
+        if Z_init is None:
+            self.initialize( X, Y )
+            self.assignInitialLabels( X, Y )
+        else:
+            self.predicted_memberships = Z_init
+        #init_labels = self.predicted_memberships
+        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
+        self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
         tau = self.predicted_memberships
         iter_ = 0 
         while True:
