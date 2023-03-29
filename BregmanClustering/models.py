@@ -664,6 +664,36 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.graph_init = False
             print( 'Initialisation chosen from the attributes' )
         return self
+    
+    def graphChernoffDivergence( self, X, Z ):
+        graph_means = self.computeGraphMeans( X , Z )
+        n = Z.shape[ 0 ]
+        pi = np.zeros( self.n_clusters )
+        for c in range( self.n_clusters ):
+            cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
+            pi[ c ] = len(cluster_c) / n
+            
+        if self.graphDistribution == 'bernoulli':
+            res = 10000
+            for a in range( self.n_clusters ):
+                for b in range( a ):
+                    div = lambda t : - (1-t) * np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
+                    minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
+                    if - minDiv['fun'] < res:
+                        res = - minDiv['fun']
+        return res
+    
+    def attributeChernoffDivergence( self, Y, Z ):
+        res = 10000
+        attribute_means = self.computeAttributeMeans( Y, Z )
+        for a in range( self.n_clusters ):
+            for b in range( a ):
+                div = lambda t : - t * (1-t)/2 * np.linalg.norm( attribute_means[a] - attribute_means[b] )
+                minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
+                if - minDiv['fun'] < res:
+                    res = - minDiv['fun']
+
+        return res
 
     def chernoff_initializer(self,X,Y):
         n = Y.shape[0]
