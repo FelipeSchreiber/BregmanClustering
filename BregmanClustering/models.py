@@ -303,7 +303,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
                  graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
                  initializer = 'chernoff', 
-                 graph_initializer = "spectralClustering", attribute_initializer = 'bregmanHardClustering', 
+                 graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100 ):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
@@ -351,6 +351,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         self.N = X.shape[0]
         if Z_init is None:
+            self.initialize( X, Y )
             self.assignInitialLabels( X, Y )
         else:
             self.predicted_memberships = Z_init
@@ -375,43 +376,38 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return self
     
     def initialize( self, X, Y ):
-        if self.attribute_initializer == 'bregmanHardClustering':
-            #model = BregmanHard(n_clusters = self.n_clusters, divergence = self.attribute_divergence, initializer="kmeans++")
+        if self.attribute_initializer == 'GMM':
             model = GaussianMixture(n_components=self.n_clusters)
             model.fit( Y )
             self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
+            self.attribute_model_init = model
             #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
         else:
             raise TypeError( 'The initializer provided for the attributes is not correct' )
             
         if self.graph_initializer == 'spectralClustering':
             U = self.spectralEmbedding(X)
-            # model = BregmanHard(n_clusters = self.n_clusters,\
-            #                   divergence = self.attribute_divergence,\
-            #                   initializer="kmeans++")
             model = GaussianMixture(n_components=self.n_clusters)
             model.fit(U)
             self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
                                                                             n_clusters = self.n_clusters )
+            self.graph_model_init = model
             #self.graph_means = self.computeGraphMeans(X,self.memberships_from_graph)
         else:
             raise TypeError( 'The initializer provided for the graph is not correct' )
     
     def AIC_initializer(self,X,Y):
         U = self.spectralEmbedding(X)
-        net_null_model = GaussianMixture(n_components=1).fit(U)
+        net_null_model = GaussianMixture(n_components=1,).fit(U)
         null_net = net_null_model.aic(U)
-        net_model = GaussianMixture(n_components=self.n_clusters).fit(U)
+        net_model = self.graph_model_init
         fitted_net = net_model.aic(U)
-        self.memberships_from_graph = fromVectorToMembershipMatrice(net_model.predict(U))
         AIC_graph = fitted_net - null_net
-
 
         att_null_model = GaussianMixture(n_components=1).fit(Y)
         null_attributes = att_null_model.aic(Y)
-        att_model = GaussianMixture(n_components=self.n_clusters).fit(Y)
+        att_model = self.attribute_model_init
         fitted_attributes = att_model.aic(Y)
-        self.memberships_from_attributes = fromVectorToMembershipMatrice(att_model.predict(Y))
         AIC_attribute = fitted_attributes - null_attributes
         
         if AIC_graph < AIC_attribute:
@@ -447,10 +443,9 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
-            self.initialize( X, Y )
             self.chernoff_initializer(X,Y)
         
-    def spectralEmbedding( self, X ):
+    def spectralEmbedding(self, X ):
         if (X<0).any():
             X = pairwise_kernels(X,metric='rbf')
         U = SpectralEmbedding(n_components=self.n_clusters,\
