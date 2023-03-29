@@ -337,7 +337,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.attributeDistribution = 'gaussian'
         
 
-    def fit( self, X, Y ):
+    def fit( self, X, Y, Z_init=None ):
         """
         Training step.
         Parameters
@@ -350,9 +350,13 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             Trained model.
         """
         self.N = X.shape[0]
-        self.initialize( X, Y )
-        self.assignInitialLabels( X, Y )
-        init_labels = self.predicted_memberships
+        if Z_init is None:
+            self.assignInitialLabels( X, Y )
+        else:
+            self.predicted_memberships = Z_init
+        #init_labels = self.predicted_memberships
+        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
+        self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
         convergence = True
         iteration = 0
         while convergence:
@@ -368,28 +372,28 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                 #print( accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) )  )
             self.predicted_memberships = new_memberships
         print( 'number of iterations : ', iteration)
-        return self,init_labels
+        return self
     
     def initialize( self, X, Y ):
         if self.attribute_initializer == 'bregmanHardClustering':
-            model = BregmanHard(n_clusters = self.n_clusters, divergence = self.attribute_divergence, initializer="kmeans++")
-            #model = GaussianMixture(n_components=self.n_clusters)
+            #model = BregmanHard(n_clusters = self.n_clusters, divergence = self.attribute_divergence, initializer="kmeans++")
+            model = GaussianMixture(n_components=self.n_clusters)
             model.fit( Y )
             self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
-            self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
+            #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
         else:
             raise TypeError( 'The initializer provided for the attributes is not correct' )
             
         if self.graph_initializer == 'spectralClustering':
             U = self.spectralEmbedding(X)
-            model = BregmanHard(n_clusters = self.n_clusters,\
-                              divergence = self.attribute_divergence,\
-                              initializer="kmeans++")
-            #model = GaussianMixture(n_components=self.n_clusters)
+            # model = BregmanHard(n_clusters = self.n_clusters,\
+            #                   divergence = self.attribute_divergence,\
+            #                   initializer="kmeans++")
+            model = GaussianMixture(n_components=self.n_clusters)
             model.fit(U)
-            Z = self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
+            self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
                                                                             n_clusters = self.n_clusters )
-            self.graph_means = self.computeGraphMeans(X,Z)
+            #self.graph_means = self.computeGraphMeans(X,self.memberships_from_graph)
         else:
             raise TypeError( 'The initializer provided for the graph is not correct' )
     
@@ -399,14 +403,17 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         null_net = net_null_model.aic(U)
         net_model = GaussianMixture(n_components=self.n_clusters).fit(U)
         fitted_net = net_model.aic(U)
+        self.memberships_from_graph = fromVectorToMembershipMatrice(net_model.predict(U))
         AIC_graph = fitted_net - null_net
-            
+
+
         att_null_model = GaussianMixture(n_components=1).fit(Y)
         null_attributes = att_null_model.aic(Y)
         att_model = GaussianMixture(n_components=self.n_clusters).fit(Y)
         fitted_attributes = att_model.aic(Y)
+        self.memberships_from_attributes = fromVectorToMembershipMatrice(att_model.predict(Y))
         AIC_attribute = fitted_attributes - null_attributes
-            
+        
         if AIC_graph < AIC_attribute:
             self.predicted_memberships = self.memberships_from_graph
             self.graph_init = True
@@ -415,6 +422,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = self.memberships_from_attributes
             self.graph_init = False
             print( 'Initialisation chosen from the attributes' )
+        return self
 
     def chernoff_initializer(self,X,Y):
         n = Y.shape[0]
@@ -427,6 +435,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = self.memberships_from_attributes
             self.graph_init = False
             print( 'Initialisation chosen from the attributes' )         
+        return self
     
     def assignInitialLabels( self, X, Y ):
         if self.initializer == 'random':
@@ -438,6 +447,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
+            self.initialize( X, Y )
             self.chernoff_initializer(X,Y)
         
     def spectralEmbedding( self, X ):
