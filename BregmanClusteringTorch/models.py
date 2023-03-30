@@ -63,10 +63,9 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         
     def spectralEmbedding( self, X ):
         if (X<0).any():
-            X = (X,metric='rbf')
-        U = SpectralEmbedding(n_components=self.n_clusters,\
-								affinity="precomputed")\
-								.fit_transform(X)
+            X = rbf_kernel(X[:,None],X[None,:])
+        L, V = torch.linalg.eig(X)
+        U = V[:,-self.n_clusters:]
         return U
     
     def computeAttributeMeans( self, Y, Z ):

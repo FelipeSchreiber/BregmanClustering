@@ -3,10 +3,10 @@
 """
 Created on Fri Feb 17 16:52:18 2023
 
-@author: maximilien
+@author: maximilien, Felipe Schreiber Fernandes
 
 This code is taken from 
-https://github.com/juselara1/bregclus/blob/main/bregclus/divergences.py
+
 """
 
 import torch
@@ -22,9 +22,6 @@ def euclidean_(X,M):
 
 def rbf_kernel(X,M):
     return torch.exp(-torch.norm(X-M))
-
-
-
 
 def dist_to_phi(dist):
     dist_to_phi_dict = {
@@ -51,7 +48,6 @@ def get_phi(name):
     }
     return phi_dict[name]
 
-
 #x, theta are both k-dimensional
 def bregman_divergence(phi_list, x, theta):
     phi = phi_list[0]
@@ -59,7 +55,6 @@ def bregman_divergence(phi_list, x, theta):
 
     bregman_div = phi(x) - phi(theta) - torch.dot(gradient(theta), x-theta)
     return bregman_div
-
 
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
 def pairwise_bregman(X, Y, phi_list, shape=None):
@@ -73,8 +68,8 @@ def pairwise_bregman(X, Y, phi_list, shape=None):
         phi_X = phi(X)[:, None]
         phi_Y = phi(Y)[None, :]
 
-    X = X[:, np.newaxis]
-    Y = Y[np.newaxis, :]
+    X = X[:, None]
+    Y = Y[None, :]
 
 
     if shape:
@@ -83,7 +78,6 @@ def pairwise_bregman(X, Y, phi_list, shape=None):
         pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * gradient(Y), axis=-1)
 
     return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
-    
 
 
 
