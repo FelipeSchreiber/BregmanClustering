@@ -9,7 +9,7 @@ felipesc@cos.ufrj.br
 
 import scipy as sp
 from sklearn.base import BaseEstimator, ClusterMixin
-from BREGMANCLUSTERING.BregmanClustering import *
+from BregmanClustering.BregmanClustering import *
 from .torch_divergences import *
 import torch
 device = "cuda" if torch.cuda.is_available() else "cpu"
