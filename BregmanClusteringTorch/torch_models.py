@@ -9,7 +9,7 @@ felipesc@cos.ufrj.br
 
 import scipy as sp
 from sklearn.base import BaseEstimator, ClusterMixin
-from ..BregmanClustering import *
+from BregmanClustering.BregmanClustering import *
 from .torch_divergences import *
 import torch
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -27,7 +27,8 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
-                 normalize_=True, thresholding=True
+                 normalize_=True, thresholding=True,
+                 reduce_by = torch.sum
                 ):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
@@ -59,7 +60,8 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         self.attributeDistribution = 'gaussian'
         self.normalize_ = normalize_
         self.thresholding = thresholding
-        
+        self.reduce_by = reduce_by
+
     def spectralEmbedding( self, X ):
         if (X<0).any():
             X = rbf_kernel(X[:,None],X[None,:])
@@ -123,18 +125,21 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         """
         net_divergence_total = torch.tensordot(tau, net_divergences_elementwise, axes=[(0,1),(1,3)])
         #print(net_divergence_total)
-        att_divergence_total = self.attribute_divergence(Y[:,None],self.attribute_means[None,:])
+        att_divergence_total = self.reduce_by(
+                                                self.attribute_divergence(Y[:,None],\
+                                                self.attribute_means[None,:])
+        dim=-1)
         if self.normalize_:
             net_divergence_total -= phi_kl(X).sum(dim=1)[:,None]
             att_divergence_total -= phi_euclidean( Y ).sum(dim=1)[:,None]
         # print(att_divergence_total,net_divergence_total)
-        temp = pi[None,:]*torch.exp(-net_divergence_total -att_divergence_total,dim=-1)
+        temp = pi[None,:]*torch.exp(-net_divergence_total -att_divergence_total)
         if self.thresholding:
-            max_ = np.argmax(temp,axis=1)
-            tau = np.zeros((N,self.n_clusters))
-            tau[np.arange(N),max_] = np.ones(N)
+            max_ = torch.argmax(temp,dim=1)
+            tau = torch.zeros((N,self.n_clusters))
+            tau.gather(1,max_) = torch.ones(N)
             return tau
-        tau = normalize(temp,norm="l1",axis=1)
+        tau = temp/(temp.sum(dim=1)[:,None])
         return tau
 
     def M_Step(self,X,Y,tau):
@@ -152,23 +157,26 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         n : Number of rows in the data matrix.
         """
         old_ll = -torch.inf
-        self.indices_ones = list(X.nonzero())
         self.N = X.shape[0]
         if Z_init is None:
-            self.initialize( X, Y )
-            self.assignInitialLabels( X, Y )
+            model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
+            model.initialize( X, Y )
+            model.assignInitialLabels( X, Y )  
+            self.predicted_memberships = torch.tensor(model.predicted_memberships)
         else:
-            self.predicted_memberships = Z_init
+            self.predicted_memberships = torch.tensor(Z_init)
         #init_labels = self.predicted_memberships
+        X = torch.tensor(X)
+        Y = torch.tensor(Y)
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
-        tau = self.predicted_memberships
+        new_tau = tau = self.predicted_memberships
         iter_ = 0 
         while True:
             print(iter_)
             new_tau = self.VE_step(X,Y,tau)
             self.attribute_means,self.graph_means = self.M_Step(X,Y,new_tau)
-            if np.allclose(tau,new_tau) or iter_ > self.n_iters:
+            if torch.allclose(tau,new_tau) or iter_ > self.n_iters:
                 break
             iter_  += 1
             tau = new_tau
@@ -189,4 +197,4 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         z: Array
             Assigned cluster for each data point (n, )
         """
-        return frommembershipMatriceToVector( self.predicted_memberships)
+        return torch.argmax(self.predicted_memberships,dim=1).numpy()

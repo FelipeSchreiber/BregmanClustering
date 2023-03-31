@@ -14,11 +14,17 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def kullbackLeibler_binaryMatrix( X, M ):
-    essai = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) , dim=-1)
-    return torch.sum(essai,dim=-1)
+    essai = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M))
+    return essai
 
 def euclidean_(X,M):
-    return torch.square(X - M,dim=-1)
+    return torch.square(X - M)
+
+def phi_kl( a ):
+    return torch.log(1+torch.exp(a))
+
+def phi_euclidean( a ):
+    return torch.square(a)
 
 def rbf_kernel(X,M):
     return torch.exp(-torch.norm(X-M,dim=-1))
