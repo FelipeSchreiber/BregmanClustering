@@ -113,8 +113,8 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         """
         Compute net divergences for every pair X[i,j], mu[k,l]
         """
-        net_divergences_elementwise = self.graph_divergence(X[:,None],\
-                                             self.graph_means[None,:])\
+        net_divergences_elementwise = self.graph_divergence(X.reshape(-1,1),\
+                                             self.graph_means.reshape(-1,1))\
                                             .reshape((self.N,self.N,self.n_clusters,self.n_clusters))
         """
         net_divergences has shape N x N x K x K
