@@ -89,7 +89,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
             for l in range(self.n_clusters):
                 graph_means[q,l]=torch.sum(weights[q,l]*X)/torch.sum(weights[q,l])
         #graph_means/=((tau_sum.reshape((-1, 1)) * tau_sum) - tau.T @ tau)
-        torch.nan_to_num(graph_means,copy=False)
+        torch.nan_to_num(graph_means,out=graph_means)
         return graph_means 
     
     def likelihoodAttributes(self,Y,Z):
