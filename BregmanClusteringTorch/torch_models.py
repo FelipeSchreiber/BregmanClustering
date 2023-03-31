@@ -166,9 +166,9 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships)
+            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.double)
         else:
-            self.predicted_memberships = torch.tensor(Z_init)
+            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.double)
         #init_labels = self.predicted_memberships
         X = torch.tensor(X,dtype=torch.double)
         Y = torch.tensor(Y,dtype=torch.double)
