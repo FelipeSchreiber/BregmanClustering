@@ -170,8 +170,8 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         else:
             self.predicted_memberships = torch.tensor(Z_init)
         #init_labels = self.predicted_memberships
-        X = torch.tensor(X)
-        Y = torch.tensor(Y)
+        X = torch.tensor(X,dtype=torch.double)
+        Y = torch.tensor(Y,dtype=torch.double)
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
         new_tau = tau = self.predicted_memberships
