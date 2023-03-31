@@ -127,8 +127,9 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         #print(net_divergence_total)
         att_divergence_total = self.reduce_by(
                                                 self.attribute_divergence(Y[:,None],\
-                                                self.attribute_means[None,:])
-        dim=-1)
+                                                self.attribute_means[None,:]),\
+                                                dim=-1
+                                            )
         if self.normalize_:
             net_divergence_total -= phi_kl(X).sum(dim=1)[:,None]
             att_divergence_total -= phi_euclidean( Y ).sum(dim=1)[:,None]
