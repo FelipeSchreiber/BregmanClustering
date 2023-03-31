@@ -61,6 +61,8 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         self.normalize_ = normalize_
         self.thresholding = thresholding
         self.reduce_by = reduce_by
+        self.N = 0
+        self.row_indices = torch.arange(2)
 
     def spectralEmbedding( self, X ):
         if (X<0).any():
@@ -106,14 +108,14 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         Y: attributes matrix
         tau: membership matrix
         """
-        N = X.shape[0]
+        #N = X.shape[0]
         pi = tau.mean(0)
         """
         Compute net divergences for every pair X[i,j], mu[k,l]
         """
         net_divergences_elementwise = self.graph_divergence(X[:,None],\
                                              self.graph_means[None,:])\
-                                            .reshape((N,N,self.n_clusters,self.n_clusters))
+                                            .reshape((self.N,self.N,self.n_clusters,self.n_clusters))
         """
         net_divergences has shape N x N x K x K
         tau has shape N x K
@@ -137,8 +139,8 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         temp = pi[None,:]*torch.exp(-net_divergence_total -att_divergence_total)
         if self.thresholding:
             max_ = torch.argmax(temp,dim=1)
-            tau = torch.zeros((N,self.n_clusters))
-            tau.gather(1,max_) = torch.ones(N)
+            tau = torch.zeros((self.N,self.n_clusters))
+            tau[self.row_indices,max_] = torch.ones(self.N)
             return tau
         tau = temp/(temp.sum(dim=1)[:,None])
         return tau
@@ -159,6 +161,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         """
         old_ll = -torch.inf
         self.N = X.shape[0]
+        self.row_indices = torch.arange(self.N)
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
