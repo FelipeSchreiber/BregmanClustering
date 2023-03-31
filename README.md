@@ -8,6 +8,7 @@ Usage example:
 ```python
 ##import model. You can choose SoftBregmanNodeAttributeGraphClustering as well 
 from BregmanClustering.models import BregmanNodeAttributeGraphClustering as bregClust
+from BregmanClusteringTorch.torch_models import SoftBregmanClusteringTorch as torchBreg
 
 ##import benchmark
 from BregmanClustering.WSBM import *
@@ -26,6 +27,7 @@ X,Y= BregmanBenchmark(P,[n]*c,-10,10,dims=d,weight_variance=0.01,att_variance=0.
 A = (X != 0).astype(int)
 
 model = bregClust(n_clusters=c)
+#model = torchBreg(n_clusters=c,thresholding=True,normalize_=True)
 model.fit(A,Y)
 labels = model.predict(A,Y)
 ```
