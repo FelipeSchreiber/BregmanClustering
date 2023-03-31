@@ -84,7 +84,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         desired output:
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
-        weights = torch.transpose(weights,(1,3,0,2))
+        weights = weights.permute(1,3,0,2)
         for q in range(self.n_clusters):
             for l in range(self.n_clusters):
                 graph_means[q,l]=torch.sum(weights[q,l]*X)/torch.sum(weights[q,l])
