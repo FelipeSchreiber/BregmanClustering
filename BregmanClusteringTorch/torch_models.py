@@ -78,7 +78,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
     def computeGraphMeans(self,X,tau):
         graph_means = torch.zeros((self.n_clusters,self.n_clusters))
         tau_sum = tau.sum(0)
-        weights = torch.tensordot(tau, tau, axes=((), ()))
+        weights = torch.tensordot(tau, tau, dims=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
         desired output:
@@ -125,7 +125,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         "j" appears at axes 0 for tau and at axes 1 for net_divergence
         "l" appears at axes 1 for tau and at axes 3 for net_divergence
         """
-        net_divergence_total = torch.tensordot(tau, net_divergences_elementwise, axes=[(0,1),(1,3)])
+        net_divergence_total = torch.tensordot(tau, net_divergences_elementwise, dims=[(0,1),(1,3)])
         #print(net_divergence_total)
         att_divergence_total = self.reduce_by(
                                                 self.attribute_divergence(Y[:,None],\
