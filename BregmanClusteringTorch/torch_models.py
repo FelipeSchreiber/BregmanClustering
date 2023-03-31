@@ -72,7 +72,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         return U
     
     def computeAttributeMeans( self, Y, Z ):
-        attribute_means = torch.dot(Z.T, Y)/(Z.sum(dim=0) + 10 * torch.finfo(Z.dtype).eps)[:, None]
+        attribute_means = (Z.T@Y)/(Z.sum(dim=0) + 10 * torch.finfo(Z.dtype).eps)[:, None]
         return attribute_means
 
     def computeGraphMeans(self,X,tau):
