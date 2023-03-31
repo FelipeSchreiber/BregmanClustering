@@ -14,14 +14,14 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def kullbackLeibler_binaryMatrix( X, M ):
-    essai = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) )
-    return torch.sum(essai)
+    essai = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) , dim=-1)
+    return torch.sum(essai,dim=-1)
 
 def euclidean_(X,M):
-    return torch.square(X - M)
+    return torch.square(X - M,dim=-1)
 
 def rbf_kernel(X,M):
-    return torch.exp(-torch.norm(X-M))
+    return torch.exp(-torch.norm(X-M,dim=-1))
 
 def dist_to_phi(dist):
     dist_to_phi_dict = {
