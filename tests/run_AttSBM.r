@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 library(reticulate)
-source('../AttributedSBM/FitAttribute.R')
+source('./AttributedSBM/FitAttribute.R')
 args = commandArgs(trailingOnly=TRUE)
 # Create a file
 file.create("predict.npy")
