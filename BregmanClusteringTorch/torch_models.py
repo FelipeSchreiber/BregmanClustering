@@ -254,7 +254,7 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         U = V[:,-self.n_clusters:]
         return U
     
-    def sparse_dense_mul(s, d):
+    def sparse_dense_mul(self, s, d):
         i = s._indices()
         v = s._values()
         dv = d[i[0,:], i[1,:]]  # get values from relevant entries of dense matrix
@@ -394,4 +394,3 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             Assigned cluster for each data point (n, )
         """
         return torch.argmax(self.predicted_memberships,dim=1).numpy()
-        res = tf.SparseTensor(x.indices, tf.gather_nd(y, x.indices) * x.values, x.dense_shape)
