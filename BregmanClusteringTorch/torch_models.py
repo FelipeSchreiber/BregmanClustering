@@ -468,7 +468,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
     
     def fit(self,G,Y):
         model = self.model = self.make_model(Y.shape[1])
-        X = nx.adjacency_matrix(G)
+        X = nx.adjacency_matrix(G).todense()
         X = torch.tensor(X,dtype=torch.float) ## Network data
         Y = torch.tensor(Y,dtype=torch.float) ## attributes
         graph_data = from_networkx(G,group_node_attrs=['attr'])
