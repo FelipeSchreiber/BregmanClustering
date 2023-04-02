@@ -10,6 +10,8 @@ if IGNORE_WARNINGS:
     import logging
     warnings.filterwarnings("ignore")
     logging.disable(logging.INFO)
+    logging.basicConfig(level=logging.CRITICAL)
+
 
 def modify_att_sbm(path):
     for i,line in enumerate(fileinput.input(path, inplace=True)):
