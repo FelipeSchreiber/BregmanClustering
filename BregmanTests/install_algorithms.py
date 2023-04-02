@@ -27,8 +27,8 @@ def modify_csbm(path):
 
 def main():
     print("Downloading packages from github...\n")
-    bash_path = resource_filename("BregmanTests","")
-    print(bash_path)
+    bash_path = resource_filename("BregmanTests","")+"/install_algos.sh"
+    subprocess.call(["chmod","777",f"{bash_path}"])
     subprocess.call([f"{bash_path}/install_algos.sh"])
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm(path_to_att_sbm)
