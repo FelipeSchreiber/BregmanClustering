@@ -7,7 +7,9 @@ from rpy2.robjects.packages import importr
 from .cfg import *
 if IGNORE_WARNINGS: 
     import warnings
+    import logging
     warnings.filterwarnings("ignore")
+    logging.disable(logging.INFO)
 
 def modify_att_sbm(path):
     for i,line in enumerate(fileinput.input(path, inplace=True)):
