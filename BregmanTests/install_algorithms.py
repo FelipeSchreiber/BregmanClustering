@@ -28,12 +28,15 @@ def main():
     subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm("./AttributedSBM/FitAttribute.R")
-    print("Installing R packages...\n")
+    print("Installing R packages...\n This step takes about 5 min...\n")
     utils = importr('utils')
-    #utils.chooseCRANmirror(ind=1)
-    # Install packages
     packnames = ("igraph", "reticulate","mvtnorm")
-    utils.install_packages(StrVector(packnames),repos="https://cran.fiocruz.br/")
+    if CRAN_repo is None:
+        utils.chooseCRANmirror(ind=1)
+        utils.install_packages(StrVector(packnames))
+    else:
+        # Install packages
+        utils.install_packages(StrVector(packnames),repos=CRAN_repo)
 
 if __name__ == "__main__":
     main()
