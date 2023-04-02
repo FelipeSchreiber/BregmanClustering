@@ -2,9 +2,9 @@ import subprocess
 import fileinput
 from pkg_resources import resource_filename
 import rpy2
+import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
-import os
 
 path = "./data/Benchmark/"
 path_to_att_sbm = "./AttributedSBM/FitAttribute.R"
