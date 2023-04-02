@@ -14,6 +14,7 @@ class build_py(build_py_orig):
         ]
     
 s = setup(name='bregClust',
+version='1.0',
 description='A package for clustering attributed networks',
 url='#',
 author='Felipe Schreiber Fernandes, Maximilien Dreveton',
