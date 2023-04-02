@@ -7,8 +7,8 @@ from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
 
 base_path = resource_filename("BregmanTests","")
-path_to_data = ".data/Benchmark/"
-path_to_att_sbm = ".AttributedSBM/FitAttribute.R"
+path_to_data = "./data/Benchmark/"
+path_to_att_sbm = "./AttributedSBM/FitAttribute.R"
 
 def modify_att_sbm(path):
     for i,line in enumerate(fileinput.input(path, inplace=True)):
