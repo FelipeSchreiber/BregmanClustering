@@ -32,7 +32,7 @@ def main():
     subprocess.call(["chmod","777",f"{bash_path}"])
     subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
-    modify_att_sbm(path_to_att_sbm)
+    modify_att_sbm("./AttributedSBM/FitAttribute.R")
     print("Installing R packages...\n")
     utils = importr('utils')
     #utils.chooseCRANmirror(ind=1)
