@@ -1,7 +1,7 @@
 import fnmatch
 from setuptools import find_packages, setup
 from setuptools.command.build_py import build_py as build_py_orig
-import cfg
+#import cfg
 
 excluded = ['tests/*.ipynb','tests/*.eps','tests/.npy']
 
@@ -25,5 +25,5 @@ packages=find_packages(),
 cmdclass={'build_py': build_py},
 package_data = {'tests': ['*.r']},
 zip_safe=False)
-cfg.install_breg_path = s.command_obj['install'].__dir__()
-print(cfg.install_breg_path)
+#cfg.install_breg_path = s.command_obj['install'].__dir__()
+#print(cfg.install_breg_path)
