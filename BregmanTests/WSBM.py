@@ -1,10 +1,9 @@
 import numpy as np
 import networkx as nx
-from scipy.spatial.distance import pdist
-from BregmanClustering.distributions import *
+from BregmanTests.distributions import *
 
 class BregmanBenchmark():
-    def __init__(self,P,communities_sizes,min_,max_,dims=2,weight_variance=1,att_variance=1,\
+    def __init__(self,P,communities_sizes,min_=0,max_=1,dims=2,weight_variance=1,att_variance=1,\
                  weight_distribution="gamma",attributes_distribution="gaussian",radius=1):
         self.probability_matrix=P
         self.communities_sizes=communities_sizes
@@ -36,23 +35,31 @@ class BregmanBenchmark():
             G[i][j]['weight'] = self.weight_distribution(*p)
         return nx.to_numpy_array(G)
     
-    def generate_attributes(self):
-        basis = []
+    def get_unit_circle_coordinates(self):
+        centers = []
         for i in range(self.n_clusters):
-            basis.append((self.radius*np.cos(2*np.pi*i/self.n_clusters),\
-                          self.radius*np.sin(2*np.pi*i/self.n_clusters)))
-        
+            centers.append([self.radius*np.cos(2*np.pi*i/self.n_clusters),\
+                          self.radius*np.sin(2*np.pi*i/self.n_clusters)])
+        return np.array(centers)
+    
+    def generate_attributes(self):
+        centers = self.get_unit_circle_coordinates()
+        if self.dims < centers.shape[1]:
+            centers = centers[:,:self.dims]
+        elif self.dims > centers.shape[1]:
+            centers = np.hstack([centers,np.zeros((centers.shape[0],self.dims - centers.shape[1]))])
         N = np.sum(self.communities_sizes)
         Y = np.zeros((N,self.n_clusters))
         cumsum = np.cumsum(self.communities_sizes)
         cumsum = np.insert(cumsum,0,0)
         for q,clus_len in enumerate(self.communities_sizes):
-            for l in range(len(basis[0])):
-                p = self.get_att_param(basis[q][l],self.att_variance)
+            for l in range(len(centers[0])):
+                p = self.get_att_param(centers[q][l],self.att_variance)
                 Y[cumsum[q]:cumsum[q+1],l] = self.att_distribution(*p,size=clus_len)
         return Y
     
     def generate_benchmark_WSBM(self):
          X = self.generate_WSBM()
          Y = self.generate_attributes()
-         return X,Y
+         labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
+         return X,Y,labels_true

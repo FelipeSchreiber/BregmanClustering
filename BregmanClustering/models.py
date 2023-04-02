@@ -9,16 +9,15 @@ felipesc@cos.ufrj.br
 
 import numpy as np
 import scipy as sp
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from .divergences import *
 from .phi import *
-from sklearn.metrics import adjusted_rand_score, accuracy_score
-from scipy.spatial.distance import hamming
+from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import pairwise_kernels, paired_distances, pairwise_distances
 from sklearn.mixture import GaussianMixture
 from sklearn.manifold import SpectralEmbedding
 from tqdm import tqdm
-from sklearn.cluster import SpectralClustering, KMeans
+from sklearn.cluster import SpectralClustering
 from sklearn.preprocessing import normalize, MinMaxScaler
 import warnings
 warnings.filterwarnings("ignore")
