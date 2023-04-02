@@ -22,5 +22,5 @@ install_requires=["torch_geometric","rpy2"],
 author_email='felipesc@cos.ufrj.br',
 packages=find_packages(),
 cmdclass={'build_py': build_py},
-package_data = {'tests': ['*.r']},
+package_data = {'tests': ['*.r',"*.sh"]},
 zip_safe=False)
