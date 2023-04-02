@@ -463,7 +463,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
     
     def loss_fn(self,X,Y,Z):
         W = self.get_dist_matrix(X,Y,Z)
-        loss_ = torch.linalg.norm(Z@Z.T - W)
+        loss_ = torch.linalg.norm(Z@Z.T - W@W.T)
         return loss_
     
     def fit(self,G,Y):
