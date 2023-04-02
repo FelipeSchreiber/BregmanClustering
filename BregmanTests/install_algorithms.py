@@ -6,8 +6,9 @@ import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
 
-path = "./data/Benchmark/"
-path_to_att_sbm = "./AttributedSBM/FitAttribute.R"
+base_path = resource_filename("BregmanTests","")
+path_to_data = base_path+"/data/Benchmark/"
+path_to_att_sbm = base_path+"AttributedSBM/FitAttribute.R"
 
 def modify_att_sbm(path):
     for i,line in enumerate(fileinput.input(path, inplace=True)):
@@ -27,17 +28,17 @@ def modify_csbm(path):
 
 def main():
     print("Downloading packages from github...\n")
-    bash_path = resource_filename("BregmanTests","")+"/install_algos.sh"
+    bash_path = base_path+"/install_algos.sh"
     subprocess.call(["chmod","777",f"{bash_path}"])
     subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm(path_to_att_sbm)
     print("Installing R packages...\n")
     utils = importr('utils')
-    utils.chooseCRANmirror(ind=1)
+    #utils.chooseCRANmirror(ind=1)
     # Install packages
     packnames = ("igraph", "reticulate","mvtnorm")
-    utils.install_packages(StrVector(packnames))
+    utils.install_packages(StrVector(packnames),repos="https://cran.fiocruz.br/")
 
 if __name__ == "__main__":
     main()
