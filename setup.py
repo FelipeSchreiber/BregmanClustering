@@ -13,7 +13,7 @@ class build_py(build_py_orig):
             if not any(fnmatch.fnmatchcase(file, pat=pattern) for pattern in excluded)
         ]
     
-s = setup(name='bregClust',
+setup(name='bregClust',
 version='0.1',
 description='A package for clustering attributed networks',
 url='#',

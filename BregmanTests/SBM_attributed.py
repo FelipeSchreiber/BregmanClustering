@@ -43,10 +43,10 @@ def make_vectors(P,K,delta,n,dim=2,sample_along_direction=True):
     X = np.zeros((K*n,dim*K))
     N = 2*n
     if delta == None:
-    	dist = pdist(P)
-    	#diff = np.amin(np.amin(P[P != np.amin(P,axis=0)].reshape(K,K-1),axis=1) - np.amin(P,axis=0))
-    	diff = np.amin(dist)
-    	delta = 2*1.1*np.sqrt( ( 1 + np.sqrt( 1+2*K/( N*np.log(N) ) ) )*np.log(N) )/(diff*np.sqrt(dim))
+        dist = pdist(P)
+        #diff = np.amin(np.amin(P[P != np.amin(P,axis=0)].reshape(K,K-1),axis=1) - np.amin(P,axis=0))
+        diff = np.amin(dist)
+        delta = 2*1.1*np.sqrt( ( 1 + np.sqrt( 1+2*K/( N*np.log(N) ) ) )*np.log(N) )/(diff*np.sqrt(dim))
     basis = make_basis(P,K,delta,dim,sample_along_direction)
     for c in range(K): ## PARA CADA UMA DAS COMUNIDADES
         for i in range(n):## PARA CADA VÉRTICE DE UMA COMUNIDADE
