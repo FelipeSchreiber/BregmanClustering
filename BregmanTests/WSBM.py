@@ -64,7 +64,7 @@ class BregmanBenchmark():
          Y = self.generate_attributes()
          labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
          if self.return_G:
-            for i in range(self.sum(self.communities_sizes)):
+            for i in range(np.sum(self.communities_sizes)):
                 G.nodes[i]["attr"] = Y[i,:]
             return X,Y,labels_true,G
          return X,Y,labels_true
