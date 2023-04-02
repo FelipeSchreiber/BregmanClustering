@@ -277,7 +277,7 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         weights = weights.permute(1,3,0,2)
         for q in range(self.n_clusters):
             for l in range(self.n_clusters):
-                graph_means[q,l]=torch.sum(self.sparse_dense_mul(X,weights[q,l]))/torch.sum(weights[q,l])
+                graph_means[q,l]=torch.sparse.sum(self.sparse_dense_mul(X,weights[q,l]))/torch.sum(weights[q,l])
         #graph_means/=((tau_sum.reshape((-1, 1)) * tau_sum) - tau.T @ tau)
         torch.nan_to_num(graph_means,out=graph_means)
         return graph_means 
@@ -394,3 +394,5 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             Assigned cluster for each data point (n, )
         """
         return torch.argmax(self.predicted_memberships,dim=1).numpy()
+    
+
