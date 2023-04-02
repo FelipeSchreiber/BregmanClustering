@@ -24,5 +24,5 @@ packages=find_packages(),
 cmdclass={'build_py': build_py},
 package_data = {'tests': ['*.r']},
 zip_safe=False)
-global install_breg_path
 install_breg_path = s.command_obj['install'].__dir__()
+print(install_breg_path)
