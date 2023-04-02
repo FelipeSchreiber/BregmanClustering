@@ -1,7 +1,7 @@
 import numpy as np
 import networkx as nx
 from scipy.spatial.distance import pdist
-from ..BregmanClustering.distributions import *
+from BregmanClustering.distributions import *
 
 class BregmanBenchmark():
     def __init__(self,P,communities_sizes,min_,max_,dims=2,weight_variance=1,att_variance=1,\
