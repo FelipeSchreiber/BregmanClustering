@@ -18,6 +18,7 @@ class BregmanBenchmark():
         self.att_distribution,self.get_att_param = distributions_dict[attributes_distribution]          
         self.dims = dims
         self.radius=radius
+        self.return_G = False
     
     def generate_WSBM(self):
         N = np.sum(self.communities_sizes)
@@ -33,7 +34,7 @@ class BregmanBenchmark():
             l =  G.nodes[j]["block"]
             p = params[q][l]
             G[i][j]['weight'] = self.weight_distribution(*p)
-        return nx.to_numpy_array(G)
+        return nx.to_numpy_array(G), G
     
     def get_unit_circle_coordinates(self):
         centers = []
@@ -59,7 +60,11 @@ class BregmanBenchmark():
         return Y
     
     def generate_benchmark_WSBM(self):
-         X = self.generate_WSBM()
+         X, G = self.generate_WSBM()
          Y = self.generate_attributes()
          labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
+         if self.return_G:
+            for i in range(self.sum(self.communities_sizes)):
+                G.nodes[i]["attr"] = Y[i,:]
+            return X,Y,labels_true,G
          return X,Y,labels_true
