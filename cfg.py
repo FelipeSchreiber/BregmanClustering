@@ -1,1 +1,1 @@
-global install_breg_path
+install_breg_path = None

@@ -1,6 +1,6 @@
 import subprocess
 import fileinput
-import cfg
+#import cfg
 import rpy2
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
@@ -28,7 +28,8 @@ def modify_csbm(path):
 def main():
     print("Downloading packages from github...\n")
     #bash_path = os.path.abspath(bregClust.__file__)
-    bash_path = f"{cfg.install_breg_path}/BregmanTests"
+    #bash_path = f"{cfg.install_breg_path}/BregmanTests"
+    bash_path = "."
     print(bash_path)
     subprocess.call([f"{bash_path}/install_algos.sh"])
     modify_csbm("./CSBM/Python/functions.py")
