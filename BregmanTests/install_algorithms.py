@@ -1,14 +1,10 @@
 import subprocess
 import fileinput
-from pkg_resources import resource_filename
 import rpy2
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
-
-path_to_data = "./data/Benchmark/"
-path_to_att_sbm = "./AttributedSBM/FitAttribute.R"
-base_path = resource_filename("BregmanTests","")
+from cfg import *
 
 def modify_att_sbm(path):
     for i,line in enumerate(fileinput.input(path, inplace=True)):
@@ -28,7 +24,6 @@ def modify_csbm(path):
 
 def main():
     print("Downloading packages from github...\n")
-    bash_path = base_path+"/install_algos.sh"
     subprocess.call(["chmod","777",f"{bash_path}"])
     subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
