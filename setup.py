@@ -1,11 +1,11 @@
 import fnmatch
 from setuptools import find_packages, setup
 from setuptools.command.build_py import build_py as build_py_orig
-from setuptools.command.install_scripts import install_scripts
+from setuptools.command.install import install as _install
 import os
 from pkg_resources import resource_filename
 
-class OverrideInstall(install):
+class OverrideInstall(_install):
 
     def run(self):    
         bash_path = resource_filename("BregmanTests","")+"/install_algos.sh"
