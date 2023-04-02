@@ -13,7 +13,7 @@ class build_py(build_py_orig):
             if not any(fnmatch.fnmatchcase(file, pat=pattern) for pattern in excluded)
         ]
     
-setup(name='bregClust',
+s = setup(name='bregClust',
 version='0.1',
 description='A package for clustering attributed networks',
 url='#',
@@ -24,3 +24,5 @@ packages=find_packages(),
 cmdclass={'build_py': build_py},
 package_data = {'tests': ['*.r']},
 zip_safe=False)
+global install_breg_path
+install_breg_path = s.command_obj['install'].__dir__()

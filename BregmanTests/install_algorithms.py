@@ -27,7 +27,7 @@ def modify_csbm(path):
 def main():
     print("Downloading packages from github...\n")
     #bash_path = os.path.abspath(bregClust.__file__)
-    bash_path = "."
+    bash_path = f"{install_breg_path}/BregmanTests"
     print(bash_path)
     subprocess.call([f"{bash_path}/install_algos.sh"])
     modify_csbm("./CSBM/Python/functions.py")
