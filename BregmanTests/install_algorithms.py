@@ -4,7 +4,7 @@ import rpy2
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
-from cfg import *
+from .cfg import *
 
 def modify_att_sbm(path):
     for i,line in enumerate(fileinput.input(path, inplace=True)):
