@@ -400,10 +400,10 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
 
 ## GNN propriamente dita
 class my_GCN(torch.nn.Module):
-    def __init__(self,n_feat):
+    def __init__(self,n_feat,n_clusters):
         super().__init__()
         self.conv1 = GCNConv(n_feat, 10)
-        self.conv2 = GCNConv(10,self.n_clusters)
+        self.conv2 = GCNConv(10,n_clusters)
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
@@ -459,7 +459,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         self.epochs = epochs
 
     def make_model(self,n_feat):
-        return my_GCN(n_feat)
+        return my_GCN(n_feat,self.n_clusters)
     
     def loss_fn(self,X,Y,Z):
         W = self.get_dist_matrix(X,Y,Z)
