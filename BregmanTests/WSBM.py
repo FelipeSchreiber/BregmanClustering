@@ -4,7 +4,7 @@ from BregmanTests.distributions import *
 
 class BregmanBenchmark():
     def __init__(self,P,communities_sizes,min_=0,max_=1,dims=2,weight_variance=1,att_variance=1,\
-                 weight_distribution="gamma",attributes_distribution="gaussian",radius=1):
+                 weight_distribution="gamma",attributes_distribution="gaussian",radius=1,return_G=False):
         self.probability_matrix=P
         self.communities_sizes=communities_sizes
         ## min and max specifies the range of the weight distribution means in 1D
@@ -18,7 +18,7 @@ class BregmanBenchmark():
         self.att_distribution,self.get_att_param = distributions_dict[attributes_distribution]          
         self.dims = dims
         self.radius=radius
-        self.return_G = False
+        self.return_G = return_G
     
     def generate_WSBM(self):
         N = np.sum(self.communities_sizes)
