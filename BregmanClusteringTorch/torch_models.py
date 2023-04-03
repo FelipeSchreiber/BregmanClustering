@@ -492,6 +492,14 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         graph_data.x = Tensor.float(graph_data.x)
         Z = self.predicted_memberships
         model.train()
+        while True:
+            optimizer.zero_grad()
+            out = model(graph_data)
+            loss = torch.linalg.norm(out-Z)
+            loss.backward()
+            optimizer.step()
+            if torch.allclose(out,Z):
+                break 
         while total < self.epochs:
             optimizer.zero_grad()
             Z = model(graph_data)
