@@ -467,16 +467,24 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         loss_ = torch.linalg.norm(Z@Z.T - W@W.T)
         return loss_
     
-    def fit(self,G,Y):
-        model = self.model = self.make_model(Y.shape[1])
+    def fit(self,G,Y,Z_init=None):
         X = nx.adjacency_matrix(G).todense()
+        if Z_init is None:
+            model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
+            model.initialize( X, Y )
+            model.assignInitialLabels( X, Y )  
+            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float)
+        else:
+            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float)
+        model = self.model = self.make_model(Y.shape[1])
         X = torch.tensor(X,dtype=torch.float) ## Network data
         Y = torch.tensor(Y,dtype=torch.float) ## attributes
         #graph_data = from_networkx(G,group_node_attrs=['attr'])
         edge_index = torch.nonzero(X)
         graph_data = Data(x=Y, edge_index=edge_index.T,edge_attr=X[edge_index[:,0],edge_index[:,1]])
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
-        Z = total = 0
+        total = 0
+        self.attribute_means,self.graph_means = self.M_Step(X,Y,Z_init)
         graph_data.x = Tensor.float(graph_data.x)
         model.train()
         while total < self.epochs:
