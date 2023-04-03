@@ -502,7 +502,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
     
     def computeAttributeMeans( self, Y, Z ):
         attribute_means = (Z.T@Y)/(Z.sum(dim=0) + 10 * torch.finfo(Z.dtype).eps)[:, None]
-        return attribute_means
+        return attribute_means.detach()
 
     def computeGraphMeans(self,X,tau):
         #tau_sum = tau.sum(0)
@@ -513,8 +513,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
         weights = weights.permute(1,3,0,2)
-        graph_means = torch.sum(weights*X, dim=(2,3))/torch.sum(weights,dim=(2,3))
-        graph_means.requires_grad_(requires_grad=False)
+        graph_means = (torch.sum(weights*X, dim=(2,3))/torch.sum(weights,dim=(2,3))).detach()
         torch.nan_to_num(graph_means,out=graph_means)
         return graph_means 
     
