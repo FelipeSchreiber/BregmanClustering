@@ -474,7 +474,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         Y = torch.tensor(Y,dtype=torch.float) ## attributes
         #graph_data = from_networkx(G,group_node_attrs=['attr'])
         edge_index = torch.nonzero(X)
-        graph_data = Data(x=Y, edge_index=edge_index,edge_attr=X[edge_index[:,0],edge_index[:,1]])
+        graph_data = Data(x=Y, edge_index=edge_index.T,edge_attr=X[edge_index[:,0],edge_index[:,1]])
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         Z = total = 0
         graph_data.x = Tensor.float(graph_data.x)
