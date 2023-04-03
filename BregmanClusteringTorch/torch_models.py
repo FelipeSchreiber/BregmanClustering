@@ -492,18 +492,10 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         graph_data.x = Tensor.float(graph_data.x)
         Z = self.predicted_memberships
         model.train()
-        while True:
-            optimizer.zero_grad()
-            out = model(graph_data)
-            loss = torch.linalg.norm(out-Z)
-            loss.backward()
-            optimizer.step()
-            if torch.allclose(out,Z):
-                break 
         while total < self.epochs:
             optimizer.zero_grad()
             Z = model(graph_data)
-            if total%10==0:
+            if total%1000==0:
                 self.attribute_means,self.graph_means = self.M_Step(X,Y,Z)
                 print(self.graph_means)
             loss = self.loss_fn(X,Y,Z)
@@ -570,8 +562,8 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
                                                 dim=-1
                                             )
         if self.normalize_:
-            net_divergence_total = F.normalize(net_divergence_total, p=1, dim=1)
-            att_divergence_total = F.normalize(att_divergence_total, p=1, dim=1)
+            net_divergence_total = F.normalize(net_divergence_total, p=1, dim=-1)
+            att_divergence_total = F.normalize(att_divergence_total, p=1, dim=-1)
         distance_matrix = F.normalize(torch.hstack([net_divergence_total,att_divergence_total]),p=1,dim=-1)
         return distance_matrix
 
