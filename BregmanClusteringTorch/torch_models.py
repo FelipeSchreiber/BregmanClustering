@@ -20,6 +20,7 @@ from torch.nn import Linear
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data
+from torch_geometric.utils.convert import from_networkx
 import warnings
 warnings.filterwarnings("ignore")
 
