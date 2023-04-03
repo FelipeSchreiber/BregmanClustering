@@ -492,10 +492,9 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
             optimizer.zero_grad()
             Z = model(graph_data)
             loss = self.loss_fn(X,Y,Z)
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
-            if total%10 == 0:
-                self.attribute_means,self.graph_means = self.M_Step(X,Y,Z)
+            self.attribute_means,self.graph_means = self.M_Step(X,Y,Z)
             total += 1
         self.predicted_memberships = Z
         return self
