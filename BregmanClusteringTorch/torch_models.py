@@ -514,6 +514,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         """
         weights = weights.permute(1,3,0,2)
         graph_means = torch.sum(weights*X, dim=(2,3))/torch.sum(weights,dim=(2,3))
+        graph_means.requires_grad_(requires_grad=False)
         torch.nan_to_num(graph_means,out=graph_means)
         return graph_means 
     
