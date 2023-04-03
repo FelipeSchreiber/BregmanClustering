@@ -469,6 +469,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
     
     def fit(self,G,Y,Z_init=None):
         X = nx.adjacency_matrix(G).todense()
+        print(X)
         self.N = X.shape[0]
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
