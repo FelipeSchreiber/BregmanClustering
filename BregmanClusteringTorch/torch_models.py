@@ -559,7 +559,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         if self.normalize_:
             net_divergence_total = F.normalize(net_divergence_total, p=1, dim=1)
             att_divergence_total = F.normalize(att_divergence_total, p=1, dim=1)
-        distance_matrix = torch.hstack([net_divergence_total,att_divergence_total])*0.5
+        distance_matrix = F.normalize(torch.hstack([net_divergence_total,att_divergence_total]),p=1,dim=-1)
         return distance_matrix
 
     def M_Step(self,X,Y,tau):
