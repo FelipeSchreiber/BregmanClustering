@@ -478,10 +478,8 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         else:
             self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float)
         model = self.model = self.make_model(Y.shape[1])
-        X = torch.tensor(X,dtype=torch.float) ## Network data
-        Y = torch.tensor(Y,dtype=torch.float) ## attributes
-        X = X.detach()
-        Y = Y.detach()
+        X = torch.tensor(X,dtype=torch.float,requires_grad=False) ## Network data
+        Y = torch.tensor(Y,dtype=torch.float,requires_grad=False) ## attributes
         #graph_data = from_networkx(G,group_node_attrs=['attr'])
         edge_index = torch.nonzero(X)
         graph_data = Data(x=Y, edge_index=edge_index.T,edge_attr=X[edge_index[:,0],edge_index[:,1]])
