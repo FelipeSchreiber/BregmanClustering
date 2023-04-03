@@ -411,7 +411,8 @@ class my_GCN(torch.nn.Module):
         x = self.conv1(x, edge_index)
         x = F.relu(x)
         x = self.conv2(x, edge_index)
-        x = F.softmax(x,dim=-1)
+        #x = F.softmax(x,dim=-1)
+        x = F.normalize(torch.exp(4*x),p=1,dim=-1)
         return x
         
 class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
