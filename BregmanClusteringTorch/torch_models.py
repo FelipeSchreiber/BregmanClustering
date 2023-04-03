@@ -494,7 +494,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
             optimizer.zero_grad()
             Z = model(graph_data)
             loss = self.loss_fn(X,Y,Z)
-            loss.backward(retain_graph=True)
+            loss.backward()
             optimizer.step()
             self.attribute_means,self.graph_means = self.M_Step(X,Y,Z.detach())
             total += 1
