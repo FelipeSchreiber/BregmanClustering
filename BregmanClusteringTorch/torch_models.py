@@ -484,7 +484,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         graph_data = Data(x=Y, edge_index=edge_index.T,edge_attr=X[edge_index[:,0],edge_index[:,1]])
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         total = 0
-        self.attribute_means,self.graph_means = self.M_Step(X,Y,Z_init)
+        self.attribute_means,self.graph_means = self.M_Step(X,Y,self.predicted_memberships)
         graph_data.x = Tensor.float(graph_data.x)
         model.train()
         while total < self.epochs:
