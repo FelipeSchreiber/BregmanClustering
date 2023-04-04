@@ -480,7 +480,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
                                                               torch.tensor(model.memberships_from_attributes,\
                                                                            dtype=torch.float)
                                                             )
-            self.graph_means = self.computeGraphMeans(torch.float(X),\
+            self.graph_means = self.computeGraphMeans(torch.tensor(X,dtype=torch.float),\
                                                       torch.tensor(model.memberships_from_graph,\
                                                                    dtype=torch.float)
                                                     )  
