@@ -412,7 +412,7 @@ class my_GCN(torch.nn.Module):
         x = F.relu(x)
         x = self.conv2(x, edge_index)
         #x = F.softmax(x,dim=-1)
-        x = F.normalize(torch.exp(4*x),p=1,dim=-1)
+        x = F.normalize(torch.exp(x),p=1,dim=-1)
         return x
         
 class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
@@ -475,7 +475,9 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
-            model.assignInitialLabels( X, Y )  
+            model.assignInitialLabels( X, Y )
+            self.attribute_means = self.computeAttributeMeans(Y,model.memberships_from_attributes)
+            self.graph_means = self.computeGraphMeans(X,model.memberships_from_graph)  
             self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float)
         else:
             self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float)
@@ -488,8 +490,8 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         graph_data = Data(x=Y, edge_index=edge_index.T)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         total = 0
-        self.attribute_means,self.graph_means = self.M_Step(X,Y,self.predicted_memberships)
-        print(self.graph_means)
+        #self.attribute_means,self.graph_means = self.M_Step(X,Y,self.predicted_memberships)
+        #print(self.graph_means)
         graph_data.x = Tensor.float(graph_data.x)
         Z = self.predicted_memberships
         model.train()
