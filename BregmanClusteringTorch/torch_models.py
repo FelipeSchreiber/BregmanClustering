@@ -476,8 +476,14 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )
-            self.attribute_means = self.computeAttributeMeans(Y,torch.tensor(model.memberships_from_attributes))
-            self.graph_means = self.computeGraphMeans(X,torch.tensor(model.memberships_from_graph))  
+            self.attribute_means = self.computeAttributeMeans(Y,\
+                                                              torch.tensor(model.memberships_from_attributes,\
+                                                                           dtype=torch.float)
+                                                            )
+            self.graph_means = self.computeGraphMeans(X,\
+                                                      torch.tensor(model.memberships_from_graph,\
+                                                                   dtype=torch.float)
+                                                    )  
             self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float)
         else:
             self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float)
