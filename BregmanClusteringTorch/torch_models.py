@@ -476,11 +476,11 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )
-            self.attribute_means = self.computeAttributeMeans(Y,\
+            self.attribute_means = self.computeAttributeMeans(torch.tensor(Y,dtype=torch.float),\
                                                               torch.tensor(model.memberships_from_attributes,\
                                                                            dtype=torch.float)
                                                             )
-            self.graph_means = self.computeGraphMeans(X,\
+            self.graph_means = self.computeGraphMeans(torch.float(X),\
                                                       torch.tensor(model.memberships_from_graph,\
                                                                    dtype=torch.float)
                                                     )  
