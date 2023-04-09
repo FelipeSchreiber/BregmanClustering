@@ -20,7 +20,8 @@ class OverrideInstall(_install):
             os.chmod(bash_path, mode)
         except:
             logging.log("Failed to change permissions of install_algos.sh, please set manually to 777")
-
+            pass
+        
 excluded = ['tests/*.ipynb','tests/*.eps','tests/.npy']
 
 class build_py(build_py_orig):
