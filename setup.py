@@ -5,6 +5,7 @@ from setuptools.command.install import install as _install
 import os
 from pkg_resources import resource_filename
 import subprocess
+import logging
 
 class OverrideInstall(_install):
 
@@ -13,7 +14,7 @@ class OverrideInstall(_install):
         _install.run(self) # calling install.run(self) insures that everything that happened previously still happens, so the installation does not break! 
         # here we start with doing our overriding and private magic ..
         bash_path = resource_filename("BregmanTests","")+"/install_algos.sh"
-        print("Changing permissions of %s to %s" %
+        logging.log("Changing permissions of %s to %s" %
                         (bash_path, oct(mode)))
         os.chmod(bash_path, mode)
 
