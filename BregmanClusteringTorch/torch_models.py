@@ -469,7 +469,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         return loss_
     
     def fit(self,G,Y,Z_init=None):
-        X = nx.adjacency_matrix(G).todense().to(device)
+        X = nx.adjacency_matrix(G).todense()
         X[X!=0] = 1
         self.N = X.shape[0]
         if Z_init is None:
