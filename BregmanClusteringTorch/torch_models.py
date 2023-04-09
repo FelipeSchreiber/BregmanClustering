@@ -149,7 +149,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
             max_ = torch.argmax(temp,dim=1)
             tau = torch.zeros((self.N,self.n_clusters))
             tau[self.row_indices,max_] = torch.ones(self.N)
-            return tau
+            return tau.to(device)
         tau = temp/(temp.sum(dim=1)[:,None])
         return tau
 
@@ -209,7 +209,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         z: Array
             Assigned cluster for each data point (n, )
         """
-        return torch.argmax(self.predicted_memberships,dim=1).numpy()
+        return torch.argmax(self.predicted_memberships,dim=1).to("cpu").numpy()
 
 
 class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
@@ -401,7 +401,7 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         z: Array
             Assigned cluster for each data point (n, )
         """
-        return torch.argmax(self.predicted_memberships,dim=1).numpy()
+        return torch.argmax(self.predicted_memberships,dim=1).to("cpu").numpy()
 
 ## GNN propriamente dita
 class my_GCN(torch.nn.Module):
@@ -595,4 +595,4 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         z: Array
             Assigned cluster for each data point (n, )
         """
-        return torch.argmax(self.predicted_memberships,dim=1).numpy()
+        return torch.argmax(self.predicted_memberships,dim=1).to("cpu").numpy()
