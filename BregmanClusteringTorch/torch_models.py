@@ -307,7 +307,7 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         """
         Compute net divergences for every pair X[i,j], mu[k,l]
         """
-        X = X.to_dense()
+        X = X.to_dense().to(device) 
         net_divergences_elementwise = self.graph_divergence(X.reshape(-1,1)[:,None],\
                                              self.graph_means.reshape(-1,1)[None,:])\
                                             .reshape((self.N,self.N,self.n_clusters,self.n_clusters))
