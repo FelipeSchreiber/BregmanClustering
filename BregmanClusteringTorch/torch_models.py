@@ -165,17 +165,17 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         """
         old_ll = -torch.inf
         self.N = X.shape[0]
-        self.row_indices = torch.arange(self.N)
+        self.row_indices = torch.arange(self.N).to(device)
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float)
+            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float).to(device)
         else:
-            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float)
+            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float).to(device)
         #init_labels = self.predicted_memberships
-        X = torch.tensor(X,dtype=torch.float)
-        Y = torch.tensor(Y,dtype=torch.float)
+        X = torch.tensor(X,dtype=torch.float).to(device)
+        Y = torch.tensor(Y,dtype=torch.float).to(device)
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
         new_tau = tau = self.predicted_memberships
@@ -356,17 +356,17 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         """
         old_ll = -torch.inf
         self.N = X.shape[0]
-        self.row_indices = torch.arange(self.N)
+        self.row_indices = torch.arange(self.N).to(device)
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float)
+            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float).to(device)
         else:
-            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float)
+            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float).to(device)
         #init_labels = self.predicted_memberships
-        X = torch.tensor(X,dtype=torch.float)
-        Y = torch.tensor(Y,dtype=torch.float)
+        X = torch.tensor(X,dtype=torch.float).to(device)
+        Y = torch.tensor(Y,dtype=torch.float).to(device)
         X = X.to_sparse()
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
@@ -461,7 +461,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         self.epochs = epochs
 
     def make_model(self,n_feat):
-        return my_GCN(n_feat,self.n_clusters)
+        return my_GCN(n_feat,self.n_clusters).to(device)
     
     def loss_fn(self,X,Y,Z):
         W = self.get_dist_matrix(X,Y,Z)
@@ -469,37 +469,32 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         return loss_
     
     def fit(self,G,Y,Z_init=None):
-        X = nx.adjacency_matrix(G).todense()
+        X = nx.adjacency_matrix(G).todense().to(device)
         X[X!=0] = 1
         self.N = X.shape[0]
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )
-            self.attribute_means = self.computeAttributeMeans(torch.tensor(Y,dtype=torch.float),\
-                                                              torch.tensor(model.memberships_from_attributes,\
-                                                                           dtype=torch.float)
-                                                            )
-            self.graph_means = self.computeGraphMeans(torch.tensor(X,dtype=torch.float),\
-                                                      torch.tensor(model.memberships_from_graph,\
-                                                                   dtype=torch.float)
-                                                    )  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float)
+            Z_graph = torch.tensor(model.memberships_from_graph,dtype=torch.float).to(device)
+            Z_att = torch.tensor(model.memberships_from_attributes,dtype=torch.float).to(device)
+            Y = torch.tensor(Y,dtype=torch.float).to(device)
+            X = torch.tensor(X,dtype=torch.float).to(device)            
+            self.attribute_means = self.computeAttributeMeans(Y,Z_att)
+            self.graph_means = self.computeGraphMeans(X,Z_graph)  
+            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float).to(device)
         else:
-            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float)
+            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float).to(device)
         model = self.model = self.make_model(Y.shape[1])
-        X = torch.tensor(X,dtype=torch.float,requires_grad=False) ## Network data
-        Y = torch.tensor(Y,dtype=torch.float,requires_grad=False) ## attributes
-        #graph_data = from_networkx(G,group_node_attrs=['attr'])
-        edge_index = torch.nonzero(X)
+        X = torch.tensor(X,dtype=torch.float,requires_grad=False).to(device)  ## Network data
+        Y = torch.tensor(Y,dtype=torch.float,requires_grad=False).to(device)  ## attributes
+        edge_index = torch.nonzero(X).to(device) 
         #,edge_attr=X[edge_index[:,0],edge_index[:,1]]
         graph_data = Data(x=Y, edge_index=edge_index.T)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         total = 0
-        #self.attribute_means,self.graph_means = self.M_Step(X,Y,self.predicted_memberships)
         #print(self.graph_means)
-        graph_data.x = Tensor.float(graph_data.x)
-        Z = self.predicted_memberships
+        graph_data.x = Tensor.float(graph_data.x).to(device) 
         model.train()
         while total < self.epochs:
             optimizer.zero_grad()
