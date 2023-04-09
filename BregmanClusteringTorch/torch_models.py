@@ -13,7 +13,11 @@ from BregmanClustering.models import *
 from .torch_divergences import *
 import torch
 import networkx as nx
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
+dtype = torch.FloatTensor
+if torch.cuda.is_available():
+    dtype = torch.cuda.FloatTensor
+    device = "cuda"
 from torch_geometric.utils import *
 from torch import Tensor
 from torch.nn import Linear
@@ -97,8 +101,8 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         return graph_means 
     
     def likelihoodAttributes(self,Y,Z):
-        M = self.computeAttributeMeans(Y,Z)
-        total = torch.sum( self.attribute_divergence(Y,Z@M) )
+        M = self.computeAttributeMeans(Y,Z).to(device)
+        total = torch.sum( self.attribute_divergence(Y,Z@M) ).to(device)
         return total
 
     def likelihoodGraph(self,X,Z):
@@ -150,8 +154,8 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         return tau
 
     def M_Step(self,X,Y,tau):
-        att_means = self.computeAttributeMeans(Y,tau)
-        graph_means = self.computeGraphMeans(X,tau)
+        att_means = self.computeAttributeMeans(Y,tau).to(device)
+        graph_means = self.computeGraphMeans(X,tau).to(device)
         return att_means,graph_means
     
     def fit(self,X,Y,Z_init=None):
@@ -165,19 +169,19 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         """
         old_ll = -torch.inf
         self.N = X.shape[0]
-        self.row_indices = torch.arange(self.N).to(device)
+        self.row_indices = torch.arange(self.N).type(dtype)
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float).to(device)
+            self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
         else:
-            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float).to(device)
+            self.predicted_memberships = torch.tensor(Z_init).type(dtype)
         #init_labels = self.predicted_memberships
-        X = torch.tensor(X,dtype=torch.float).to(device)
-        Y = torch.tensor(Y,dtype=torch.float).to(device)
-        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-        self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
+        X = torch.tensor(X).type(dtype)
+        Y = torch.tensor(Y).type(dtype)
+        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
+        self.graph_means = self.computeGraphMeans(X,self.predicted_memberships).to(device)
         new_tau = tau = self.predicted_memberships
         iter_ = 0 
         while True:
@@ -287,12 +291,12 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         return graph_means 
     
     def likelihoodAttributes(self,Y,Z):
-        M = self.computeAttributeMeans(Y,Z)
-        total = torch.sum( self.attribute_divergence(Y,Z@M) )
+        M = self.computeAttributeMeans(Y,Z).to(device)
+        total = torch.sum( self.attribute_divergence(Y,Z@M) ).to(device)
         return total
 
     def likelihoodGraph(self,X,Z):
-        graph_mean = self.computeGraphMeans(X,Z)
+        graph_mean = self.computeGraphMeans(X,Z).to(device)
         return 1/2 * torch.sum( self.graph_divergence( X.to_dense(), Z @ graph_mean @ Z.T ) )
  
     def VE_step(self,X,Y,tau):
@@ -307,7 +311,7 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         """
         Compute net divergences for every pair X[i,j], mu[k,l]
         """
-        X = X.to_dense().to(device) 
+        X = X.to_dense().type(dtype) 
         net_divergences_elementwise = self.graph_divergence(X.reshape(-1,1)[:,None],\
                                              self.graph_means.reshape(-1,1)[None,:])\
                                             .reshape((self.N,self.N,self.n_clusters,self.n_clusters))
@@ -341,8 +345,8 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         return tau
 
     def M_Step(self,X,Y,tau):
-        att_means = self.computeAttributeMeans(Y,tau)
-        graph_means = self.computeGraphMeans(X,tau)
+        att_means =  self.computeAttributeMeans(Y,tau).to(device)
+        graph_means = self.computeGraphMeans(X,tau).to(device)
         return att_means,graph_means
     
     def fit(self,X,Y,Z_init=None):
@@ -356,20 +360,20 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         """
         old_ll = -torch.inf
         self.N = X.shape[0]
-        self.row_indices = torch.arange(self.N).to(device)
+        self.row_indices = torch.arange(self.N).type(dtype)
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float).to(device)
+            self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
         else:
-            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float).to(device)
+            self.predicted_memberships = torch.tensor(Z_init).type(dtype)
         #init_labels = self.predicted_memberships
-        X = torch.tensor(X,dtype=torch.float).to(device)
-        Y = torch.tensor(Y,dtype=torch.float).to(device)
+        X = torch.tensor(X).type(dtype)
+        Y = torch.tensor(Y).type(dtype)
         X = X.to_sparse()
-        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-        self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
+        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
+        self.graph_means = self.computeGraphMeans(X,self.predicted_memberships).to(device)
         new_tau = tau = self.predicted_memberships
         iter_ = 0 
         while True:
@@ -461,7 +465,7 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         self.epochs = epochs
 
     def make_model(self,n_feat):
-        return my_GCN(n_feat,self.n_clusters).to(device)
+        return my_GCN(n_feat,self.n_clusters).type(dtype)
     
     def loss_fn(self,X,Y,Z):
         W = self.get_dist_matrix(X,Y,Z)
@@ -476,25 +480,25 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
             model.assignInitialLabels( X, Y )
-            Z_graph = torch.tensor(model.memberships_from_graph,dtype=torch.float).to(device)
-            Z_att = torch.tensor(model.memberships_from_attributes,dtype=torch.float).to(device)
-            Y = torch.tensor(Y,dtype=torch.float).to(device)
-            X = torch.tensor(X,dtype=torch.float).to(device)            
-            self.attribute_means = self.computeAttributeMeans(Y,Z_att)
-            self.graph_means = self.computeGraphMeans(X,Z_graph)  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships,dtype=torch.float).to(device)
+            Z_graph = torch.tensor(model.memberships_from_graph).type(dtype)
+            Z_att = torch.tensor(model.memberships_from_attributes).type(dtype)
+            Y = torch.tensor(Y).type(dtype)
+            X = torch.tensor(X).type(dtype)            
+            self.attribute_means = self.computeAttributeMeans(Y,Z_att).to(device)
+            self.graph_means = self.computeGraphMeans(X,Z_graph).to(device)  
+            self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
         else:
-            self.predicted_memberships = torch.tensor(Z_init,dtype=torch.float).to(device)
+            self.predicted_memberships = torch.tensor(Z_init).type(dtype)
         model = self.model = self.make_model(Y.shape[1])
-        X = torch.tensor(X,dtype=torch.float,requires_grad=False).to(device)  ## Network data
-        Y = torch.tensor(Y,dtype=torch.float,requires_grad=False).to(device)  ## attributes
-        edge_index = torch.nonzero(X).to(device) 
+        X = torch.tensor(X,requires_grad=False).type(dtype)  ## Network data
+        Y = torch.tensor(Y,requires_grad=False).type(dtype)  ## attributes
+        edge_index = torch.nonzero(X).type(dtype) 
         #,edge_attr=X[edge_index[:,0],edge_index[:,1]]
         graph_data = Data(x=Y, edge_index=edge_index.T)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         total = 0
         #print(self.graph_means)
-        graph_data.x = Tensor.float(graph_data.x).to(device) 
+        graph_data.x = Tensor.float(graph_data.x).type(dtype) 
         model.train()
         while total < self.epochs:
             optimizer.zero_grad()
@@ -528,8 +532,8 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         return graph_means 
     
     def likelihoodAttributes(self,Y,Z):
-        M = self.computeAttributeMeans(Y,Z)
-        total = torch.sum( self.attribute_divergence(Y,Z@M) )
+        M = self.computeAttributeMeans(Y,Z).to(device)
+        total = torch.sum( self.attribute_divergence(Y,Z@M) ).to(device)
         return total
 
     def likelihoodGraph(self,X,Z):
@@ -573,8 +577,8 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         return distance_matrix
 
     def M_Step(self,X,Y,tau):
-        att_means = self.computeAttributeMeans(Y,tau)
-        graph_means = self.computeGraphMeans(X,tau)
+        att_means = self.computeAttributeMeans(Y,tau).to(device)
+        graph_means = self.computeGraphMeans(X,tau).to(device)
         return att_means,graph_means
 
     def predict(self, G, Y):
