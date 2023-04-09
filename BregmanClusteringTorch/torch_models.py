@@ -340,7 +340,7 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             max_ = torch.argmax(temp,dim=1)
             tau = torch.zeros((self.N,self.n_clusters))
             tau[self.row_indices,max_] = torch.ones(self.N)
-            return tau
+            return tau.to(device)
         tau = temp/(temp.sum(dim=1)[:,None])
         return tau
 
@@ -360,7 +360,7 @@ class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         """
         old_ll = -torch.inf
         self.N = X.shape[0]
-        self.row_indices = torch.arange(self.N).type(dtype)
+        self.row_indices = torch.arange(self.N).to(device)
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
