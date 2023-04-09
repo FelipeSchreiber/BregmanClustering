@@ -492,13 +492,13 @@ class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
         model = self.model = self.make_model(Y.shape[1])
         X = torch.tensor(X,requires_grad=False).type(dtype)  ## Network data
         Y = torch.tensor(Y,requires_grad=False).type(dtype)  ## attributes
-        edge_index = torch.nonzero(X).type(dtype) 
+        edge_index = torch.nonzero(X) 
         #,edge_attr=X[edge_index[:,0],edge_index[:,1]]
-        graph_data = Data(x=Y, edge_index=edge_index.T)
+        graph_data = Data(x=Y, edge_index=edge_index.T).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
         total = 0
         #print(self.graph_means)
-        graph_data.x = Tensor.float(graph_data.x).type(dtype) 
+        graph_data.x = graph_data.x.type(dtype) 
         model.train()
         while total < self.epochs:
             optimizer.zero_grad()
