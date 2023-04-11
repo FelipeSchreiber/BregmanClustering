@@ -1001,7 +1001,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return normalisation @ Z.T @ A @ Z @ normalisation
     
     def computeEdgeMeans( self, X, Z ):
-        weights = np.tensordot(Z, Z, dims=((), ()))
+        weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
         desired output:
