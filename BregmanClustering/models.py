@@ -891,6 +891,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.assignInitialLabels( A, Y )
         else:
             self.predicted_memberships = Z_init
+        print(Z_init.shape)
         #init_labels = self.predicted_memberships
         self.edge_index = np.nonzero(A)
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
