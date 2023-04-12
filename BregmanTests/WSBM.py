@@ -26,7 +26,6 @@ class BregmanBenchmark():
         G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
         ## Draw the means of the weight distributions for each pair of community interaction
         means = np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
-        print(means)
         params = self.get_w_params(means,self.weight_variance,self.n_clusters)
         # ## get weights
         for e in G.edges:
