@@ -169,7 +169,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         """
         old_ll = -torch.inf
         self.N = X.shape[0]
-        self.row_indices = torch.arange(self.N).type(dtype)
+        self.row_indices = torch.arange(self.N).to(device)
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
             model.initialize( X, Y )
