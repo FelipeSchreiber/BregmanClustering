@@ -31,7 +31,7 @@ def modify_csbm(path):
 
 def main():
     print("Downloading packages from github...\n")
-    subprocess.call(["chmod","777",f"{bash_path}"])
+    #subprocess.call(["chmod","777",f"{bash_path}"])
     subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm("./AttributedSBM/FitAttribute.R")
