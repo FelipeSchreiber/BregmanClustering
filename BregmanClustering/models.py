@@ -1081,8 +1081,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             M = Ztilde @ self.graph_means @ Ztilde.T
-            #E = self.computeEdgeMeans(X,Ztilde)
-            E = self.edge_means
+            E = self.computeEdgeMeans(X,Ztilde)
+            #E = self.edge_means
             """
             X has shape n x n x d
             E has shape k x k x d
