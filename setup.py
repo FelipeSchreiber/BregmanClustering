@@ -13,14 +13,14 @@ class OverrideInstall(_install):
         mode = 777
         _install.run(self) # calling install.run(self) insures that everything that happened previously still happens, so the installation does not break! 
         # here we start with doing our overriding and private magic ..
-        try:
-            bash_path = resource_filename("BregmanTests","")+"/install_algos.sh"
-            logging.log("Changing permissions of %s to %s" %
-                        (bash_path, oct(mode)))
-            os.chmod(bash_path, mode)
-        except:
-            logging.log("Failed to change permissions of install_algos.sh, please set manually to 777")
-            pass
+        # try:
+        #     bash_path = resource_filename("BregmanTests","")+"/install_algos.sh"
+        #     logging.log("Changing permissions of %s to %s" %
+        #                 (bash_path, oct(mode)))
+        #     os.chmod(bash_path, mode)
+        # except:
+        #     logging.log("Failed to change permissions of install_algos.sh, please set manually to 777")
+        #     pass
     
 excluded = ['tests/*.ipynb','tests/*.eps','tests/.npy']
 

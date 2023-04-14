@@ -1,6 +1,7 @@
 import subprocess
 import fileinput
 import rpy2
+import os
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
@@ -32,6 +33,7 @@ def modify_csbm(path):
 def main():
     print("Downloading packages from github...\n")
     #subprocess.call(["chmod","777",f"{bash_path}"])
+    os.chmod(bash_path, 777)
     subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm("./AttributedSBM/FitAttribute.R")
