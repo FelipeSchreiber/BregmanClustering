@@ -12,7 +12,7 @@ def plotting( x, curves, labels, xticks,
              curves_std = None,
              legendTitle = '', figTitle = '',
              xlabel = 'a', ylabel = 'ARI',
-             saveFig = False, fileName = 'fig.eps'):
+             saveFig = False, fileName = 'fig.png'):
     
     if len( curves ) != len( labels ):
         raise TypeError( 'The number of labels is different from the number of curves' )
@@ -33,7 +33,7 @@ def plotting( x, curves, labels, xticks,
     plt.yticks( fontsize = SIZE_TICKS )
     plt.title( figTitle, fontsize = SIZE_TITLE )
     if saveFig:
-        plt.savefig( fileName, format = 'eps', bbox_inches = 'tight' )
+        plt.savefig( fileName, format = 'png', bbox_inches = 'tight' )
 
 def get_spectral_decomposition(A,k):
     if (A<0).any():
