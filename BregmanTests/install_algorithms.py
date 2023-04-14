@@ -34,7 +34,7 @@ def main():
     print("Downloading packages from github...\n")
     #subprocess.call(["chmod","777",f"{bash_path}"])
     os.chmod(bash_path, 777)
-    os.environ["R_HOME"] = r"C:\Program Files\R\R-4.2.3"
+    os.environ["R_HOME"] = r"C:\\Program Files\R\R-4.2.3"
     subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm("./AttributedSBM/FitAttribute.R")
