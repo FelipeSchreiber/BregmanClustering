@@ -1081,8 +1081,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             M = Ztilde @ self.graph_means @ Ztilde.T
-            E = self.computeEdgeMeans(X,Ztilde)
-            #E = self.edge_means
+            #E = self.computeEdgeMeans(X,Ztilde)
+            E = self.edge_means
             """
             X has shape n x n x d
             E has shape k x k x d
@@ -1096,8 +1096,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             graph_div = self.graph_divergence( A[node,:], M[node,:] )
             edge_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
                                                  Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:]) )
-            print(edge_div)
-            L[ q ] = att_div + graph_div + edge_div
+            #print(edge_div)
+            L[ q ] = att_div + 0.5*graph_div + edge_div
         return np.argmin( L )
     
     def predict(self, X, Y):
