@@ -36,7 +36,7 @@ def main():
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm("./AttributedSBM/FitAttribute.R")
     print("Installing R packages...\n This step takes about 5 min...\n")
-    utils = importr('utils')
+    utils = importr("utils")
     packnames = ("igraph", "reticulate","mvtnorm")
     if CRAN_repo is None:
         utils.chooseCRANmirror(ind=1)
