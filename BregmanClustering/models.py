@@ -1014,6 +1014,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
         edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
+        print(edges_means)
         return edges_means 
     
     def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
@@ -1096,7 +1097,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             edge_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
                                                  Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:]) )
             """
-            print(E)
+            #print(E)
             L[ q ] = att_div + 0.5*graph_div + 0
         return np.argmin( L )
     
