@@ -1005,9 +1005,9 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         desired output:
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
+        ## transpose and select only the i,j \in E
         weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
         X = X[self.edge_index[0],self.edge_index[1],:]
-        print(X.shape,weights.shape)
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
@@ -1015,7 +1015,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
         edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=2)[:,:,np.newaxis])
-        print(">>>",edges_means,np.sum(weights))
+        print(">>>",edges_means,np.sum(weights,axis=2))
         return edges_means 
     
     def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
