@@ -162,7 +162,7 @@ class BregmanHard(BaseEstimator, ClusterMixin):
     #This is a copy paste from the code of the original paper on Bregman Clustering, found
     # https://github.com/juselara1/bregclus
 
-    def __init__(self, n_clusters, divergence=euclidean, n_iters=1000, has_cov=False,
+    def __init__(self, n_clusters, divergence=euclidean_distance, n_iters=1000, has_cov=False,
                  initializer="rand", init_iters=100, pretrainer=None):
         """
         Bregman Hard Clustering Algorithm
@@ -300,7 +300,7 @@ class BregmanHard(BaseEstimator, ClusterMixin):
     
 class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
+                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_distance, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100 ):
@@ -543,7 +543,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
 class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
+                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_distance, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
