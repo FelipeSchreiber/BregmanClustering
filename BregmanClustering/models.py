@@ -155,9 +155,6 @@ class BregmanGraphPartitioning( BaseEstimator, ClusterMixin ):
         """
         return frommembershipMatriceToVector( self.predicted_memberships )
 
-    
-
-
 class BregmanHard(BaseEstimator, ClusterMixin):
     #This is a copy paste from the code of the original paper on Bregman Clustering, found
     # https://github.com/juselara1/bregclus
