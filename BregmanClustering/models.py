@@ -1007,7 +1007,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
         X = X[self.edge_index[0],self.edge_index[1],:]
-        print((X == 0).any(),weights.shape)
+        print(X.shape,weights.shape)
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
