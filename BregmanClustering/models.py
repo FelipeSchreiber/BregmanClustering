@@ -830,9 +830,9 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
 class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix,
-                 attribute_divergence = euclidean,
-                 edge_divergence = euclidean,
+                 graph_distribution = "multinomial",
+                 attribute_distribution = "gaussian",
+                 edge_distribution = "gaussian",
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100 ):
@@ -855,9 +855,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         None.
         """
         self.n_clusters = n_clusters
-        self.graph_divergence = graph_divergence
-        self.edge_divergence = edge_divergence
-        self.attribute_divergence = attribute_divergence
         self.n_iters = n_iters
         self.initializer = initializer
         self.graph_initializer = graph_initializer
@@ -865,8 +862,12 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.init_iters = init_iters
         ## Variable that stores which initialization was chosen
         self.graph_init = False
-        self.graphDistribution = 'bernoulli'
-        self.attributeDistribution = 'gaussian'
+        self.graphDistribution = graph_distribution
+        self.attributeDistribution = attribute_distribution
+        self.edgeDistribution = edge_distribution
+        self.graph_divergence = dist_to_phi_dict[self.graphDistribution]
+        self.edge_divergence = dist_to_phi_dict[self.edgeDistribution]
+        self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
         self.edge_index = None 
 
     def fit( self, A, X, Y, Z_init=None ):
