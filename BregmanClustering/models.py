@@ -827,7 +827,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
 class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_distribution = "multinomial",
+                 graph_distribution = "bernoulli",
                  attribute_distribution = "gaussian",
                  edge_distribution = "gaussian",
                  initializer = 'chernoff', 

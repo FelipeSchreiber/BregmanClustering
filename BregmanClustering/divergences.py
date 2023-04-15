@@ -40,7 +40,7 @@ def euclidean_distance(X,M):
 
 dist_to_phi_dict = {
         'gaussian': euclidean_distance,
-        'multinomial': KL_divergence,
+        'bernoulli': KL_divergence,
         'exponential': itakura_saito_loss,
         'poisson': relative_entropy
     }
