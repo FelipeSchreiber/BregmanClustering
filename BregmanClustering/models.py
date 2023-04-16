@@ -826,12 +826,12 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             Assigned cluster for each data point (n, )
         """
         return frommembershipMatriceToVector( self.predicted_memberships)
-
+    
 class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_distribution = "bernoulli",
-                 attribute_distribution = "gaussian",
-                 edge_distribution = "gaussian",
+                 graph_divergence = kullbackLeibler_binaryMatrix,
+                 attribute_divergence = euclidean,
+                 edge_divergence = euclidean,
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100 ):
@@ -854,6 +854,9 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         None.
         """
         self.n_clusters = n_clusters
+        self.graph_divergence = graph_divergence
+        self.edge_divergence = edge_divergence
+        self.attribute_divergence = attribute_divergence
         self.n_iters = n_iters
         self.initializer = initializer
         self.graph_initializer = graph_initializer
@@ -861,12 +864,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.init_iters = init_iters
         ## Variable that stores which initialization was chosen
         self.graph_init = False
-        self.graphDistribution = graph_distribution
-        self.attributeDistribution = attribute_distribution
-        self.edgeDistribution = edge_distribution
-        self.graph_divergence = dist_to_phi_dict[self.graphDistribution]
-        self.edge_divergence = dist_to_phi_dict[self.edgeDistribution]
-        self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
+        self.graphDistribution = 'bernoulli'
+        self.attributeDistribution = 'gaussian'
         self.edge_index = None 
 
     def fit( self, A, X, Y, Z_init=None ):
@@ -1007,7 +1006,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         desired output:
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
-        ## transpose and select only the i,j \in E
         weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
         X = X[self.edge_index[0],self.edge_index[1],:]
         """
@@ -1016,8 +1014,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=2)[:,:,np.newaxis])
-        print(">>>",edges_means,np.sum(weights,axis=2))
+        edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
         return edges_means 
     
     def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
@@ -1028,7 +1025,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         graph_means = self.computeGraphMeans( X , Z )
         n = Z.shape[ 0 ]
         pi = np.zeros( self.n_clusters )
-
         for c in range( self.n_clusters ):
             cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
             pi[ c ] = len(cluster_c) / n
@@ -1071,7 +1067,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def assignments( self, A, X, Y ):
         z = np.zeros( X.shape[ 0 ], dtype = int )
-        H = pairwise_distances(Y, self.attribute_means, metric=self.attribute_divergence)
+        H = self.attribute_divergence( Y, self.attribute_means )
         for node in range( len( z ) ):
             z[ node ] = self.singleNodeAssignment( A, X, H, node )
         return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )        
@@ -1097,12 +1093,10 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             """
             att_div = H[node,q]
             graph_div = self.graph_divergence( A[node,:], M[node,:] )
-            
             edge_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
                                                  Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:]) )
-            
-            #print(E)
-            L[ q ] = att_div + 0.5*(graph_div + edge_div)
+            #print(edge_div)
+            L[ q ] = att_div + 0.5*graph_div + edge_div
         return np.argmin( L )
     
     def predict(self, X, Y):
