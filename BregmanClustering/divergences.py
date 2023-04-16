@@ -38,6 +38,27 @@ def relative_entropy(X,M):
 def euclidean_distance(X,M):
     return np.sum((X - M)**2)
 
+def _euclidean_vectorized(X,Y):
+    """
+    Computes a pairwise Euclidean distance between two matrices: D_ij=||x_i-y_j||^2.
+    Parameters
+    ----------
+        X: array-like, shape=(batch_size, n_features)
+           Input batch matrix.
+        Y: array-like, shape=(n_clusters, n_features)
+           Matrix in which each row represents the mean vector of each cluster.
+    Returns
+    -------
+        D: array-like, shape=(batch_size, n_clusters)
+           Matrix of paiwise dissimilarities between the batch and the cluster's parameters.
+    """
+    
+    # same computation as the _old_euclidean function, but a new axis is added
+    # to X so that Y can be directly broadcast, speeding up computations
+    return np.sqrt(np.sum((np.expand_dims(X, axis=1)-Y)**2, axis=-1))
+
+# expose the vectorized version as the default one
+euclidean = _euclidean_vectorized
 dist_to_phi_dict = {
         'gaussian': euclidean_distance,
         'bernoulli': KL_divergence,

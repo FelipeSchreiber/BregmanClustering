@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Fri Feb 17 16:59:19 2023
-
 @author: maximilien, Felipe Schreiber Fernandes
 felipesc@cos.ufrj.br
 """
@@ -155,11 +154,14 @@ class BregmanGraphPartitioning( BaseEstimator, ClusterMixin ):
         """
         return frommembershipMatriceToVector( self.predicted_memberships )
 
+    
+
+
 class BregmanHard(BaseEstimator, ClusterMixin):
     #This is a copy paste from the code of the original paper on Bregman Clustering, found
     # https://github.com/juselara1/bregclus
 
-    def __init__(self, n_clusters, divergence=euclidean_distance, n_iters=1000, has_cov=False,
+    def __init__(self, n_clusters, divergence=euclidean, n_iters=1000, has_cov=False,
                  initializer="rand", init_iters=100, pretrainer=None):
         """
         Bregman Hard Clustering Algorithm
@@ -297,7 +299,7 @@ class BregmanHard(BaseEstimator, ClusterMixin):
     
 class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_distance, 
+                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100 ):
@@ -540,7 +542,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
 class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_distance, 
+                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
@@ -613,7 +615,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return total
 
     def likelihoodGraph(self,X,Z):
-        graph_mean = self.computeGraphMeans(X,Z)
+        graph_mean = self.computeGMeans(X,Z)
         return 1/2 * np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def initialize( self, X, Y ):
@@ -1026,6 +1028,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         graph_means = self.computeGraphMeans( X , Z )
         n = Z.shape[ 0 ]
         pi = np.zeros( self.n_clusters )
+
         for c in range( self.n_clusters ):
             cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
             pi[ c ] = len(cluster_c) / n
