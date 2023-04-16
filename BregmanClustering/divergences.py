@@ -11,6 +11,8 @@ https://github.com/juselara1/bregclus/blob/main/bregclus/divergences.py
 
 
 import numpy as np
+from sklearn.metrics import log_loss
+from scipy.special import kl_div
 import functools
 import warnings
 warnings.filterwarnings("ignore")
@@ -19,10 +21,15 @@ def kullbackLeibler_binaryMatrix( X, M ):
     essai = np.where( X == 0, -np.log( 1-M ), np.log(X/M) )
     return np.sum( essai )
 
+#Bernoulli
+def logistic_loss(X,M):
+    total = log_loss(X.flatten(),M.flatten())
+    return total
+
 #Multinomial
-def KL_divergence(X,M):
-    total = np.sum(X*np.log(X/M) + (1-X)*np.log((1-X)/(1-M)))
-    return total 
+def KL_div(X,M):
+    total = np.sum(kl_div(X.flatten(),M.flatten()))
+    return total
 
 #Exponential
 def itakura_saito_loss(X,M):
@@ -61,7 +68,8 @@ def _euclidean_vectorized(X,Y):
 euclidean = _euclidean_vectorized
 dist_to_phi_dict = {
         'gaussian': euclidean_distance,
-        'bernoulli': KL_divergence,
+        'bernoulli': logistic_loss,
+        'multinomial':KL_div,
         'exponential': itakura_saito_loss,
         'poisson': relative_entropy
     }

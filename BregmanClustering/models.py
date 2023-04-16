@@ -864,8 +864,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.graphDistribution = 'bernoulli'
         self.attributeDistribution = 'gaussian'
         self.edgeDistribution = "gaussian"
-        #self.graph_divergence = dist_to_phi_dict[self.graphDistribution]
-        self.graph_divergence = graph_divergence
+        self.graph_divergence = dist_to_phi_dict[self.graphDistribution]
+        #self.graph_divergence = graph_divergence
         self.edge_divergence = dist_to_phi_dict[self.edgeDistribution]
         self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
         self.edge_index = None 
