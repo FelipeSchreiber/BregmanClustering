@@ -359,7 +359,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         else:
             self.predicted_memberships = Z_init
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-        self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
+        self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
         convergence = True
         iteration = 0
         while convergence:
