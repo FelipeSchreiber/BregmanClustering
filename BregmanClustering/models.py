@@ -299,7 +299,7 @@ class BregmanHard(BaseEstimator, ClusterMixin):
     
 class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graphDistribution = "bernoulli",
+                 edgeDistribution = "bernoulli",
                  attributeDistribution = "gaussian",
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
@@ -330,9 +330,9 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.init_iters = init_iters
         ## Variable that stores which initialization was chosen
         self.graph_init = False
-        self.graphDistribution = graphDistribution
+        self.edgeDistribution = edgeDistribution
         self.attributeDistribution = attributeDistribution
-        self.graph_divergence = dist_to_phi_dict[self.graphDistribution]
+        self.graph_divergence = dist_to_phi_dict[self.edgeDistribution]
         self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
         self.edge_index = None 
 
@@ -472,7 +472,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
             pi[ c ] = len(cluster_c) / n
             
-        if self.graphDistribution == 'bernoulli':
+        if self.edgeDistribution == 'bernoulli':
             res = 10000
             for a in range( self.n_clusters ):
                 for b in range( a ):
@@ -588,7 +588,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.attribute_initializer = attribute_initializer
         self.init_iters = init_iters
         self.scaler = MinMaxScaler()
-        self.graphDistribution = 'bernoulli'
+        self.edgeDistribution = 'bernoulli'
         self.attributeDistribution = 'gaussian'
         self.normalize_ = normalize_
         self.thresholding = thresholding
@@ -688,7 +688,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
             pi[ c ] = len(cluster_c) / n
             
-        if self.graphDistribution == 'bernoulli':
+        if self.edgeDistribution == 'bernoulli':
             res = 10000
             for a in range( self.n_clusters ):
                 for b in range( a ):
@@ -842,9 +842,9 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
 class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graphDistribution = "bernoulli",
+                 edgeDistribution = "bernoulli",
                  attributeDistribution = "gaussian",
-                 edgeDistribution = "gaussian",
+                 weightDistribution = "gaussian",
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100 ):
@@ -874,11 +874,11 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.init_iters = init_iters
         ## Variable that stores which initialization was chosen
         self.graph_init = False
-        self.graphDistribution = graphDistribution
-        self.attributeDistribution = attributeDistribution
         self.edgeDistribution = edgeDistribution
-        self.graph_divergence = dist_to_phi_dict[self.graphDistribution]
-        self.edge_divergence = dist_to_phi_dict[self.edgeDistribution]
+        self.attributeDistribution = attributeDistribution
+        self.weightDistribution = weightDistribution
+        self.graph_divergence = dist_to_phi_dict[self.edgeDistribution]
+        self.edge_divergence = dist_to_phi_dict[self.weightDistribution]
         self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
         self.edge_index = None 
 
@@ -1043,7 +1043,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
             pi[ c ] = len(cluster_c) / n
             
-        if self.graphDistribution == 'bernoulli':
+        if self.edgeDistribution == 'bernoulli':
             res = 10000
             for a in range( self.n_clusters ):
                 for b in range( a ):
