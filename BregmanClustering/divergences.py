@@ -23,7 +23,8 @@ def kullbackLeibler_binaryMatrix( X, M ):
 
 #Bernoulli
 def logistic_loss(X,M):
-    total = log_loss(X.flatten(),M.flatten())
+    #total = log_loss(X.flatten(),M.flatten())
+    total = np.where( X == 0, -np.log( 1-M ), np.log(X/M) ).sum()
     return total
 
 #Multinomial
