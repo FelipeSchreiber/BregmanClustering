@@ -18,7 +18,7 @@ def get_logistic_parameter(mean,variance):
 
 def get_exponential_parameter(mean,variance):
     scale = 1/mean
-    return (scale)
+    return (scale,)
 
 def make_weight_params(f):
 	def get_parameters_for_every_community_pair(means,variance,n_clusters):
