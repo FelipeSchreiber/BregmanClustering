@@ -517,7 +517,6 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def singleNodeAssignment( self, X, H, node ):
         L = np.zeros( self.n_clusters )
-        node_indices = np.argwhere(self.edge_index[0] == node).flatten()
         for q in range( self.n_clusters ):
             Ztilde = self.predicted_memberships.copy()
             Ztilde[ node, : ] = 0
