@@ -12,6 +12,7 @@ https://github.com/juselara1/bregclus/blob/main/bregclus/divergences.py
 
 import numpy as np
 from sklearn.metrics import log_loss
+from sklearn.metrics.pairwise import euclidean_distances
 from scipy.special import kl_div
 import functools
 import warnings
@@ -68,7 +69,7 @@ def _euclidean_vectorized(X,Y):
 # expose the vectorized version as the default one
 euclidean = _euclidean_vectorized
 dist_to_phi_dict = {
-        'gaussian': euclidean_distance,
+        'gaussian': euclidean_distances,
         'bernoulli': logistic_loss,
         'multinomial':KL_div,
         'exponential': itakura_saito_loss,
