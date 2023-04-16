@@ -45,7 +45,7 @@ def relative_entropy(X,M):
 
 #gaussian
 def euclidean_distance(X,M):
-    return np.linalg.norm(X-M,ord="fro")
+    return np.linalg.norm(X-M)
 
 def _euclidean_vectorized(X,Y):
     """
