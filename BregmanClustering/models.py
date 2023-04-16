@@ -299,7 +299,8 @@ class BregmanHard(BaseEstimator, ClusterMixin):
     
 class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
+                 graphDistribution = "bernoulli",
+                 attributeDistribution = "gaussian",
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100 ):
@@ -322,8 +323,6 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         None.
         """
         self.n_clusters = n_clusters
-        self.graph_divergence = graph_divergence
-        self.attribute_divergence = attribute_divergence
         self.n_iters = n_iters
         self.initializer = initializer
         self.graph_initializer = graph_initializer
@@ -331,17 +330,23 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.init_iters = init_iters
         ## Variable that stores which initialization was chosen
         self.graph_init = False
-        self.graphDistribution = 'bernoulli'
-        self.attributeDistribution = 'gaussian'
-        
+        self.graphDistribution = graphDistribution
+        self.attributeDistribution = attributeDistribution
+        self.graph_divergence = dist_to_phi_dict[self.graphDistribution]
+        self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
+        self.edge_index = None 
 
     def fit( self, X, Y, Z_init=None ):
         """
         Training step.
         Parameters
         ----------
-        X : ARRAY
+        Y : ARRAY
             Input data matrix (n, m) of n samples and m features.
+        X : ARRAY
+            Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
+        A : ARRAY
+            Input (n,n) matrix encoding the adjacency matrix
         Returns
         -------
         TYPE
@@ -353,9 +358,8 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.assignInitialLabels( X, Y )
         else:
             self.predicted_memberships = Z_init
-        #init_labels = self.predicted_memberships
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-        self.graph_means = self.computeGraphMeans(X,self.predicted_memberships)
+        self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
         convergence = True
         iteration = 0
         while convergence:
@@ -365,10 +369,8 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.graph_means = self.computeGraphMeans( X, new_memberships )
             
             iteration += 1
-            #if np.array_equal( new_memberships, self.predicted_memberships) or iteration >= self.n_iters:
             if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
                 convergence = False
-                #print( accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) )  )
             self.predicted_memberships = new_memberships
         print( 'number of iterations : ', iteration)
         return self
@@ -379,7 +381,6 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             model.fit( Y )
             self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
             self.attribute_model_init = model
-            #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
         else:
             raise TypeError( 'The initializer provided for the attributes is not correct' )
             
@@ -455,9 +456,9 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeGraphMeans( self, X, Z ):
+    def computeGraphMeans( self, A, Z ):
         normalisation = np.linalg.pinv ( Z.T @ Z )
-        return normalisation @ Z.T @ X @ Z @ normalisation
+        return normalisation @ Z.T @ A @ Z @ normalisation
     
     def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
         if distribution.lower() == 'bernoulli':
@@ -498,7 +499,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         attributeLikelihood = self.likelihoodAttributes(Y,Z)
         return graphLikelihood + attributeLikelihood
     
-    def likelihoodGraph( self, X, Z):
+    def likelihoodGraph(self, X, Z):
         graph_mean = self.computeGraphMeans(X,Z)
         return 1/2 * np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
     
@@ -509,19 +510,31 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def assignments( self, X, Y ):
         z = np.zeros( X.shape[ 0 ], dtype = int )
-        H = self.attribute_divergence( Y, self.attribute_means )
+        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range( len( z ) ):
             z[ node ] = self.singleNodeAssignment( X, H, node )
         return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )        
     
     def singleNodeAssignment( self, X, H, node ):
         L = np.zeros( self.n_clusters )
-        for k in range( self.n_clusters ):
+        node_indices = np.argwhere(self.edge_index[0] == node).flatten()
+        for q in range( self.n_clusters ):
             Ztilde = self.predicted_memberships.copy()
             Ztilde[ node, : ] = 0
-            Ztilde[ node, k ] = 1
+            Ztilde[ node, q ] = 1
             M = Ztilde @ self.graph_means @ Ztilde.T
-            L[ k ] = H[node,k] +  1/2 * self.graph_divergence( X[node,:], M[node,:] )
+            """
+            X has shape n x n x d
+            E has shape k x k x d
+            
+            the edge divergence computes the difference between node i (from community q) edges and the means
+            given node j belongs to community l:
+            
+            sum_j phi_edge(e_ij, E[q,l,:])  
+            """
+            att_div = H[node,q]
+            graph_div = self.graph_divergence( X[node,:], M[node,:] )
+            L[ q ] = att_div + 0.5*graph_div
         return np.argmin( L )
     
     def predict(self, X, Y):
