@@ -854,9 +854,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         None.
         """
         self.n_clusters = n_clusters
-        self.graph_divergence = graph_divergence
-        self.edge_divergence = edge_divergence
-        self.attribute_divergence = attribute_divergence
         self.n_iters = n_iters
         self.initializer = initializer
         self.graph_initializer = graph_initializer
@@ -866,6 +863,10 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.graph_init = False
         self.graphDistribution = 'bernoulli'
         self.attributeDistribution = 'gaussian'
+        self.edgeDistribution = "gaussian"
+        self.graph_divergence = dist_to_phi_dict[self.graphDistribution]
+        self.edge_divergence = dist_to_phi_dict[self.edgeDistribution]
+        self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
         self.edge_index = None 
 
     def fit( self, A, X, Y, Z_init=None ):
@@ -1068,7 +1069,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def assignments( self, A, X, Y ):
         z = np.zeros( X.shape[ 0 ], dtype = int )
         #H = self.attribute_divergence( Y, self.attribute_means )
-        H = pairwise_distances(Y,self.attribute_means,metric=euclidean_distance)
+        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range( len( z ) ):
             z[ node ] = self.singleNodeAssignment( A, X, H, node )
         return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )        
@@ -1096,7 +1097,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             graph_div = self.graph_divergence( A[node,:], M[node,:] )
             edge_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
                                                  Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:],\
-                                                metric=euclidean_distance))
+                                                metric=self.edge_divergence))
             #print(edge_div)
             L[ q ] = att_div + 0.5*graph_div + edge_div
         return np.argmin( L )
