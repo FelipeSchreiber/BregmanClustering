@@ -3,7 +3,7 @@ import networkx as nx
 from BregmanTests.distributions import *
 
 class BregmanBenchmark():
-    def __init__(self,P,communities_sizes,min_=0,max_=1,dims=2,weight_variance=1,att_variance=1,\
+    def __init__(self,P,communities_sizes,min_=1,max_=10,dims=2,weight_variance=1,att_variance=1,\
                  weight_distribution="gamma",attributes_distribution="gaussian",radius=1,return_G=False):
         self.probability_matrix=P
         self.communities_sizes=communities_sizes
