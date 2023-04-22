@@ -16,7 +16,7 @@ class BregmanBenchmark():
                     attributes_distribution = "gaussian",\
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
-                    radius=1,return_G=False):
+                    radius=None,return_G=False):
         self.probability_matrix=P
         self.communities_sizes=communities_sizes
         ## min and max specifies the range of the weight distribution means in 1D
@@ -156,6 +156,7 @@ class BregmanBenchmark():
                 pin = a * np.log( n ) / n
                 p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
                 self.probability_matrix = p
+                self.radius = r
 
                 aris_attributes = [ ]
                 aris_graph = [ ]
