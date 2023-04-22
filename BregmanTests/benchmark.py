@@ -5,7 +5,7 @@ from BregmanClustering.models import *
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as edgeBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 import subprocess
-import tqdm
+from tqdm import tqdm
 from .cfg import *
 import os
 from .utils import *
