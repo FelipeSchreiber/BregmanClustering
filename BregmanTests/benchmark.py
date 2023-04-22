@@ -84,7 +84,7 @@ class BregmanBenchmark():
             for i in range(np.sum(self.communities_sizes)):
                 G.nodes[i]["attr"] = Y[i,:]
             return X,Y,labels_true,G
-         return X,Y,labels_true
+         return X,Y,labels_true,None
     
     def generate_benchmark_dense(self):
         means = np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
