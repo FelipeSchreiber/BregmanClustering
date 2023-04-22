@@ -24,7 +24,7 @@ class BregmanBenchmark():
         self.max_ = max_
         self.weight_variance = weight_variance
         self.att_variance = att_variance
-        self.n_clusters = P.shape[0]
+        self.n_clusters = P.shape[0] if P is not None else None
         self.weight_distribution_name = weight_distribution
         self.weight_distribution,f = distributions_dict[weight_distribution]
         self.get_w_params = make_weight_params(f)
@@ -118,6 +118,7 @@ class BregmanBenchmark():
 
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
+        self.n_clusters = n_clusters
         pout = b * np.log( n ) / n
         stats = {"varying":[],"a":[],"r":[],"agreed":[],"ARI_chernoff":[],"ARI_AIC":[],"ARI_ORACLE":[]}
         for varying in ["attributes","graph"]:
