@@ -173,7 +173,7 @@ class BregmanBenchmark():
                 for trial in range( n_average ):
                     ( X, Y, z_true, G) = benchmark_instance() 
                     
-                    #A = (X != 0).astype(int)
+                    A = (X != 0).astype(int)
                     model = BregmanNodeAttributeGraphClustering( n_clusters = n_clusters,\
                                                                     attributeDistribution=self.attributes_distribution_name,\
                                                                     edgeDistribution=self.weight_distribution_name,\
