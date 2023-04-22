@@ -13,7 +13,10 @@ from copy import deepcopy
 
 class BregmanBenchmark():
     def __init__(self,P,communities_sizes,min_=1,max_=10,dims=2,weight_variance=1,att_variance=1,\
-                 weight_distribution="gamma",attributes_distribution="gaussian",radius=1,return_G=False):
+                    attributes_distribution = "gaussian",\
+                    edge_distribution = "bernoulli",\
+                    weight_distribution = "exponential",\
+                    radius=1,return_G=False):
         self.probability_matrix=P
         self.communities_sizes=communities_sizes
         ## min and max specifies the range of the weight distribution means in 1D
@@ -22,9 +25,12 @@ class BregmanBenchmark():
         self.weight_variance = weight_variance
         self.att_variance = att_variance
         self.n_clusters = P.shape[0]
+        self.weight_distribution_name = weight_distribution
         self.weight_distribution,f = distributions_dict[weight_distribution]
         self.get_w_params = make_weight_params(f)
+        self.attributes_distribution_name = attributes_distribution
         self.att_distribution,self.get_att_param = distributions_dict[attributes_distribution]          
+        self.edge_distribution_name = edge_distribution
         self.dims = dims
         self.radius=radius
         self.return_G = return_G
@@ -93,13 +99,17 @@ class BregmanBenchmark():
         return X,Y,labels_true
     
     def run_test(self,n_average=10,cluster_sizes=100,\
-                 attributes_distribution = "gaussian",\
-                 edge_distribution = "bernoulli",\
-                 weight_distribution = "exponential",\
                  b=5,\
                  a_range=[ 5,7,9,11,13,15 ],\
                  r_range = [ 0,1,2,3,4,5 ],\
+                 dense=False,\
                  file_endings=".jpeg"):
+        benchmark_instance = None
+        if dense:
+            benchmark_instance = self.generate_benchmark_dense
+        else:
+            benchmark_instance = self.generate_benchmark_joint
+
         if not other_algos_installed:
             from .install_algorithms import main as install_env
             ## Optional: set repository for CRAN
@@ -161,12 +171,12 @@ class BregmanBenchmark():
 
                 total = 0
                 for trial in range( n_average ):
-                    ( X, Y, z_true, G) = self.generate_benchmark_joint()
+                    ( X, Y, z_true, G) = benchmark_instance() 
                     
-                    A = (X != 0).astype(int)
+                    #A = (X != 0).astype(int)
                     model = BregmanNodeAttributeGraphClustering( n_clusters = n_clusters,\
-                                                                    attributeDistribution=attributes_distribution,\
-                                                                    edgeDistribution=edge_distribution,\
+                                                                    attributeDistribution=self.attributes_distribution_name,\
+                                                                    edgeDistribution=self.weight_distribution_name,\
                                                                     initializer="chernoff")
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(X,Y)
@@ -201,9 +211,9 @@ class BregmanBenchmark():
                     ### > end
 
                     model2 = edgeBreg(n_clusters=n_clusters,\
-                                    attributeDistribution=attributes_distribution,\
-                                    edgeDistribution=edge_distribution,\
-                                    weightDistribution=weight_distribution
+                                    attributeDistribution=self.attributes_distribution_name,\
+                                    edgeDistribution=self.edge_distribution_name,\
+                                    weightDistribution=self.weight_distribution_name
                                     )
                     z_pred_both2 = model2.fit(A,X.reshape(n,n,1),Y,z_init).predict( X, Y )
                     
