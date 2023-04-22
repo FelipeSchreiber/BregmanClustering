@@ -181,7 +181,7 @@ class BregmanBenchmark():
                     model = BregmanNodeAttributeGraphClustering( n_clusters = n_clusters,\
                                                                     attributeDistribution=self.attributes_distribution_name,\
                                                                     edgeDistribution=self.weight_distribution_name,\
-                                                                    initializer="chernoff")
+                                                                    initializer="AIC")
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(A,Y)
                     model.assignInitialLabels(A, Y)
