@@ -104,6 +104,7 @@ class BregmanBenchmark():
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
                  file_endings=".jpeg"):
+        self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
             benchmark_instance = self.generate_benchmark_dense
