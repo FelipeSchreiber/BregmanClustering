@@ -155,7 +155,8 @@ class BregmanBenchmark():
 
                 pin = a * np.log( n ) / n
                 p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
-
+                self.probability_matrix = p
+                
                 aris_attributes = [ ]
                 aris_graph = [ ]
                 aris_both = [ ]
