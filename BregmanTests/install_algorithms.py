@@ -47,6 +47,9 @@ def main():
     else:
         # Install packages
         utils.install_packages(StrVector(packnames),repos=CRAN_repo)
+    other_algos_installed = True
+    from CSBM.Python import functions as csbm
+
 
 if __name__ == "__main__":
     main()

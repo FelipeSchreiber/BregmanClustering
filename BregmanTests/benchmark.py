@@ -100,14 +100,11 @@ class BregmanBenchmark():
                  a_range=[ 5,7,9,11,13,15 ],\
                  r_range = [ 0,1,2,3,4,5 ],\
                  file_endings=".jpeg"):
-        try:
-            from CSBM.Python.functions import *
-        except:
+        if not other_algos_installed:
             from .install_algorithms import main as install_env
             ## Optional: set repository for CRAN
             CRAN_repo = "https://cran.fiocruz.br/"
             install_env()
-            from CSBM.Python.functions import *
 
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
@@ -184,7 +181,7 @@ class BregmanBenchmark():
                     with open(f'{path_}net_{trial}.npy', 'wb') as g:
                         np.save(g, X)
                     with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
-                        np.save(g, convertZ(z_init)+1)
+                        np.save(g, csbm.convertZ(z_init)+1)
 
                     model.fit( X, Y )
                     z_pred_both = model.predict( X, Y )
@@ -210,8 +207,8 @@ class BregmanBenchmark():
                                     )
                     z_pred_both2 = model2.fit(A,X.reshape(n,n,1),Y,z_init).predict( X, Y )
                     
-                    IR_sLS_pred = iter_csbm(X,Y,z_init,n_clusters)
-                    IR_LS_pred = iter_csbm2(X,Y,z_init,n_clusters)
+                    IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)
+                    IR_LS_pred = csbm.iter_csbm2(X,Y,z_init,n_clusters)
                         
                     subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
                                     f'{path_}att_{trial}.npy',\

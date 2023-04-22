@@ -22,7 +22,7 @@ class OverrideInstall(_install):
         #     logging.log("Failed to change permissions of install_algos.sh, please set manually to 777")
         #     pass
     
-excluded = ['tests/*.ipynb','tests/*.eps','tests/.npy']
+excluded = ['BregmanTests/*.ipynb','BregmanTests/*.eps','BregmanTests/.npy','BregmanTests/CSBM']
 
 class build_py(build_py_orig):
     def find_package_modules(self, package, package_dir):
