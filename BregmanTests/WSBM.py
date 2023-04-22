@@ -59,7 +59,9 @@ class BregmanBenchmark():
                 Y[cumsum[q]:cumsum[q+1],l] = self.att_distribution(*p,size=clus_len)
         return Y
     
-    def generate_benchmark_WSBM(self):
+    ## Generate Benchmark where the edges follows a joint probability distribution
+    #  given by bernoulli and weights from exponential familly 
+    def generate_benchmark_joint(self):
          X, G = self.generate_WSBM()
          Y = self.generate_attributes()
          labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
@@ -68,3 +70,15 @@ class BregmanBenchmark():
                 G.nodes[i]["attr"] = Y[i,:]
             return X,Y,labels_true,G
          return X,Y,labels_true
+    
+    def generate_benchmark_dense(self):
+        means = np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
+        params = self.get_w_params(means,self.weight_variance,self.n_clusters)
+        X = 0
+        Y = self.generate_attributes()
+        labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
+        if self.return_G:
+            for i in range(np.sum(self.communities_sizes)):
+                G.nodes[i]["attr"] = Y[i,:]
+            return X,Y,labels_true,G
+        return X,Y,labels_true
