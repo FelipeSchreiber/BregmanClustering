@@ -184,8 +184,8 @@ class BregmanBenchmark():
                                                                     edgeDistribution=self.weight_distribution_name,\
                                                                     initializer="AIC")
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
-                    model.initialize(A,Y)
-                    model.assignInitialLabels(A, Y)
+                    model.initialize(X,Y)
+                    model.assignInitialLabels(X, Y)
                     z_init = deepcopy(model.predicted_memberships)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
@@ -198,8 +198,8 @@ class BregmanBenchmark():
                     with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
                         np.save(g, csbm.convertZ(z_init)+1)
 
-                    model.fit( A, Y )
-                    z_pred_both = model.predict( A, Y )
+                    model.fit( X, Y )
+                    z_pred_both = model.predict( X, Y )
                     z_pred_graph = frommembershipMatriceToVector( chernoff_graph_labels )
                     z_pred_attributes = frommembershipMatriceToVector( chernoff_att_labels )
                     
