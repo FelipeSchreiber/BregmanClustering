@@ -8,6 +8,15 @@ SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
 
+def make_contour_plot(x,y,z,filename="contour.jpeg"):
+    # Create contour lines or level curves using matplotlib.pyplot module
+    contours = plt.contour(x, y, z)
+    # Display z values on contour lines
+    plt.clabel(contours, inline=1, fontsize=10)
+    plt.savefig(filename)
+    # Display the contour plot
+    plt.show()
+
 def plotting( x, curves, labels, xticks,
              curves_std = None,
              legendTitle = '', figTitle = '',

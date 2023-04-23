@@ -297,3 +297,5 @@ class BregmanBenchmark():
                 fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_a_' + str(a) + '_b_' + str(b) +  '_nAverage_' + str(n_average) + file_endings
                 plotting( r_range, curves, labels, curves_std = curves_std, xticks = r_range, xlabel = 'r', saveFig = saveFig, fileName = fileName )
                 plt.close()
+        make_contour_plot(stats['a'],stats['r'],stats['ARI_AIC'],filename="contour_plot_AIC.jpeg")
+        make_contour_plot(stats['a'],stats['r'],stats['ARI_ORACLE'],filename="contour_plot_ORACLE.jpeg")
