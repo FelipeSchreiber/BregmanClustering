@@ -10,6 +10,7 @@ from .cfg import *
 import os
 from .utils import *
 from copy import deepcopy
+from CSBM.Python import functions as csbm
 
 class BregmanBenchmark():
     def __init__(self,P=None,communities_sizes=None,min_=1,max_=10,dims=2,weight_variance=1,att_variance=1,\
