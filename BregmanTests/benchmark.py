@@ -36,10 +36,14 @@ class BregmanBenchmark():
         self.radius=radius
         self.return_G = return_G
     
-    def generate_WSBM(self):
+    def generate_WSBM(self,complete_graph=False):
         N = np.sum(self.communities_sizes)
         ## Generate binary connectivity matrix
-        G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
+        G = None
+        if complete_graph:
+            G = nx.complete_graph(N)
+        else:
+            G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
         ## Draw the means of the weight distributions for each pair of community interaction
         means = np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
         params = self.get_w_params(means,self.weight_variance,self.n_clusters)
@@ -88,9 +92,7 @@ class BregmanBenchmark():
          return X,Y,labels_true,None
     
     def generate_benchmark_dense(self):
-        means = np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
-        params = self.get_w_params(means,self.weight_variance,self.n_clusters)
-        X = 0
+        X, G = self.generate_WSBM(complete_graph=True)
         Y = self.generate_attributes()
         labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
         if self.return_G:
