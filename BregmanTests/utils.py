@@ -1,3 +1,4 @@
+from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.pairwise import pairwise_kernels
@@ -10,9 +11,23 @@ SIZE_LEGEND = 18
 
 def make_contour_plot(x,y,z,filename="contour.jpeg"):
     # Create contour lines or level curves using matplotlib.pyplot module
-    contours = plt.contour(x, y, z)
+    # Plot the 3D surface
+    ax = plt.figure().add_subplot(projection='3d')
+    ax.plot_surface(x, y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
+                    alpha=0.3)
+
+    # Plot projections of the contours for each dimension.  By choosing offsets
+    # that match the appropriate axes limits, the projected contours will sit on
+    # the 'walls' of the graph.
+    ax.contour(x, y, z, zdir='z', offset=-100, cmap='coolwarm')
+    ax.contour(x, y, z, zdir='x', offset=-40, cmap='coolwarm')
+    ax.contour(x, y, z, zdir='y', offset=40, cmap='coolwarm')
+
+    ax.set(xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
+    xlabel='a', ylabel='r', zlabel='ARI')
+    #contours = plt.contour(x, y, z)
     # Display z values on contour lines
-    plt.clabel(contours, inline=1, fontsize=10)
+    #plt.clabel(contours, inline=1, fontsize=10)
     plt.savefig(filename)
     # Display the contour plot
     #plt.show()
