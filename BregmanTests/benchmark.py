@@ -365,6 +365,7 @@ class BregmanBenchmark():
         x = a_range
         y = r_range
         z = np.array(stats['ARI']).reshape(len(x),len(y)).T
+        print(z)
         z2 = np.array(stats['ARI_ORACLE']).reshape(len(x),len(y)).T
         make_contour_plot(x,y,z,filename="contour_plot_AIC.jpeg")
         make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg")
