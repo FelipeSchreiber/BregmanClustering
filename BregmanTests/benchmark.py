@@ -11,6 +11,7 @@ import os
 from .utils import *
 from copy import deepcopy
 from CSBM.Python import functions as csbm
+from itertools import product
 
 class BregmanBenchmark():
     def __init__(self,P=None,communities_sizes=None,min_=1,max_=10,dims=2,weight_variance=1,att_variance=1,\
@@ -297,5 +298,70 @@ class BregmanBenchmark():
                 fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_a_' + str(a) + '_b_' + str(b) +  '_nAverage_' + str(n_average) + file_endings
                 plotting( r_range, curves, labels, curves_std = curves_std, xticks = r_range, xlabel = 'r', saveFig = saveFig, fileName = fileName )
                 plt.close()
-        make_contour_plot(stats['a'],stats['r'],stats['ARI_AIC'],filename="contour_plot_AIC.jpeg")
+    
+    def run_contour(self,n_average=10,cluster_sizes=100,\
+                 b=5,\
+                 a_range=[ 5,7,9,11,13,15 ],\
+                 r_range = [ 0,1,2,3,4,5 ],\
+                 dense=False,\
+                 file_endings=".jpeg"):
+        self.communities_sizes = cluster_sizes
+        benchmark_instance = None
+        if dense:
+            benchmark_instance = self.generate_benchmark_dense
+        else:
+            benchmark_instance = self.generate_benchmark_joint
+
+        n = np.sum(cluster_sizes)
+        n_clusters = len(cluster_sizes)
+        self.n_clusters = n_clusters
+        pout = b * np.log( n ) / n
+        stats = {"a":[],"r":[],"ARI":[],"ARI_ORACLE":[]}
+        aris_both_mean = [ ]
+        aris_both_std = [ ]
+        aris_oracle_mean = [ ]
+        aris_oracle_std = [ ]
+        for a,r in product(a_range,r_range):
+            pin = a * np.log( n ) / n
+            p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
+            self.probability_matrix = p
+            self.radius = r
+            aris_both = [ ]
+            aris_oracle = [ ]
+
+            total = 0
+            for trial in range( n_average ):
+                ( X, Y, z_true, G) = benchmark_instance() 
+                    
+                A = (X != 0).astype(int)
+                model = edgeBreg(n_clusters=n_clusters,\
+                                    attributeDistribution=self.attributes_distribution_name,\
+                                    edgeDistribution=self.edge_distribution_name,\
+                                    weightDistribution=self.weight_distribution_name
+                                    )
+                z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
+                chernoff_graph_labels = model.memberships_from_graph
+                chernoff_att_labels = model.memberships_from_attributes
+                aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
+                 
+                if model.AIC_initializer(X,Y).graph_init:
+                    z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
+                    ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
+                    aris_oracle.append( max(aris_both[-1], ari_att_init))
+                else:
+                    z_pred_graph_init =  model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
+                    ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
+                    aris_oracle.append( max(aris_both[-1], ari_graph_init))
+                        
+                aris_both_mean.append( np.mean( aris_both ) )
+                aris_oracle_mean.append( np.mean( aris_oracle) )
+                aris_both_std.append( np.std( aris_both ) )
+                aris_oracle_std.append( np.std( aris_oracle) )
+
+                stats["a"].append(a)
+                stats["r"].append(r)
+                stats["ARI"].append(aris_both_mean[-1])
+                stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
+       
+        make_contour_plot(stats['a'],stats['r'],stats['ARI'],filename="contour_plot_AIC.jpeg")
         make_contour_plot(stats['a'],stats['r'],stats['ARI_ORACLE'],filename="contour_plot_ORACLE.jpeg")
