@@ -362,5 +362,9 @@ class BregmanBenchmark():
                 stats["ARI"].append(aris_both_mean[-1])
                 stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
        
-        make_contour_plot(stats['a'],stats['r'],stats['ARI'],filename="contour_plot_AIC.jpeg")
-        make_contour_plot(stats['a'],stats['r'],stats['ARI_ORACLE'],filename="contour_plot_ORACLE.jpeg")
+        x = stats['a']
+        y = stats['r']
+        z = np.array(stats['ARI']).reshape(len(y),len(x))
+        z2 = np.array(stats['ARI_ORACLE']).reshape(len(y),len(x))
+        make_contour_plot(x,y,z,filename="contour_plot_AIC.jpeg")
+        make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg")
