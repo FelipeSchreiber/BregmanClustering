@@ -9,25 +9,27 @@ SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
 
-def make_contour_plot(x,y,z,filename="contour.jpeg"):
+def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
     # Create contour lines or level curves using matplotlib.pyplot module
+    if plot_3d:
     # Plot the 3D surface
-    ax = plt.figure().add_subplot(projection='3d')
-    ax.plot_surface(x, y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
-                    alpha=0.3)
+        ax = plt.figure().add_subplot(projection='3d')
+        ax.plot_surface(x, y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
+                        alpha=0.3)
 
-    # Plot projections of the contours for each dimension.  By choosing offsets
-    # that match the appropriate axes limits, the projected contours will sit on
-    # the 'walls' of the graph.
-    ax.contour(x, y, z, zdir='z', offset=-100, cmap='coolwarm')
-    ax.contour(x, y, z, zdir='x', offset=-40, cmap='coolwarm')
-    ax.contour(x, y, z, zdir='y', offset=40, cmap='coolwarm')
+        # Plot projections of the contours for each dimension.  By choosing offsets
+        # that match the appropriate axes limits, the projected contours will sit on
+        # the 'walls' of the graph.
+        ax.contour(x, y, z, zdir='z', offset=-100, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='x', offset=-40, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='y', offset=40, cmap='coolwarm')
 
-    ax.set(xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
-    xlabel='a', ylabel='r', zlabel='ARI')
-    #contours = plt.contour(x, y, z)
-    # Display z values on contour lines
-    #plt.clabel(contours, inline=1, fontsize=10)
+        ax.set(xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
+        xlabel='a', ylabel='r', zlabel='ARI')
+    else:
+        contours = plt.contour(x, y, z)
+        # Display z values on contour lines
+        plt.clabel(contours, inline=1, fontsize=10)
     plt.savefig(filename)
     # Display the contour plot
     #plt.show()
