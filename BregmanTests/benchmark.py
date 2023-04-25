@@ -303,7 +303,8 @@ class BregmanBenchmark():
                  a_range=[ 5,7,9,11,13,15 ],\
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
-                 file_endings=".jpeg"):
+                 file_endings=".jpeg",\
+                 plot_3d=False):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
@@ -367,5 +368,5 @@ class BregmanBenchmark():
         z = np.array(stats['ARI']).reshape(len(x),len(y)).T
         print(z)
         z2 = np.array(stats['ARI_ORACLE']).reshape(len(x),len(y)).T
-        make_contour_plot(x,y,z,filename="contour_plot_AIC.jpeg")
-        make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg")
+        make_contour_plot(x,y,z,filename="contour_plot_AIC.jpeg",plot_3d=plot_3d)
+        make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
