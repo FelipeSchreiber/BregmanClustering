@@ -23,7 +23,12 @@ class BregmanBenchmark():
                     attributes_distribution = "gaussian",\
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
-                    radius=None,return_G=False):
+                    radius=None,return_G=False,\
+                        att_centers = None):
+        ## att_centers must have shape K x D, where K is the number
+        #  of communities and D the number of dimensions.
+        # If not specified, then the centers are taken from unit circle
+        self.att_centers=att_centers
         self.probability_matrix=P
         self.communities_sizes=communities_sizes
         ## min and max specifies the range of the weight distribution means in 1D
@@ -70,11 +75,15 @@ class BregmanBenchmark():
         return np.array(centers)
     
     def generate_attributes(self):
-        centers = self.get_unit_circle_coordinates()
-        if self.dims < centers.shape[1]:
-            centers = centers[:,:self.dims]
-        elif self.dims > centers.shape[1]:
-            centers = np.hstack([centers,np.zeros((centers.shape[0],self.dims - centers.shape[1]))])
+        centers = None
+        if self.att_centers is not None:
+            centers = self.att_centers
+        else: 
+            centers = self.get_unit_circle_coordinates()
+            if self.dims < centers.shape[1]:
+                centers = centers[:,:self.dims]
+            elif self.dims > centers.shape[1]:
+                centers = np.hstack([centers,np.zeros((centers.shape[0],self.dims - centers.shape[1]))])
         N = np.sum(self.communities_sizes)
         Y = np.zeros((N,self.n_clusters))
         cumsum = np.cumsum(self.communities_sizes)
