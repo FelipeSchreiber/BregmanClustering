@@ -15,7 +15,7 @@ def make_contour_plot(x,y,z,filename="contour.jpeg"):
     plt.clabel(contours, inline=1, fontsize=10)
     plt.savefig(filename)
     # Display the contour plot
-    plt.show()
+    #plt.show()
 
 def plotting( x, curves, labels, xticks,
              curves_std = None,
