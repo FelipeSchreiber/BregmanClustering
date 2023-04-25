@@ -320,7 +320,7 @@ class BregmanBenchmark():
         aris_both_std = [ ]
         aris_oracle_mean = [ ]
         aris_oracle_std = [ ]
-        for a,r in zip(product(a_range,r_range)):
+        for a,r in product(a_range,r_range):
             pin = a * np.log( n ) / n
             p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
             self.probability_matrix = p
@@ -357,10 +357,10 @@ class BregmanBenchmark():
                 aris_both_std.append( np.std( aris_both ) )
                 aris_oracle_std.append( np.std( aris_oracle) )
 
-                stats["a"].append(a)
-                stats["r"].append(r)
-                stats["ARI"].append(aris_both_mean[-1])
-                stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
+            stats["a"].append(a)
+            stats["r"].append(r)
+            stats["ARI"].append(aris_both_mean[-1])
+            stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
        
         x = stats['a']
         y = stats['r']
