@@ -304,7 +304,8 @@ class BregmanBenchmark():
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
                  file_endings=".jpeg",\
-                 plot_3d=False):
+                 plot_3d=False,\
+                 binary=False):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
@@ -334,6 +335,8 @@ class BregmanBenchmark():
                 ( X, Y, z_true, G) = benchmark_instance() 
                     
                 A = (X != 0).astype(int)
+                if binary:
+                    X = A
                 model = edgeBreg(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
