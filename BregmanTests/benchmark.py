@@ -10,6 +10,11 @@ from .cfg import *
 import os
 from .utils import *
 from copy import deepcopy
+if not other_algos_installed:
+    from .install_algorithms import main as install_env
+    ## Optional: set repository for CRAN
+    CRAN_repo = "https://cran.fiocruz.br/"
+    install_env()
 from CSBM.Python import functions as csbm
 from itertools import product
 
@@ -114,12 +119,6 @@ class BregmanBenchmark():
             benchmark_instance = self.generate_benchmark_dense
         else:
             benchmark_instance = self.generate_benchmark_joint
-
-        if not other_algos_installed:
-            from .install_algorithms import main as install_env
-            ## Optional: set repository for CRAN
-            CRAN_repo = "https://cran.fiocruz.br/"
-            install_env()
 
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
