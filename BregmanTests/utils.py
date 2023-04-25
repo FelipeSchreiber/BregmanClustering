@@ -30,6 +30,8 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         contours = plt.contour(x, y, z)
         # Display z values on contour lines
         plt.clabel(contours, inline=1, fontsize=10)
+        plt.xlabel("a")
+        plt.ylabel("r")
     plt.savefig(filename)
     # Display the contour plot
     #plt.show()
