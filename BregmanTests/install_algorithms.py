@@ -50,4 +50,5 @@ def main():
     other_algos_installed = True
 
 if __name__ == "__main__":
-    main()
+    if not os.path.isdir("./sCSBM"):
+        main()
