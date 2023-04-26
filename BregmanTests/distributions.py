@@ -20,6 +20,9 @@ def get_exponential_parameter(mean,variance):
     scale = 1/mean
     return (scale,)
 
+def get_poisson_parameter(mean,variance):
+    return (mean,)
+
 def make_weight_params(f):
 	def get_parameters_for_every_community_pair(means,variance,n_clusters):
 		params = {}
@@ -37,5 +40,6 @@ distributions_dict = {
 "gaussian":(np.random.normal,get_normal_parameter),
 "wald":(np.random.wald,get_wald_parameter),
 "logistic":(np.random.logistic,get_logistic_parameter),
-"exponential":(np.random.exponential,get_exponential_parameter)
+"exponential":(np.random.exponential,get_exponential_parameter),
+"poisson":(np.random.poisson,get_poisson_parameter)
 }

@@ -19,16 +19,22 @@ from CSBM.Python import functions as csbm
 from itertools import product
 
 class BregmanBenchmark():
-    def __init__(self,P=None,communities_sizes=None,min_=1,max_=10,dims=2,weight_variance=1,att_variance=1,\
+    def __init__(self,P=None,communities_sizes=None,min_=1,max_=10,\
+                    dims=2,\
+                    weight_variance=1,att_variance=1,\
                     attributes_distribution = "gaussian",\
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
                     radius=None,return_G=False,\
-                        att_centers = None):
+                    att_centers = None, weight_centers = None):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle
         self.att_centers=att_centers
+        ## weight_centers must have shape K x K, where K is the number
+        #  of communities
+        # If not specified, then the weights are taken from linspace between [min_, max_]
+        self.weight_centers=weight_centers
         self.probability_matrix=P
         self.communities_sizes=communities_sizes
         ## min and max specifies the range of the weight distribution means in 1D
@@ -56,8 +62,12 @@ class BregmanBenchmark():
         else:
             G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
         ## Draw the means of the weight distributions for each pair of community interaction
-        means = np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
-        params = self.get_w_params(means,self.weight_variance,self.n_clusters)
+        w_centers = None
+        if self.weight_centers is not None:
+            w_centers = self.weight_centers.flatten()
+        else:
+            w_centers = np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
+        params = self.get_w_params(w_centers,self.weight_variance,self.n_clusters)
         # ## get weights
         for e in G.edges:
             i,j = e
@@ -85,11 +95,11 @@ class BregmanBenchmark():
             elif self.dims > centers.shape[1]:
                 centers = np.hstack([centers,np.zeros((centers.shape[0],self.dims - centers.shape[1]))])
         N = np.sum(self.communities_sizes)
-        Y = np.zeros((N,self.n_clusters))
+        Y = np.zeros((N,centers.shape[1]))
         cumsum = np.cumsum(self.communities_sizes)
         cumsum = np.insert(cumsum,0,0)
         for q,clus_len in enumerate(self.communities_sizes):
-            for l in range(len(centers[0])):
+            for l in range(centers.shape[1]):
                 p = self.get_att_param(centers[q][l],self.att_variance)
                 Y[cumsum[q]:cumsum[q+1],l] = self.att_distribution(*p,size=clus_len)
         return Y
@@ -312,7 +322,6 @@ class BregmanBenchmark():
                  a_range=[ 5,7,9,11,13,15 ],\
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
-                 file_endings=".jpeg",\
                  plot_3d=False,\
                  binary=False):
         self.communities_sizes = cluster_sizes
@@ -339,8 +348,7 @@ class BregmanBenchmark():
             aris_both = [ ]
             aris_oracle = [ ]
 
-            total = 0
-            for trial in range( n_average ):
+            for _ in range( n_average ):
                 ( X, Y, z_true, G) = benchmark_instance() 
                     
                 A = (X != 0).astype(int)
@@ -377,8 +385,8 @@ class BregmanBenchmark():
        
         x = a_range
         y = r_range
-        z = np.array(stats['ARI']).reshape(len(x),len(y)).T
+        z = np.array(stats['ARI']).reshape((len(x),len(y))).T
         print(z)
-        z2 = np.array(stats['ARI_ORACLE']).reshape(len(x),len(y)).T
+        z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
         make_contour_plot(x,y,z,filename="contour_plot_AIC.jpeg",plot_3d=plot_3d)
         make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
