@@ -385,6 +385,9 @@ class BregmanBenchmark():
        
         x = a_range
         y = r_range
+        if plot_3d:
+            x = stats["a"]
+            y = stats["r"] 
         z = np.array(stats['ARI']).reshape((len(x),len(y))).T
         print(z)
         z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
