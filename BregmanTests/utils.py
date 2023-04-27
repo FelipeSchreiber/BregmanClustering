@@ -25,7 +25,7 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         ax.contour(x, y, z, zdir='y', offset=-1, cmap='coolwarm')
 
         #xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
-        ax.set(xlim=(0, 20), ylim=(0, 20), zlim=(0, 2),xlabel='a', ylabel='r', zlabel='ARI')
+        ax.set(xlim=(-1, 20), ylim=(-1, 20), zlim=(-1, 2),xlabel='a', ylabel='r', zlabel='ARI')
     else:
         contours = plt.contour(x, y, z)
         # Display z values on contour lines
@@ -62,6 +62,7 @@ def plotting( x, curves, labels, xticks,
     plt.title( figTitle, fontsize = SIZE_TITLE )
     if saveFig:
         plt.savefig( fileName, format = 'jpeg', bbox_inches = 'tight' )
+    plt.show()
 
 def get_spectral_decomposition(A,k):
     if (A<0).any():
