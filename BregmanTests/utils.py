@@ -20,15 +20,18 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         ax.plot_surface(X, Y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
                         alpha=0.3)
 
+        x_min, x_max = np.min(x), np.max(x)
+        y_min, y_max = np.min(y), np.max(y)
+        z_min, z_max = np.min(z), np.max(z)
         # Plot projections of the contours for each dimension.  By choosing offsets
         # that match the appropriate axes limits, the projected contours will sit on
         # the 'walls' of the graph.
-        ax.contour(x, y, z, zdir='z', offset=0, cmap='coolwarm')
-        ax.contour(x, y, z, zdir='x', offset=0, cmap='coolwarm')
-        ax.contour(x, y, z, zdir='y', offset=0, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='z', offset=z_min-1, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='x', offset=x_min-1, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='y', offset=y_min-1, cmap='coolwarm')
 
         #xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
-        ax.set(xlabel='a', ylabel='r', zlabel='ARI')
+        ax.set(xlim=(x_min -1, x_max), ylim=(y_min-1, y_max), zlim=(z_min-1,z_max),xlabel='a', ylabel='r', zlabel='ARI')
     else:
         contours = plt.contour(x, y, z)
         # Display z values on contour lines
