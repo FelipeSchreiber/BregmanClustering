@@ -1,5 +1,6 @@
 from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
+import numpy as np
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.manifold import SpectralEmbedding
@@ -13,16 +14,18 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
     # Create contour lines or level curves using matplotlib.pyplot module
     if plot_3d:
     # Plot the 3D surface
+        X,Y = np.meshgrid(x,y)
+
         ax = plt.figure().add_subplot(projection='3d')
-        ax.plot_surface(x, y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
+        ax.plot_surface(X, Y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
                         alpha=0.3)
 
         # Plot projections of the contours for each dimension.  By choosing offsets
         # that match the appropriate axes limits, the projected contours will sit on
         # the 'walls' of the graph.
-        ax.contour(x, y, z, zdir='z', cmap='coolwarm')
-        ax.contour(x, y, z, zdir='x', cmap='coolwarm')
-        ax.contour(x, y, z, zdir='y', cmap='coolwarm')
+        ax.contour(x, y, z, zdir='z', offset=0, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='x', offset=0, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='y', offset=0, cmap='coolwarm')
 
         #xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
         ax.set(xlabel='a', ylabel='r', zlabel='ARI')
