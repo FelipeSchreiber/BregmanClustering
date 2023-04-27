@@ -14,10 +14,10 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
     # Create contour lines or level curves using matplotlib.pyplot module
     if plot_3d:
     # Plot the 3D surface
-        X,Y = np.meshgrid(x,y)
+        x,y = np.meshgrid(x,y)
 
         ax = plt.figure().add_subplot(projection='3d')
-        ax.plot_surface(X, Y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
+        ax.plot_surface(x, y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
                         alpha=0.3)
 
         x_min, x_max = np.min(x), np.max(x)
