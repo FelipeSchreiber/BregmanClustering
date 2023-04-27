@@ -20,9 +20,9 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         # Plot projections of the contours for each dimension.  By choosing offsets
         # that match the appropriate axes limits, the projected contours will sit on
         # the 'walls' of the graph.
-        ax.contour(x, y, z, zdir='z', offset=0, cmap='coolwarm')
-        ax.contour(x, y, z, zdir='x', offset=0, cmap='coolwarm')
-        ax.contour(x, y, z, zdir='y', offset=0, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='z', offset=-1, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='x', offset=-1, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='y', offset=-1, cmap='coolwarm')
 
         #xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
         ax.set(xlim=(-1, 20), ylim=(-1, 20), zlim=(-1, 2),xlabel='a', ylabel='r', zlabel='ARI')
