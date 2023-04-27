@@ -34,6 +34,7 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         ax.set(xlim=(x_min, x_max), ylim=(y_min, y_max), zlim=(z_min,z_max),\
                xlabel='a', ylabel='r', zlabel='ARI')
     else:
+        x,y = np.meshgrid(x,y)
         contours = plt.contour(x, y, z)
         # Display z values on contour lines
         plt.clabel(contours, inline=1, fontsize=10)
