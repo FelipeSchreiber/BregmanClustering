@@ -31,7 +31,8 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         ax.contour(x, y, z, zdir='y', offset=y_min-1, cmap='coolwarm')
 
         #xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
-        ax.set(xlim=(x_min -1, x_max), ylim=(y_min-1, y_max), zlim=(z_min-1,z_max),xlabel='a', ylabel='r', zlabel='ARI')
+        ax.set(xlim=(x_min -1, x_max), ylim=(y_min-1, y_max), zlim=(z_min-1,z_max),\
+               xlabel='a', ylabel='r', zlabel='ARI')
     else:
         contours = plt.contour(x, y, z)
         # Display z values on contour lines
