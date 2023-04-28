@@ -456,6 +456,7 @@ class BregmanBenchmark():
             
             ##restore centers to original K x 1 shape
             self.att_centers = arr
+            print("----",arr,d,mu)
             ## gather stats
             stats["d"].append(d)
             stats["mu"].append(mu)
