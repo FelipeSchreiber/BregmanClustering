@@ -58,7 +58,8 @@ class BregmanBenchmark():
         ## Generate binary connectivity matrix
         G = None
         if complete_graph:
-            G = nx.complete_graph(N)
+            G = nx.stochastic_block_model(self.communities_sizes,np.ones(shape=(self.n_clusters,self.n_clusters)),seed=42)
+            #G = nx.complete_graph(N)
         else:
             G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
         ## Draw the means of the weight distributions for each pair of community interaction
