@@ -471,3 +471,81 @@ class BregmanBenchmark():
         x,y = np.meshgrid(x,y)
         make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_AIC.jpeg",plot_3d=False)
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
+    
+def run_2_3(self,n_average=10,cluster_sizes=100,\
+                 d_range=[ 0,1,2,3,4,5 ],\
+                 mu_range = [ 0,1,2,3,4,5 ],\
+                 dense=True,\
+                 binary=False):
+        
+        self.communities_sizes = cluster_sizes
+        benchmark_instance = None
+        if dense:
+            benchmark_instance = self.generate_benchmark_dense
+        else:
+            benchmark_instance = self.generate_benchmark_joint
+
+        n = np.sum(cluster_sizes)
+        n_clusters = len(cluster_sizes)
+        self.n_clusters = n_clusters
+        stats = {"d":[],"mu":[],"ARI":[]}
+        #,"ARI_ORACLE":[]
+        aris_both_mean = [ ]
+        aris_both_std = [ ]
+        #aris_oracle_mean = [ ]
+        #aris_oracle_std = [ ]
+        for d,mu in tqdm(product(d_range,mu_range)):
+            aris_both = [ ]
+            #aris_oracle = [ ]
+            self.dims=d
+            ### HERE ATT_CENTERS IS K x 1
+            arr = self.att_centers.reshape(-1,1)
+            self.att_centers = np.repeat(arr,d,axis=1)
+            self.weight_centers = np.eye(self.n_clusters)*mu
+            for _ in range( n_average ):
+                ( X, Y, z_true, G) = benchmark_instance() 
+                    
+                A = (X != 0).astype(int)
+                if binary:
+                    X = A
+                model = edgeBreg(n_clusters=n_clusters,\
+                                    attributeDistribution=self.attributes_distribution_name,\
+                                    edgeDistribution=self.edge_distribution_name,\
+                                    weightDistribution=self.weight_distribution_name
+                                    )
+                z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
+                chernoff_graph_labels = model.memberships_from_graph
+                chernoff_att_labels = model.memberships_from_attributes
+                aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
+                """
+                if model.AIC_initializer(X,Y).graph_init:
+                    z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
+                    ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
+                    aris_oracle.append( max(aris_both[-1], ari_att_init))
+                else:
+                    z_pred_graph_init =  model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
+                    ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
+                    aris_oracle.append( max(aris_both[-1], ari_graph_init))
+                """     
+                aris_both_mean.append( np.mean( aris_both ) )
+                #aris_oracle_mean.append( np.mean( aris_oracle) )
+                aris_both_std.append( np.std( aris_both ) )
+                #aris_oracle_std.append( np.std( aris_oracle) )
+            
+            ##restore centers to original K x 1 shape
+            self.att_centers = arr
+            print("----",arr,d,mu)
+            ## gather stats
+            stats["d"].append(d)
+            stats["mu"].append(mu)
+            stats["ARI"].append(aris_both_mean[-1])
+            #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
+       
+        x = d_range
+        y = mu_range
+        z = np.array(stats['ARI']).reshape((len(x),len(y))).T
+        #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
+        #print(z)
+        x,y = np.meshgrid(x,y)
+        make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_AIC.jpeg",plot_3d=False)
+        #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
