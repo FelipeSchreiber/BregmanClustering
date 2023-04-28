@@ -31,7 +31,7 @@ class BregmanBenchmark():
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle
         self.att_centers=att_centers
-        ## weight_centers must have shape K x K, where K is the number
+        ## weight_centers must have shape K(K+1)/2, where K is the number
         #  of communities
         # If not specified, then the weights are taken from linspace between [min_, max_]
         self.weight_centers=weight_centers
@@ -335,16 +335,84 @@ class BregmanBenchmark():
         n_clusters = len(cluster_sizes)
         self.n_clusters = n_clusters
         pout = b * np.log( n ) / n
-        stats = {"a":[],"r":[],"ARI":[],"ARI_ORACLE":[]}
+        stats = {"a":[],"r":[],"ARI":[]}
+        #,"ARI_ORACLE":[]
         aris_both_mean = [ ]
         aris_both_std = [ ]
-        aris_oracle_mean = [ ]
-        aris_oracle_std = [ ]
+        #aris_oracle_mean = [ ]
+        #aris_oracle_std = [ ]
         for a,r in product(a_range,r_range):
             pin = a * np.log( n ) / n
             p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
             self.probability_matrix = p
             self.radius = r
+            aris_both = [ ]
+            #aris_oracle = [ ]
+
+            for _ in range( n_average ):
+                ( X, Y, z_true, G) = benchmark_instance() 
+                    
+                A = (X != 0).astype(int)
+                if binary:
+                    X = A
+                model = edgeBreg(n_clusters=n_clusters,\
+                                    attributeDistribution=self.attributes_distribution_name,\
+                                    edgeDistribution=self.edge_distribution_name,\
+                                    weightDistribution=self.weight_distribution_name
+                                    )
+                z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
+                chernoff_graph_labels = model.memberships_from_graph
+                chernoff_att_labels = model.memberships_from_attributes
+                aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
+                """
+                if model.AIC_initializer(X,Y).graph_init:
+                    z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
+                    ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
+                    aris_oracle.append( max(aris_both[-1], ari_att_init))
+                else:
+                    z_pred_graph_init =  model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
+                    ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
+                    aris_oracle.append( max(aris_both[-1], ari_graph_init))
+                """     
+                aris_both_mean.append( np.mean( aris_both ) )
+                #aris_oracle_mean.append( np.mean( aris_oracle) )
+                aris_both_std.append( np.std( aris_both ) )
+                #aris_oracle_std.append( np.std( aris_oracle) )
+
+            stats["a"].append(a)
+            stats["r"].append(r)
+            stats["ARI"].append(aris_both_mean[-1])
+            #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
+       
+        x = a_range
+        y = r_range
+        z = np.array(stats['ARI']).reshape((len(x),len(y))).T
+        #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
+        #print(z)
+        make_contour_plot(x,y,z,filename="contour_plot_AIC.jpeg",plot_3d=plot_3d)
+        #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
+
+    def run_2_2(self,n_average=10,cluster_sizes=100,\
+                 d_range=[ 0,1,2,3,4,5 ],\
+                 mu_range = [ 0,1,2,3,4,5 ],\
+                 dense=True,\
+                 binary=False):
+        self.communities_sizes = cluster_sizes
+        benchmark_instance = None
+        if dense:
+            benchmark_instance = self.generate_benchmark_dense
+        else:
+            benchmark_instance = self.generate_benchmark_joint
+
+        n = np.sum(cluster_sizes)
+        n_clusters = len(cluster_sizes)
+        self.n_clusters = n_clusters
+        stats = {"a":[],"r":[],"ARI":[],"ARI_ORACLE":[]}
+        aris_both_mean = [ ]
+        aris_both_std = [ ]
+        aris_oracle_mean = [ ]
+        aris_oracle_std = [ ]
+        for d,mu in product(d_range,mu_range):
             aris_both = [ ]
             aris_oracle = [ ]
 
