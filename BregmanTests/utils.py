@@ -17,7 +17,6 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
     z_min, z_max = np.min(z), np.max(z)
     if plot_3d:
     # Plot the 3D surface
-        x,y = np.meshgrid(x,y)
 
         ax = plt.figure().add_subplot(projection='3d')
         ax.plot_surface(x, y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
@@ -34,14 +33,18 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         ax.set(xlim=(x_min, x_max), ylim=(y_min, y_max), zlim=(z_min,z_max),\
                xlabel='a', ylabel='r', zlabel='ARI')
     else:
-        x,y = np.meshgrid(x,y)
-        contours = plt.contourf(x, y, z,levels=10)
+        origin = 'lower'
+        fig1, ax = plt.subplots(layout='constrained')
+        CS = ax.contourf(x, y, z, cmap=plt.cm.bone,origin=origin)
         # Display z values on contour lines
-        plt.clabel(contours, inline=1, fontsize=10)
-        plt.xlabel("a")
-        plt.ylabel("r")
-        plt.ylim(y_min-1,y_max+1)
-        plt.xlim(x_min-1,x_max+1)
+        CS2 = ax.contour(CS, colors='r',origin=origin)
+        # Make a colorbar for the ContourSet returned by the contourf call.
+        cbar = fig1.colorbar(CS)
+        cbar.ax.set_ylabel('ARI')
+        # Add the contour line levels to the colorbar
+        cbar.add_lines(CS2)
+        ax.set_xlabel('a')
+        ax.set_ylabel('r')
     plt.savefig(filename)
     # Display the contour plot
     plt.show()

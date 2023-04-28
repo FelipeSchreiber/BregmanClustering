@@ -26,12 +26,10 @@ def get_poisson_parameter(mean,variance):
 def make_weight_params(f):
 	def get_parameters_for_every_community_pair(means,variance,n_clusters):
 		params = {}
-		curr = 0
 		for i in range(n_clusters):
 			params[i] = {}
-			for j in range(i,n_clusters):
-				params[i][j] = f(means[curr],variance)
-				curr += 1
+			for j in range(n_clusters):
+				params[i][j] = f(means[i,j],variance)
 		return params
 	return get_parameters_for_every_community_pair
 
