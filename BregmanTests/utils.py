@@ -1,5 +1,6 @@
 from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import numpy as np
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.pairwise import pairwise_kernels
@@ -9,6 +10,69 @@ SIZE_TITLE = 24
 SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
+
+def make_4d_plot(x,y,z,data,filename="contour.jpeg"):
+    kw = {
+        'vmin': data.min(),
+        'vmax': data.max(),
+        'levels': np.linspace(data.min(), data.max(), 10),
+    }
+
+    # Create a figure with 3D ax
+    fig = plt.figure(figsize=(5, 4))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Set limits of the plot from coord limits
+    xmin, xmax = X.min(), X.max()
+    ymin, ymax = Y.min(), Y.max()
+    zmin, zmax = Z.min(), Z.max()
+    ax.set(xlim=[xmin, xmax], ylim=[ymin, ymax], zlim=[zmin, zmax])
+
+    # Plot contour surfaces
+    _ = ax.contourf(
+        X[:, :, 0], Y[:, :, 0], data[:, :, 0],
+        zdir='z', offset=0, **kw
+    )
+    ### This is the top of the box
+
+    # _ = ax.contourf(
+    #     X[:, :, -1], Y[:, :, -1], data[:, :, -1],
+    #     zdir='z', offset=Z.max(), **kw
+    # )
+    _ = ax.contourf(
+        X[0, :, :], data[0, :, :], Z[0, :, :],
+        zdir='y', offset=0, **kw
+    )
+    C = ax.contourf(
+        data[:, 0, :], Y[:, 0, :], Z[:, 0, :],
+        zdir='x', offset=X.min(), **kw
+    )
+    # --
+
+    # Plot edges
+    edges_kw = dict(color='0.4', linewidth=1,zorder=-1e3)
+    ax.plot([xmax, xmax], [ymin, ymax], zmin, **edges_kw)
+    ax.plot([xmin, xmax], [ymin, ymin], zmin, **edges_kw)
+    ax.plot([xmin, xmax], [ymin, ymin], [zmin, zmax], **edges_kw)
+
+    # Set labels and zticks
+    ax.set(
+        xlabel='X [km]',
+        ylabel='Y [km]',
+        zlabel='Z [m]'
+    )
+
+    # Set zoom and angle view
+    ax.view_init(30, 45, 0)
+    ax.set_box_aspect(None, zoom=0.9)
+
+    # Colorbar
+    fig.colorbar(C, ax=ax, fraction=0.02, pad=0.1, label='ARI')
+
+    plt.savefig(filename)
+    # Show Figure
+    plt.show()
+
 
 def make_contour_plot(x,y,z,x_label="a",y_label="r",filename="contour.jpeg",plot_3d=False):
     # Create contour lines or level curves using matplotlib.pyplot module
