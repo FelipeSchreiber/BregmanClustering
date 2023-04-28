@@ -26,13 +26,15 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         # Plot projections of the contours for each dimension.  By choosing offsets
         # that match the appropriate axes limits, the projected contours will sit on
         # the 'walls' of the graph.
-        ax.contour(x, y, z, zdir='z', offset=z_min-1, cmap='coolwarm')
-        ax.contour(x, y, z, zdir='x', offset=x_min-1, cmap='coolwarm')
-        ax.contour(x, y, z, zdir='y', offset=y_min-1, cmap='coolwarm')
-        
-        ax.set(xlim=(x_min -1, x_max), ylim=(y_min-1, y_max), zlim=(z_min-1,z_max),\
+        ax.contour(x, y, z, zdir='z', offset=z_min, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='x', offset=x_min, cmap='coolwarm')
+        ax.contour(x, y, z, zdir='y', offset=y_min, cmap='coolwarm')
+
+        #xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
+        ax.set(xlim=(x_min, x_max), ylim=(y_min, y_max), zlim=(z_min,z_max),\
                xlabel='a', ylabel='r', zlabel='ARI')
     else:
+        x,y = np.meshgrid(x,y)
         contours = plt.contour(x, y, z)
         # Display z values on contour lines
         plt.clabel(contours, inline=1, fontsize=10)
