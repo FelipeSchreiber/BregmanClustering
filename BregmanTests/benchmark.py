@@ -317,7 +317,7 @@ class BregmanBenchmark():
                 plotting( r_range, curves, labels, curves_std = curves_std, xticks = r_range, xlabel = 'r', saveFig = saveFig, fileName = fileName )
                 plt.close()
     
-    def run_contour(self,n_average=10,cluster_sizes=100,\
+    def run_2_1(self,n_average=10,cluster_sizes=100,\
                  b=5,\
                  a_range=[ 5,7,9,11,13,15 ],\
                  r_range = [ 0,1,2,3,4,5 ],\
