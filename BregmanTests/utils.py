@@ -10,7 +10,7 @@ SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
 
-def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
+def make_contour_plot(x,y,z,x_label="a",y_label="r",filename="contour.jpeg",plot_3d=False):
     # Create contour lines or level curves using matplotlib.pyplot module
     x_min, x_max = np.min(x), np.max(x)
     y_min, y_max = np.min(y), np.max(y)
@@ -43,8 +43,8 @@ def make_contour_plot(x,y,z,filename="contour.jpeg",plot_3d=False):
         cbar.ax.set_ylabel('ARI')
         # Add the contour line levels to the colorbar
         cbar.add_lines(CS2)
-        ax.set_xlabel('a')
-        ax.set_ylabel('r')
+        ax.set_xlabel(x_label)
+        ax.set_ylabel(y_label)
     plt.savefig(filename)
     # Display the contour plot
     plt.show()

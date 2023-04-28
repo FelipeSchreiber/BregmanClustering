@@ -393,7 +393,7 @@ class BregmanBenchmark():
         #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
         #print(z)
         x,y = np.meshgrid(x,y)
-        make_contour_plot(x,y,z,filename="contour_plot_AIC.jpeg",plot_3d=plot_3d)
+        make_contour_plot(x,y,z,x_label="a",y_label="r",filename="contour_plot_AIC.jpeg",plot_3d=plot_3d)
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
 
     def run_2_2(self,n_average=10,cluster_sizes=100,\
@@ -412,7 +412,7 @@ class BregmanBenchmark():
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
         self.n_clusters = n_clusters
-        stats = {"a":[],"r":[],"ARI":[]}
+        stats = {"d":[],"mu":[],"ARI":[]}
         #,"ARI_ORACLE":[]
         aris_both_mean = [ ]
         aris_both_std = [ ]
@@ -421,9 +421,10 @@ class BregmanBenchmark():
         for d,mu in product(d_range,mu_range):
             aris_both = [ ]
             #aris_oracle = [ ]
+            ### HERE ATT_CENTERS IS K x 1
             arr = self.att_centers.reshape(-1,1)
             self.att_centers = np.repeat(arr,d,axis=1)
-
+            self.weight_centers = np.eye(self.n_clusters)*mu
             for _ in range( n_average ):
                 ( X, Y, z_true, G) = benchmark_instance() 
                     
@@ -454,16 +455,16 @@ class BregmanBenchmark():
                 aris_both_std.append( np.std( aris_both ) )
                 #aris_oracle_std.append( np.std( aris_oracle) )
 
-            stats["a"].append(a)
-            stats["r"].append(r)
+            stats["d"].append(d)
+            stats["mu"].append(mu)
             stats["ARI"].append(aris_both_mean[-1])
             #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
        
-        x = a_range
-        y = r_range
+        x = d_range
+        y = mu_range
         z = np.array(stats['ARI']).reshape((len(x),len(y))).T
         #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
         #print(z)
         x,y = np.meshgrid(x,y)
-        make_contour_plot(x,y,z,filename="contour_plot_AIC.jpeg",plot_3d=False)
+        make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_AIC.jpeg",plot_3d=False)
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
