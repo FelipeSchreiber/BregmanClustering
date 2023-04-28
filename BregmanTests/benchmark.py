@@ -62,10 +62,7 @@ class BregmanBenchmark():
         else:
             G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
         ## Draw the means of the weight distributions for each pair of community interaction
-        w_centers = None
-        if self.weight_centers is not None:
-            w_centers = self.weight_centers.flatten()
-        else: 
+        if self.weight_centers is None:
             self.weight_centers = np.zeros((self.n_clusters,self.n_clusters))
             self.weight_centers[np.triu_indices(self.n_clusters, k = 0)] = \
                 np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
@@ -454,7 +451,10 @@ class BregmanBenchmark():
                 #aris_oracle_mean.append( np.mean( aris_oracle) )
                 aris_both_std.append( np.std( aris_both ) )
                 #aris_oracle_std.append( np.std( aris_oracle) )
-
+            
+            ##restore centers to original K x 1 shape
+            self.att_centers = arr
+            ## gather stats
             stats["d"].append(d)
             stats["mu"].append(mu)
             stats["ARI"].append(aris_both_mean[-1])
