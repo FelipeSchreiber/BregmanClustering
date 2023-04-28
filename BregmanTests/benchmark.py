@@ -125,7 +125,7 @@ class BregmanBenchmark():
             for i in range(np.sum(self.communities_sizes)):
                 G.nodes[i]["attr"] = Y[i,:]
             return X,Y,labels_true,G
-        return X,Y,labels_true
+        return X,Y,labels_true,None
     
     def run_test(self,n_average=10,cluster_sizes=100,\
                  b=5,\
