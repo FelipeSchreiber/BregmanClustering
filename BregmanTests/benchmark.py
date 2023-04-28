@@ -419,6 +419,7 @@ class BregmanBenchmark():
         for d,mu in product(d_range,mu_range):
             aris_both = [ ]
             #aris_oracle = [ ]
+            self.dims=d
             ### HERE ATT_CENTERS IS K x 1
             arr = self.att_centers.reshape(-1,1)
             self.att_centers = np.repeat(arr,d,axis=1)
