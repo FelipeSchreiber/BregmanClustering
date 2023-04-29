@@ -360,6 +360,7 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
+                print(X.shape)
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
