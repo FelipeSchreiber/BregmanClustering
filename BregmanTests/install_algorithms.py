@@ -34,7 +34,11 @@ def main():
     print("Downloading packages from github...\n")
     #subprocess.call(["chmod","777",f"{bash_path}"])
     os.chmod(bash_path, 777)
-    subprocess.call([f"{bash_path}"])
+    if platform == "win32":
+        subprocess.call(["git","clone","https://github.com/glmbraun/CSBM/"])
+        subprocess.call(["git","clone","https://github.com/stanleyn/AttributedSBM.git"])
+    else:
+        subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm("./AttributedSBM/FitAttribute.R")
     print("Installing R packages...\n This step takes about 5 min...\n")
