@@ -49,7 +49,7 @@ def main():
     for pack in packnames:
             try:
                 rpack = importr(pack)
-            except RRuntimeError:
+            except Exception:
                 not_installed.append(pack)
                 pass
     packnames = tuple(not_installed)
