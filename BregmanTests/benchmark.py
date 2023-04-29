@@ -328,7 +328,7 @@ class BregmanBenchmark():
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
                  plot_3d=False,\
-                 binary=False):
+                 binary=True):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
@@ -362,9 +362,9 @@ class BregmanBenchmark():
                     X = A
                 X = X.reshape(n,n,1)
                 print(X.shape)
-                model = self.model_(n_clusters=n_clusters,\
-                                    attributeDistribution=self.attributes_distribution_name,\
-                                    edgeDistribution=self.edge_distribution_name,\
+                model = self.model_(n_clusters=n_clusters,
+                                    attributeDistribution=self.attributes_distribution_name,
+                                    edgeDistribution=self.edge_distribution_name,
                                     weightDistribution=self.weight_distribution_name
                                     )
                 z_pred_both = model.fit(A,X,Y).predict( X, Y )
