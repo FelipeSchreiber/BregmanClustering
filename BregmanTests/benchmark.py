@@ -57,7 +57,7 @@ class BregmanBenchmark():
             self.model_ = torchBreg
         else:
             self.model_ = edgeBreg
-
+            
     def generate_WSBM(self,complete_graph=False):
         N = np.sum(self.communities_sizes)
         ## Generate binary connectivity matrix
@@ -205,7 +205,7 @@ class BregmanBenchmark():
                     ( X, Y, z_true, G) = benchmark_instance() 
                     
                     A = (X != 0).astype(int)
-                    model = self.model_( n_clusters = n_clusters,\
+                    model = BregmanNodeAttributeGraphClustering( n_clusters = n_clusters,\
                                                                     attributeDistribution=self.attributes_distribution_name,\
                                                                     edgeDistribution=self.weight_distribution_name,\
                                                                     initializer="AIC")
@@ -241,7 +241,7 @@ class BregmanBenchmark():
                     #     model.fit(X, Y, chernoff_att_labels)
                     ### > end
 
-                    model2 = edgeBreg(n_clusters=n_clusters,\
+                    model2 = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
