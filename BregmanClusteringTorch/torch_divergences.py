@@ -46,6 +46,9 @@ dist_to_phi_dict = {
         'poisson': relative_entropy
     }
 
+def rbf_kernel(X,M):
+    return torch.exp(-torch.norm(X-M,dim=-1))
+
 """ 
 def kullbackLeibler_binaryMatrix( X, M ):
     essai = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M))
@@ -59,9 +62,6 @@ def phi_kl( a ):
 
 def phi_euclidean( a ):
     return torch.square(a)
-
-def rbf_kernel(X,M):
-    return torch.exp(-torch.norm(X-M,dim=-1))
 
 def dist_to_phi(dist):
     dist_to_phi_dict = {

@@ -532,7 +532,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
 
 class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_, 
+                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_distance, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
