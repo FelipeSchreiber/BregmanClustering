@@ -307,7 +307,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         L = torch.zeros( self.n_clusters )
         node_indices = torch.argwhere(self.edge_index[0] == node).flatten()
         for q in range( self.n_clusters ):
-            Ztilde = self.predicted_memberships.copy()
+            Ztilde = self.predicted_memberships
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             M = Ztilde @ self.graph_means @ Ztilde.T
