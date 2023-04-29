@@ -471,7 +471,7 @@ class BregmanBenchmark():
         make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_AIC.jpeg",plot_3d=False)
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
     
-def run_2_3(self,n_average=10,cluster_sizes=100,\
+    def run_2_3(self,n_average=10,cluster_sizes=100,\
                  d_range=[ 0,1,2,3,4,5 ],\
                  lambda_range = [ 0,1,2,3,4,5 ],\
                  a_range = [1,2,3],\
