@@ -3,6 +3,7 @@ import networkx as nx
 from BregmanTests.distributions import *
 from BregmanClustering.models import *
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as edgeBreg
+from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorch as torchBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 import subprocess
 from tqdm import tqdm
@@ -26,7 +27,7 @@ class BregmanBenchmark():
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
                     radius=None,return_G=False,\
-                    att_centers = None, weight_centers = None):
+                    att_centers = None, weight_centers = None, run_gpu=False):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle
@@ -52,7 +53,11 @@ class BregmanBenchmark():
         self.dims = dims
         self.radius=radius
         self.return_G = return_G
-    
+        if run_gpu:
+            self.model_ = torchBreg
+        else:
+            self.model_ = edgeBreg
+
     def generate_WSBM(self,complete_graph=False):
         N = np.sum(self.communities_sizes)
         ## Generate binary connectivity matrix
@@ -200,7 +205,7 @@ class BregmanBenchmark():
                     ( X, Y, z_true, G) = benchmark_instance() 
                     
                     A = (X != 0).astype(int)
-                    model = BregmanNodeAttributeGraphClustering( n_clusters = n_clusters,\
+                    model = self.model_( n_clusters = n_clusters,\
                                                                     attributeDistribution=self.attributes_distribution_name,\
                                                                     edgeDistribution=self.weight_distribution_name,\
                                                                     initializer="AIC")
@@ -355,7 +360,7 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
-                model = edgeBreg(n_clusters=n_clusters,\
+                model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
@@ -429,7 +434,7 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
-                model = edgeBreg(n_clusters=n_clusters,\
+                model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
@@ -514,7 +519,7 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
-                model = edgeBreg(n_clusters=n_clusters,\
+                model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
