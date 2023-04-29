@@ -467,7 +467,7 @@ class BregmanBenchmark():
         #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
         #print(z)
         x,y = np.meshgrid(x,y)
-        make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_2_3.jpeg",plot_3d=False)
+        make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_2_2.jpeg",plot_3d=False)
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
     
     def run_2_3(self,n_average=10,cluster_sizes=100,\
