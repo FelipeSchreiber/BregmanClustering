@@ -323,10 +323,16 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            graph_div = self.graph_divergence( A[node,:], M[node,:] )
-            edge_div = torch.sum( self.edge_divergence(X[node,self.edge_index[1][node_indices],:],\
-                                                 Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:]
-                                                ))
+            graph_div = self.reduce_by( 
+                                        self.graph_divergence( A[node,:], M[node,:] ),
+                                        dim=-1
+                                    )
+            edge_div = self.reduce_by( self.edge_divergence(
+                                                X[node,self.edge_index[1][node_indices],:],
+                                                Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:]
+                                                ),
+                                        dim=-1
+                                        )
             L[ q ] = att_div + 0.5*graph_div + edge_div
         return torch.argmin( L )
     

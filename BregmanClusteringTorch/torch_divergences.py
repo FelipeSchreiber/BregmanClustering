@@ -16,22 +16,22 @@ warnings.filterwarnings("ignore")
 
 #Bernoulli
 def logistic_loss(X,M):
-    total = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) ).sum()
+    total = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) )
     return total
 
 #Multinomial
 def KL_div(X,M):
-    total = torch.sum(kl_div(X.flatten(),M.flatten(),reduction="sum"))
+    total = kl_div(X,M)
     return total
 
 #Exponential
 def itakura_saito_loss(X,M):
-    total = torch.sum((X/M - torch.log(X/M) - 1))
+    total = (X/M - torch.log(X/M) - 1)
     return total
 
 #Poisson
 def relative_entropy(X,M):
-    total = torch.sum(X*torch.log(X/M) + M - X)
+    total = X*torch.log(X/M) + M - X
     return total
 
 #gaussian
