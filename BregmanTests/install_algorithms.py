@@ -1,6 +1,6 @@
 import subprocess
 import fileinput
-import rpy2
+from sys import platform
 import os
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
@@ -34,7 +34,8 @@ def main():
     print("Downloading packages from github...\n")
     #subprocess.call(["chmod","777",f"{bash_path}"])
     os.chmod(bash_path, 777)
-    #os.environ["R_HOME"] = r"C:\\Program Files\R\R-4.2.3"
+    if platform == "win32":
+        os.environ["R_HOME"] = r"C:\\Program Files\R\R-4.2.3"
     subprocess.call([f"{bash_path}"])
     modify_csbm("./CSBM/Python/functions.py")
     modify_att_sbm("./AttributedSBM/FitAttribute.R")
