@@ -555,5 +555,5 @@ def run_2_3(self,n_average=10,cluster_sizes=100,\
         #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
         #print(z)
         x,y,z = np.meshgrid(x, y, z)
-        make_4d_plot(x,y,z,x_label="d",y_label="lambda",z_label="a",filename="contour_plot_AIC.jpeg")
+        make_4d_plot(x,y,z,v,x_label="d",y_label="lambda",z_label="a",filename="contour_plot_AIC.jpeg")
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
