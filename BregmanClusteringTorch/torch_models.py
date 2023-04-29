@@ -239,7 +239,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        edges_means = torch.tensordot( weights, X, dims=[(2),(0)] )/(torch.sum(weights,dim=-1)[:,:,None])
+        edges_means = torch.tensordot( weights, X, dims=[(2,),(0,)] )/(torch.sum(weights,dim=-1)[:,:,None])
         return edges_means 
     
     def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
