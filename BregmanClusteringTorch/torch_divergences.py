@@ -21,7 +21,7 @@ def logistic_loss(X,M):
 
 #Multinomial
 def KL_div(X,M):
-    total = kl_div(X,M)
+    total = kl_div(X,M,reduction="none")
     return total
 
 #Exponential
