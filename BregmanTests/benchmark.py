@@ -476,7 +476,7 @@ def run_2_3(self,n_average=10,cluster_sizes=100,\
                  lambda_range = [ 0,1,2,3,4,5 ],\
                  a_range = [1,2,3],\
                  b = 5,\
-                 dense=True,\
+                 dense=False,\
                  binary=False):
         
         self.communities_sizes = cluster_sizes
