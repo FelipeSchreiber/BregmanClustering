@@ -51,6 +51,7 @@ def main():
                 rpack = importr(pack)
             except RRuntimeError:
                 not_installed.append(pack)
+                pass
     packnames = tuple(not_installed)
     if CRAN_repo is None:
         utils.chooseCRANmirror(ind=1)
