@@ -36,7 +36,7 @@ def relative_entropy(X,M):
 
 #gaussian
 def euclidean_distance(X,M):
-    return torch.linalg.norm(X-M)
+    return (X-M)**2
 
 dist_to_phi_dict = {
         'gaussian': euclidean_distance,
