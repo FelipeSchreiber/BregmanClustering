@@ -5,6 +5,7 @@ import os
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
+from rpy2.rinterface import RRuntimeError
 from .cfg import *
 if IGNORE_WARNINGS: 
     import warnings
@@ -44,6 +45,13 @@ def main():
     print("Installing R packages...\n This step takes about 5 min...\n")
     utils = importr("utils")
     packnames = ("igraph", "reticulate","mvtnorm")
+    not_installed = []
+    for pack in packnames:
+            try:
+                rpack = importr(pack)
+            except RRuntimeError:
+                not_installed.append(pack)
+    packnames = tuple(not_installed)
     if CRAN_repo is None:
         utils.chooseCRANmirror(ind=1)
         utils.install_packages(StrVector(packnames))
