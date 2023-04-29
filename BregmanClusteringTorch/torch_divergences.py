@@ -5,14 +5,48 @@ Created on Fri Feb 17 16:52:18 2023
 
 @author: maximilien, Felipe Schreiber Fernandes
 
-This code is taken from 
+This code is taken from power k means bregman
 
 """
 
 import torch
+from torch.nn.functional import kl_div
 import warnings
 warnings.filterwarnings("ignore")
 
+#Bernoulli
+def logistic_loss(X,M):
+    total = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) ).sum()
+    return total
+
+#Multinomial
+def KL_div(X,M):
+    total = torch.sum(kl_div(X.flatten(),M.flatten(),reduction="sum"))
+    return total
+
+#Exponential
+def itakura_saito_loss(X,M):
+    total = torch.sum((X/M - torch.log(X/M) - 1))
+    return total
+
+#Poisson
+def relative_entropy(X,M):
+    total = torch.sum(X*torch.log(X/M) + M - X)
+    return total
+
+#gaussian
+def euclidean_distance(X,M):
+    return torch.linalg.norm(X-M)
+
+dist_to_phi_dict = {
+        'gaussian': euclidean_distance,
+        'bernoulli': logistic_loss,
+        'multinomial':KL_div,
+        'exponential': itakura_saito_loss,
+        'poisson': relative_entropy
+    }
+
+""" 
 def kullbackLeibler_binaryMatrix( X, M ):
     essai = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M))
     return essai
@@ -37,7 +71,7 @@ def dist_to_phi(dist):
         'poisson': 'relative_entropy',
         'gamma': 'gamma'
     }
-    return dist_to_phi_dict[dist]
+    return dist_to_phi_dict[dist] """
 
 
 '''

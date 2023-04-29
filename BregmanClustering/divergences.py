@@ -11,10 +11,7 @@ https://github.com/juselara1/bregclus/blob/main/bregclus/divergences.py
 
 
 import numpy as np
-from sklearn.metrics import log_loss
-#from sklearn.metrics.pairwise import euclidean_distances
 from scipy.special import kl_div
-import functools
 import warnings
 warnings.filterwarnings("ignore")
 
