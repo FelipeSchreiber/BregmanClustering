@@ -360,13 +360,14 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
+                X = X.reshape(n,n,1)
                 print(X.shape)
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
-                z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
+                z_pred_both = model.fit(A,X,Y).predict( X, Y )
                 #chernoff_graph_labels = model.memberships_from_graph
                 #chernoff_att_labels = model.memberships_from_attributes
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
@@ -435,12 +436,13 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
+                X = X.reshape(n,n,1)
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
-                z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
+                z_pred_both = model.fit(A,X,Y).predict( X, Y )
                 #chernoff_graph_labels = model.memberships_from_graph
                 #chernoff_att_labels = model.memberships_from_attributes
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
@@ -520,12 +522,13 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
+                X = X.reshape(n,n,1)
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
-                z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
+                z_pred_both = model.fit(A,X,Y).predict( X, Y )
                 #chernoff_graph_labels = model.memberships_from_graph
                 #chernoff_att_labels = model.memberships_from_attributes
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
