@@ -123,6 +123,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         convergence = True
         iteration = 0
         while convergence:
+            print(self.predicted_memberships.dtype)
             new_memberships = self.assignments( A, X, Y )
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
