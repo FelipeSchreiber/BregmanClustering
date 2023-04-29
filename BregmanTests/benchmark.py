@@ -366,8 +366,8 @@ class BregmanBenchmark():
                                     weightDistribution=self.weight_distribution_name
                                     )
                 z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
-                chernoff_graph_labels = model.memberships_from_graph
-                chernoff_att_labels = model.memberships_from_attributes
+                #chernoff_graph_labels = model.memberships_from_graph
+                #chernoff_att_labels = model.memberships_from_attributes
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 """
                 if model.AIC_initializer(X,Y).graph_init:
@@ -440,8 +440,8 @@ class BregmanBenchmark():
                                     weightDistribution=self.weight_distribution_name
                                     )
                 z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
-                chernoff_graph_labels = model.memberships_from_graph
-                chernoff_att_labels = model.memberships_from_attributes
+                #chernoff_graph_labels = model.memberships_from_graph
+                #chernoff_att_labels = model.memberships_from_attributes
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 """
                 if model.AIC_initializer(X,Y).graph_init:
@@ -525,8 +525,8 @@ class BregmanBenchmark():
                                     weightDistribution=self.weight_distribution_name
                                     )
                 z_pred_both = model.fit(A,X.reshape(n,n,1),Y).predict( X, Y )
-                chernoff_graph_labels = model.memberships_from_graph
-                chernoff_att_labels = model.memberships_from_attributes
+                #chernoff_graph_labels = model.memberships_from_graph
+                #chernoff_att_labels = model.memberships_from_attributes
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 """
                 if model.AIC_initializer(X,Y).graph_init:
