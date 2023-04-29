@@ -59,7 +59,6 @@ class BregmanBenchmark():
         G = None
         if complete_graph:
             G = nx.stochastic_block_model(self.communities_sizes,np.ones(shape=(self.n_clusters,self.n_clusters)),seed=42)
-            #G = nx.complete_graph(N)
         else:
             G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
         ## Draw the means of the weight distributions for each pair of community interaction
@@ -476,6 +475,7 @@ def run_2_3(self,n_average=10,cluster_sizes=100,\
                  d_range=[ 0,1,2,3,4,5 ],\
                  lambda_range = [ 0,1,2,3,4,5 ],\
                  a_range = [1,2,3],\
+                 b = 5,\
                  dense=True,\
                  binary=False):
         
@@ -489,20 +489,26 @@ def run_2_3(self,n_average=10,cluster_sizes=100,\
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
         self.n_clusters = n_clusters
-        stats = {"d":[],"mu":[],"ARI":[]}
+        stats = {"d":[],"lambda":[],"a":[],"ARI":[]}
         #,"ARI_ORACLE":[]
         aris_both_mean = [ ]
         aris_both_std = [ ]
         #aris_oracle_mean = [ ]
         #aris_oracle_std = [ ]
-        for d,mu in tqdm(product(d_range,mu_range)):
+        pout = b * np.log( n ) / n
+        for d,l,a in tqdm(product(d_range,lambda_range,a_range)):
             aris_both = [ ]
             #aris_oracle = [ ]
             self.dims=d
             ### HERE ATT_CENTERS IS K x 1
             arr = self.att_centers.reshape(-1,1)
             self.att_centers = np.repeat(arr,d,axis=1)
-            self.weight_centers = np.eye(self.n_clusters)*mu
+            self.weight_centers = np.eye(self.n_clusters)
+            self.weight_centers[self.weight_centers == 0] = 1/l
+            
+            pin = a * np.log( n ) / n
+            p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
+            self.probability_matrix = p
             for _ in range( n_average ):
                 ( X, Y, z_true, G) = benchmark_instance() 
                     
@@ -535,18 +541,19 @@ def run_2_3(self,n_average=10,cluster_sizes=100,\
             
             ##restore centers to original K x 1 shape
             self.att_centers = arr
-            print("----",arr,d,mu)
             ## gather stats
             stats["d"].append(d)
-            stats["mu"].append(mu)
+            stats["lambda"].append(l)
+            stats["a"].append(a)
             stats["ARI"].append(aris_both_mean[-1])
             #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
        
         x = d_range
-        y = mu_range
-        z = np.array(stats['ARI']).reshape((len(x),len(y))).T
+        y = lambda_range
+        z = a_range
+        v = np.array(stats['ARI']).reshape((len(x),len(y),len(z)))
         #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
         #print(z)
         x,y,z = np.meshgrid(x, y, z)
-        make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_AIC.jpeg",plot_3d=False)
+        make_4d_plot(x,y,z,x_label="d",y_label="lambda",z_label="a",filename="contour_plot_AIC.jpeg")
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)

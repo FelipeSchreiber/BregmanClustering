@@ -11,11 +11,10 @@ SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
 
-def make_4d_plot(x,y,z,data,filename="contour.jpeg"):
+def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="contour.jpeg"):
     kw = {
         'vmin': data.min(),
-        'vmax': data.max(),
-        'levels': np.linspace(data.min(), data.max(), 10),
+        'vmax': data.max()
     }
 
     # Create a figure with 3D ax
@@ -57,9 +56,9 @@ def make_4d_plot(x,y,z,data,filename="contour.jpeg"):
 
     # Set labels and zticks
     ax.set(
-        xlabel='X [km]',
-        ylabel='Y [km]',
-        zlabel='Z [m]'
+        xlabel=x_label,
+        ylabel=y_label,
+        zlabel=z_label
     )
 
     # Set zoom and angle view
