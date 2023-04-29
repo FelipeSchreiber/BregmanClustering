@@ -5,7 +5,7 @@ import os
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
-from rpy2.rinterface import RRuntimeError
+from rpy2.rinterface_lib.embedded import RRuntimeError
 from .cfg import *
 if IGNORE_WARNINGS: 
     import warnings
