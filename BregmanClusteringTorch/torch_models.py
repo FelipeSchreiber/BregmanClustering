@@ -114,7 +114,6 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = torch.tensor(Z_init).type(dtype)
         #init_labels = self.predicted_memberships
         
-        self.edge_index = torch.nonzero(A).to(device)
         if platform == "win32":
             self.predicted_memberships.to(device)
             A = torch.tensor(A).type(dtype)
@@ -124,7 +123,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             Y = torch.tensor(Y).type(dtype)
             Y.to(device)
             
-            print(self.predicted_memberships.dtype,Y.dtype)
+            self.edge_index = torch.nonzero(A).to(device)
             self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
             self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
@@ -134,6 +133,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             A = torch.tensor(A).type(dtype)
             X = torch.tensor(X).type(dtype)
             Y = torch.tensor(Y).type(dtype)
+            self.edge_index = torch.nonzero(A).to(device)
             self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships).to(device)
             self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships).to(device)
