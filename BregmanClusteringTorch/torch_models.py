@@ -267,6 +267,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
                                         self.graph_divergence( A[node,:], M[node,:] ),
                                         dim=-1
                                     )
+            print(Ztilde[self.edge_index[1][node_indices],:].shape,E[q,:,:].shape)
             edge_div = self.reduce_by( self.edge_divergence(
                                                 X[node,self.edge_index[1][node_indices],:],
                                                 Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:]
