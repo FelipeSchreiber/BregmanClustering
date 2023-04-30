@@ -1019,8 +1019,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         desired output:
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
-        weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
-        X = X[self.edge_index[0],self.edge_index[1],:]
+        weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[:,0],self.edge_index[:,1]]
+        X = X[self.edge_index[:,0],self.edge_index[:,1],:]
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
@@ -1088,7 +1088,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def singleNodeAssignment( self, A, X, H, node ):
         L = np.zeros( self.n_clusters )
-        node_indices = np.argwhere(self.edge_index[0] == node).flatten()
+        node_indices = np.argwhere(self.edge_index[:,0] == node).flatten()
         for q in range( self.n_clusters ):
             Ztilde = self.predicted_memberships.copy()
             Ztilde[ node, : ] = 0
@@ -1107,8 +1107,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             """
             att_div = H[node,q]
             graph_div = self.graph_divergence( A[node,:], M[node,:] )
-            edge_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
-                                                 Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:],\
+            edge_div = np.sum( paired_distances(X[node,self.edge_index[:,1][node_indices],:],\
+                                                 Ztilde[self.edge_index[:,1][node_indices],:]@E[q,:,:],\
                                                 metric=self.edge_divergence))
             #print(edge_div)
             L[ q ] = att_div + 0.5*graph_div + edge_div
