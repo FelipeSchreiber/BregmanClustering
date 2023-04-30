@@ -113,6 +113,8 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         else:
             self.predicted_memberships = torch.tensor(Z_init).type(dtype)
         #init_labels = self.predicted_memberships
+        
+        self.edge_index = torch.nonzero(A).to(device)
         if platform == "win32":
             self.predicted_memberships.to(device)
             A = torch.tensor(A).type(dtype)
@@ -138,9 +140,6 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             new_memberships = self.assignments( A, X, Y ).to(device)
         #print(self.attribute_means.device)
         #X = X.to_sparse()
-        self.edge_index = torch.nonzero(A).to(device)
-
-
         convergence = True
         iteration = 0
         while convergence:
