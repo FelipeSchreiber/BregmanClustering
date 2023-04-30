@@ -243,7 +243,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         return normalisation @ Z.T @ A @ Z @ normalisation
     
     def computeEdgeMeans( self, X, Z ):
-        weights = torch.tensordot(Z, Z, dims=((), ()))
+        weights = torch.tensordot(Z, Z, dims=((), ())).to(device)
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
         desired output:
