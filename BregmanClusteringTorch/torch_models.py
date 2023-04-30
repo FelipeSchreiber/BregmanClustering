@@ -292,9 +292,10 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
     def assignments( self, A, X, Y ):
         z = torch.zeros( (Y.shape[ 0 ],self.n_clusters))
         #H = self.attribute_divergence( Y, self.attribute_means )
-        H = self.attribute_divergence(Y[:,None],
-                            self.attribute_means[None,:])
-        print(H.shape)
+        H = self.reduce_by(
+                    self.attribute_divergence(Y[:,None], self.attribute_means[None,:]),
+                    dim=-1
+        )
         for node in range( z.shape[0] ):
             k = self.singleNodeAssignment( A, X, H, node )
             z[node,k]=1
