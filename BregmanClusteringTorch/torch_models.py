@@ -290,7 +290,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         return total 
     
     def assignments( self, A, X, Y ):
-        z = torch.zeros( (Y.shape[ 0 ],self.n_clusters))
+        z = torch.zeros( (Y.shape[ 0 ],self.n_clusters)).to(device)
         #H = self.attribute_divergence( Y, self.attribute_means )
         H = self.reduce_by(
                     self.attribute_divergence(Y[:,None], self.attribute_means[None,:]),
