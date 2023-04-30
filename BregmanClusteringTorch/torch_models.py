@@ -18,7 +18,8 @@ device = "cpu"
 dtype = torch.FloatTensor
 if platform == "win32":
     import torch_directml
-    device = torch_directml.device()
+    #device = torch_directml.device()
+    device = torch_directml.device(torch_directml.default_device())
 elif torch.cuda.is_available():
     dtype = torch.cuda.FloatTensor
     device = "cuda"
