@@ -123,7 +123,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             Y = torch.tensor(Y).type(dtype)
             Y.to(device)
             
-            self.edge_index = torch.nonzero(A).to(device)
+            self.edge_index = torch.nonzero(A).to("cpu")
             self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
             self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
@@ -243,7 +243,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         return normalisation @ Z.T @ A @ Z @ normalisation
     
     def computeEdgeMeans( self, X, Z ):
-        weights = torch.tensordot(Z, Z, dims=((), ())).to(device)
+        weights = torch.tensordot(Z, Z, dims=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
         desired output:
