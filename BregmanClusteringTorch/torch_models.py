@@ -106,7 +106,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         self.N = Y.shape[0]
         self.row_indices = torch.arange(self.N).to(device)
         if Z_init is None:
-            model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters)
+            model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters,initializer="AIC")
             model.initialize( A, Y )
             model.assignInitialLabels( A, Y )  
             self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
