@@ -115,7 +115,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         #init_labels = self.predicted_memberships
            
         if platform == "win32":
-            self.predicted_memberships.to(device)
+            self.predicted_memberships = self.predicted_memberships.to(device)
             A = torch.tensor(A).type(dtype).to(device)
             X = torch.tensor(X).type(dtype).to(device)
             Y = torch.tensor(Y).type(dtype).to(device)
