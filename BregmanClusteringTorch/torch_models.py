@@ -159,7 +159,9 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         if platform =="win32":
             D = torch.diag(Z.sum(dim=0))
             W = Z@torch.linalg.inv(D)
-            return W.T@A@W
+            B = W.T@A@W
+            print(B)
+            return B
         normalisation = torch.linalg.pinv(Z.T@Z)
         return normalisation @ Z.T @ A @ Z @ normalisation
     
