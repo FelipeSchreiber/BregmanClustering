@@ -113,7 +113,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         else:
             self.predicted_memberships = torch.tensor(Z_init).type(dtype)
         #init_labels = self.predicted_memberships
-           
+        """            
         if platform == "win32":
             self.predicted_memberships = self.predicted_memberships.to(device)
             A = torch.tensor(A,dtype=torch.float32).to(device)
@@ -123,6 +123,31 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             self.edge_index = torch.nonzero(A).to("cpu")
 
             print(self.predicted_memberships.dtype,Y.dtype) 
+            self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
+            self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
+            self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
+            new_memberships = self.assignments( A, X, Y ) 
+            
+        else:
+            A = torch.tensor(A).type(dtype)
+            X = torch.tensor(X).type(dtype)
+            Y = torch.tensor(Y).type(dtype)
+            self.edge_index = torch.nonzero(A).to(device)
+            self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
+            self.graph_means = self.computeGraphMeans(A,self.predicted_memberships).to(device)
+            self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships).to(device)
+            new_memberships = self.assignments( A, X, Y ).to(device)
+         """
+        if platform == "win32":
+            self.predicted_memberships.to(device)
+            A = torch.tensor(A).type(dtype)
+            A.to(device)
+            X = torch.tensor(X).type(dtype)
+            X.to(device)
+            Y = torch.tensor(Y).type(dtype)
+            Y.to(device)
+            
+            self.edge_index = torch.nonzero(A).to(device)
             self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
             self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
