@@ -122,6 +122,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             X.to(device)
             Y = torch.tensor(Y).type(dtype)
             Y.to(device)
+            print(device)
             print(self.predicted_memberships.device,A.device,Y.device,X.device)
             self.edge_index = torch.nonzero(A).to("cpu")
             self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
