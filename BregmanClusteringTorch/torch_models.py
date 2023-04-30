@@ -328,10 +328,9 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             edge_div = self.reduce_by( self.edge_divergence(
                                                 X[node,self.edge_index[1][node_indices],:],
                                                 Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:]
-                                                ),
-                                        dim=-1
+                                                )
                                         )
-            print(L.shape,att_div.shape,graph_div.shape,edge_div.shape)
+            #print(L.shape,att_div.shape,graph_div.shape,edge_div.shape)
             L[ q ] = att_div + 0.5*graph_div + edge_div
         return torch.argmin( L )
     
