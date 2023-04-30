@@ -36,7 +36,7 @@ def main():
     #subprocess.call(["chmod","777",f"{bash_path}"])
     if not os.path.isdir('CSBM'):
         os.chmod(bash_path, 777)
-        print("Accessing "+bash_path)
+        print("Accessing "+bash_path[0])
         if platform == "win32":
             subprocess.call(["git","clone","https://github.com/glmbraun/CSBM/"])
             subprocess.call(["git","clone","https://github.com/stanleyn/AttributedSBM.git"])
