@@ -235,7 +235,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
     
     def computeGraphMeans( self, A, Z ):
         M = (Z.T @ Z).type(dtype).to(device)
-        print(M.dtype,M.device,M) 
+        print(M.dtype,M.device,M.get_item()) 
         print(torch.linalg.matrix_rank(M))
         normalisation = torch.linalg.pinv(M)
         return normalisation @ Z.T @ A @ Z @ normalisation
