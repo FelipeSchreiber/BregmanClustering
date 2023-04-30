@@ -151,93 +151,16 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = new_memberships
         return self
     
-    def spectralEmbedding(self, X ):
-        if (X<0).any():
-            X = pairwise_kernels(X,metric='rbf')
-        U = SpectralEmbedding(n_components=self.n_clusters,\
-								affinity="precomputed")\
-								.fit_transform(X)
-        return U
-    
-    def initialize( self, X, Y ):
-        if self.attribute_initializer == 'GMM':
-            model = GaussianMixture(n_components=self.n_clusters)
-            model.fit( Y )
-            self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
-            self.attribute_model_init = model
-            #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
-        else:
-            raise TypeError( 'The initializer provided for the attributes is not correct' )
-            
-        if self.graph_initializer == 'spectralClustering':
-            U = self.spectralEmbedding(X)
-            model = GaussianMixture(n_components=self.n_clusters)
-            model.fit(U)
-            self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
-                                                                            n_clusters = self.n_clusters )
-            self.graph_model_init = model
-            #self.graph_means = self.computeGraphMeans(X,self.memberships_from_graph)
-        else:
-            raise TypeError( 'The initializer provided for the graph is not correct' )
-    
-    def AIC_initializer(self,X,Y):
-        U = self.spectralEmbedding(X)
-        net_null_model = GaussianMixture(n_components=1,).fit(U)
-        null_net = net_null_model.aic(U)
-        net_model = self.graph_model_init
-        fitted_net = net_model.aic(U)
-        AIC_graph = fitted_net - null_net
-
-        att_null_model = GaussianMixture(n_components=1).fit(Y)
-        null_attributes = att_null_model.aic(Y)
-        att_model = self.attribute_model_init
-        fitted_attributes = att_model.aic(Y)
-        AIC_attribute = fitted_attributes - null_attributes
-        
-        if AIC_graph < AIC_attribute:
-            self.predicted_memberships = self.memberships_from_graph
-            self.graph_init = True
-            #print( 'Initialisation chosen from the graph')
-        else:
-            self.predicted_memberships = self.memberships_from_attributes
-            self.graph_init = False
-            #print( 'Initialisation chosen from the attributes' )
-        return self
-
-    def chernoff_initializer(self,X,Y):
-        n = Y.shape[0]
-        if self.graphChernoffDivergence( X, self.memberships_from_graph ) > \
-                self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
-            self.predicted_memberships = self.memberships_from_graph
-            self.graph_init = True
-            #print( 'Initialisation chosen from the graph')
-        else:
-            self.predicted_memberships = self.memberships_from_attributes
-            self.graph_init = False
-            #print( 'Initialisation chosen from the attributes' )         
-        return self
-    
-    def assignInitialLabels( self, X, Y ):
-        if self.initializer == 'random':
-            z =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
-            self.predicted_memberships = fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
-        
-        elif self.initializer == "AIC":
-            self.AIC_initializer(X,Y)
-        
-        ## Chernoff divergence
-        elif self.initializer == "chernoff":
-            self.chernoff_initializer(X,Y)
-    
     def computeAttributeMeans( self, Y, Z ):
         attribute_means = (Z.T@Y)/(Z.sum(dim=0) + 10 * torch.finfo(Z.dtype).eps)[:, None]
         return attribute_means
     
     def computeGraphMeans( self, A, Z ):
-        M = (Z.T @ Z).type(dtype).to(device).inverse()
-        print(M.dtype,M.device,M) 
-        #print(torch.linalg.matrix_rank(M))
-        #normalisation = torch.linalg.pinv(M)
+        if platform =="win32":
+            D = torch.diag(Z.sum(dim=0))
+            W = Z@torch.linalg.inv(D)
+            return W.T@A@W
+        normalisation = torch.linalg.pinv(Z.T@Z)
         return normalisation @ Z.T @ A @ Z @ normalisation
     
     def computeEdgeMeans( self, X, Z ):
