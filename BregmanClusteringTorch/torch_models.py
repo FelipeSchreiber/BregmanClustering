@@ -157,7 +157,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
     
     def computeGraphMeans( self, A, Z ):
         if platform =="win32":
-            D = torch.diag(Z.sum(dim=0))
+            D = torch.diag(Z.sum(dim=0)).type(dtype)
             W = Z@torch.linalg.inv(D)
             B = W.T@A@W
             return B
