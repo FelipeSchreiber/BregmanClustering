@@ -160,7 +160,6 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             D = torch.diag(Z.sum(dim=0))
             W = Z@torch.linalg.inv(D)
             B = W.T@A@W
-            print(B)
             return B
         normalisation = torch.linalg.pinv(Z.T@Z)
         return normalisation @ Z.T @ A @ Z @ normalisation
