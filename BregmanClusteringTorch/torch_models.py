@@ -118,8 +118,8 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             A = torch.tensor(A).type(dtype).to(device)
             X = torch.tensor(X).type(dtype).to(device)
             Y = torch.tensor(Y).type(dtype).to(device)
-            print(self.predicted_memberships.device,A.device,X.device,Y.device)
-            print(self.predicted_memberships.dtype,A.dtype,X.dtype,Y.dtype)
+            #print(self.predicted_memberships.device,A.device,X.device,Y.device)
+            #print(self.predicted_memberships.dtype,A.dtype,X.dtype,Y.dtype)
             self.edge_index = torch.nonzero(A).to(device)
             self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
@@ -135,7 +135,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships).to(device)
             self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships).to(device)
             new_memberships = self.assignments( A, X, Y ).to(device)
-        print(new_memberships.device,self.attribute_means.device,self.graph_means.device,self.edge_means.device)
+        #print(new_memberships.device,self.attribute_means.device,self.graph_means.device,self.edge_means.device)
         convergence = True
         iteration = 0
         while convergence:
@@ -159,7 +159,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
     def computeGraphMeans( self, A, Z ):
         if platform =="win32":
             D = torch.diag(Z.sum(dim=0)).type(dtype)
-            W = Z@torch.linalg.inv(D)
+            W = Z@torch.linalg.pinv(D)
             B = W.T@A@W
             return B
         normalisation = torch.linalg.pinv(Z.T@Z)
@@ -267,7 +267,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
                                         self.graph_divergence( A[node,:], M[node,:] ),
                                         dim=-1
                                     )
-            print(Ztilde[self.edge_index[:,1][node_indices],:].shape,E[q,:,:].shape,node_indices)
+            #print(Ztilde[self.edge_index[:,1][node_indices],:].shape,E[q,:,:].shape,node_indices)
             edge_div = self.reduce_by( self.edge_divergence(
                                                 X[node,self.edge_index[:,1][node_indices],:],
                                                 Ztilde[self.edge_index[:,1][node_indices],:]@E[q,:,:]
