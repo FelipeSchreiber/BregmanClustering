@@ -118,6 +118,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             X = torch.tensor(X).to(device)
             Y = torch.tensor(Y).to(device)
             
+            print(self.predicted_memberships.device,Y.device)
             self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
             self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
@@ -131,7 +132,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships).to(device)
             self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships).to(device)
             new_memberships = self.assignments( A, X, Y ).to(device)
-        print(self.attribute_means.device)
+        #print(self.attribute_means.device)
         #X = X.to_sparse()
         self.edge_index = torch.nonzero(A).to(device)
 
