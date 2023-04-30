@@ -228,7 +228,8 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             self.chernoff_initializer(X,Y)
     
     def computeAttributeMeans( self, Y, Z ):
-        attribute_means = torch.mm(Z.T,Y)/(Z.sum(dim=0) + 10 * torch.finfo(Z.dtype).eps)[:, None]
+        ## + 10 * torch.finfo(Z.dtype).eps)[:, None]
+        attribute_means = torch.mm(Z.T,Y)/(Z.sum(dim=0))
         return attribute_means
     
     def computeGraphMeans( self, A, Z ):
