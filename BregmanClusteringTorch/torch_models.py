@@ -18,8 +18,8 @@ device = "cpu"
 dtype = torch.FloatTensor
 if platform == "win32":
     import torch_directml
-    device = torch_directml.device(torch_directml.default_device())
-    #device = torch_directml.device()
+    #device = torch_directml.device(torch_directml.default_device())
+    device = torch_directml.device()
 elif torch.cuda.is_available():
     dtype = torch.cuda.FloatTensor
     device = "cuda"
@@ -116,12 +116,9 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
            
         if platform == "win32":
             self.predicted_memberships = self.predicted_memberships.to(device)
-            A = torch.tensor(A).type(dtype)
-            A.to(device)
-            X = torch.tensor(X).type(dtype)
-            X.to(device)
-            Y = torch.tensor(Y).type(dtype)
-            Y.to(device)
+            A = torch.tensor(A).type(dtype).to(device)
+            X = torch.tensor(X).type(dtype).to(device)
+            Y = torch.tensor(Y).type(dtype).to(device)
             print(self.predicted_memberships.device,A.device,Y.device,X.device)
             self.edge_index = torch.nonzero(A).to(device)
              
