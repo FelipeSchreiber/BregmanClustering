@@ -121,21 +121,21 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             Y = torch.tensor(Y).type(dtype).to(device)
             print(self.predicted_memberships.device,A.device,Y.device,X.device)
             self.edge_index = torch.nonzero(A).to(device)
-            """ 
+             
             self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
             self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
             self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
             new_memberships = self.assignments( A, X, Y ) 
-            """
+            
         else:
             A = torch.tensor(A).type(dtype)
             X = torch.tensor(X).type(dtype)
             Y = torch.tensor(Y).type(dtype)
             self.edge_index = torch.nonzero(A).to(device)
-        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
-        self.graph_means = self.computeGraphMeans(A,self.predicted_memberships).to(device)
-        self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships).to(device)
-        new_memberships = self.assignments( A, X, Y ).to(device)
+            self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
+            self.graph_means = self.computeGraphMeans(A,self.predicted_memberships).to(device)
+            self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships).to(device)
+            new_memberships = self.assignments( A, X, Y ).to(device)
         print(new_memberships.device,self.attribute_means.device,self.graph_means.device,self.edge_means.device)
         convergence = True
         iteration = 0
