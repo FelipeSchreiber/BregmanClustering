@@ -625,4 +625,5 @@ class BregmanBenchmark():
             scores["ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
             scores["dataset"].append(data_name)
             z_pred_both = z_true = None
+            torch.cuda.empty_cache()
         return scores
