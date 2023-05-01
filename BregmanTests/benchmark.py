@@ -7,7 +7,8 @@ from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorch as to
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorchSparse as sparseBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 from torch_geometric.utils import to_networkx,to_dense_adj
-from torch_geometric.datasets import Planetoid,WebKB 
+from torch_geometric.datasets import Planetoid,WebKB
+import torch 
 import subprocess
 from tqdm import tqdm
 from .cfg import *
@@ -594,23 +595,29 @@ class BregmanBenchmark():
         scores["dataset"] = []
         scores["ARI"] = []
         for data,data_name in zip(datas,data_names):
-            attributes = data.x.numpy()
+            attributes = data.x
             z_true = data.y.numpy()
             K = np.unique(z_true).shape[0]
-            A = to_dense_adj(data.edge_index).numpy()[0]
+            """             A = to_dense_adj(data.edge_index).numpy()[0]
             n = A.shape[0]
             E = None
             if datas[0].edge_attr is None:
                 E = A.reshape(n,n,1)
             else:
-                E = datas[0].edge_attr.numpy()
+                E = datas[0].edge_attr.numpy() """
+            E = None
+            if datas[0].edge_attr is None:
+                E = torch.ones((data.edge_index.shape[1],1))
+            else:
+                E = data.edge_attr
             model = sparseBreg(n_clusters=K,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name,
                                     n_iters=2
                                     )
-            z_pred_both = model.fit(A,E,attributes).predict( A, attributes )
+            
+            z_pred_both = model.fit(data.edge_index,E,attributes).predict( E, attributes )
             scores["ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
             scores["dataset"].append(data_name)
         return scores
