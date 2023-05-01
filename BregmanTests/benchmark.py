@@ -592,7 +592,7 @@ class BregmanBenchmark():
         for data,data_name in zip(datas,data_names):
             attributes = data.x.numpy()
             z_true = data.y.numpy()
-            K = np.nunique(z_true)
+            K = np.unique(z_true).shape[0]
             A = to_dense_adj(data.edge_index).numpy()[0]
             n = A.shape[0]
             E = None
