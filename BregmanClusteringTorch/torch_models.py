@@ -411,7 +411,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     
     def computeGraphMeans( self, A, Z ):
         normalisation = torch.linalg.pinv(Z.T@Z)
-        M = Z.T@torch.sparse.mm(A,Z)
+        L = torch.sparse.mm(A,Z)
+        print(L.shape)
+        M = Z.T@L
         return normalisation @ M @ normalisation
     
     def computeEdgeMeans( self, X, Z ):
