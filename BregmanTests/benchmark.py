@@ -571,7 +571,7 @@ class BregmanBenchmark():
         #make_4d_plot(x,y,z,v,x_label="d",y_label="lambda",z_label="a",filename="contour_plot_2_3.jpeg")
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
     
-    def run_real_data(self):
+    def get_real_data(self):
         data_dir = "../../RealDataSets/"
         data_sets = ["Cora","CiteSeer","PubMed"]
         datas = []
@@ -584,11 +584,4 @@ class BregmanBenchmark():
             dataset = WebKB(root=data_dir, name=data_set)
             data = dataset[0]
             datas.append(data)
-
-        """     model = self.model_(n_clusters=n_clusters,\
-                            attributeDistribution=self.attributes_distribution_name,\
-                            edgeDistribution=self.edge_distribution_name,\
-                            weightDistribution=self.weight_distribution_name
-                            )
-        z_pred_both = model.fit(A,X,Y).predict( X, Y ) """
-        return datas
+        return datas,data_sets.extend(data_sets2)
