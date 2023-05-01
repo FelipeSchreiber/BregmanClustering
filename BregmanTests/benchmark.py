@@ -574,13 +574,21 @@ class BregmanBenchmark():
     def run_real_data(self):
         data_dir = "../../RealDataSets/"
         data_sets = ["Cora","CiteSeer","PubMed"]
-        dataset = Planetoid(root=data_dir, name=data_sets[0])
-        data = dataset[0]
+        datas = []
+        for data_set in data_sets:
+            dataset = Planetoid(root=data_dir, name=data_set)
+            data = dataset[0]
+            datas.append(data)
+        data_sets2 = ["Cornell", "Texas", "Wisconsin"]
+        for data_set in data_sets2:
+            dataset = WebKB(root=data_dir, name=data_set)
+            data = dataset[0]
+            datas.append(data)
 
-        model = self.model_(n_clusters=n_clusters,\
+        """     model = self.model_(n_clusters=n_clusters,\
                             attributeDistribution=self.attributes_distribution_name,\
                             edgeDistribution=self.edge_distribution_name,\
                             weightDistribution=self.weight_distribution_name
                             )
-        z_pred_both = model.fit(A,X,Y).predict( X, Y )
-        return data
+        z_pred_both = model.fit(A,X,Y).predict( X, Y ) """
+        return datas
