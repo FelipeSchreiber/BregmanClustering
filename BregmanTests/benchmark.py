@@ -5,6 +5,8 @@ from BregmanClustering.models import *
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as edgeBreg
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorch as torchBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
+from torch_geometric.utils import to_networkx
+from torch_geometric.datasets import Planetoid 
 import subprocess
 from tqdm import tqdm
 from .cfg import *
@@ -565,3 +567,10 @@ class BregmanBenchmark():
         x,y,z = np.meshgrid(x, y, z)
         make_4d_plot(x,y,z,v,x_label="d",y_label="lambda",z_label="a",filename="contour_plot_2_3.jpeg")
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
+    
+    def run_real_data(self):
+        data_dir = "../../RealDataSets/"
+        data_sets = ["Cora","CiteSeer","PubMed"]
+        dataset = Planetoid(root=data_dir, name=data_sets[0])
+        data = dataset[0]
+        return data,dataset
