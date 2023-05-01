@@ -598,7 +598,7 @@ class BregmanBenchmark():
             attributes = data.x
             z_true = data.y.numpy()
             K = np.unique(z_true).shape[0]
-            A = to_dense_adj(data.edge_index).to_sparse()
+            A = torch.tensor(to_dense_adj(data.edge_index).numpy()).to_sparse()
             """             A = to_dense_adj(data.edge_index).numpy()[0]
             n = A.shape[0]
             E = None
