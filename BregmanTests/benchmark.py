@@ -589,6 +589,9 @@ class BregmanBenchmark():
     
     def run_real_data(self):
         datas,data_names = self.get_real_data()
+        scores = {}
+        scores["dataset"] = []
+        scores["ARI"] = []
         for data,data_name in zip(datas,data_names):
             attributes = data.x.numpy()
             z_true = data.y.numpy()
@@ -600,11 +603,13 @@ class BregmanBenchmark():
                 E = A.reshape(n,n,1)
             else:
                 E = datas[0].edge_attr.numpy()
-                model = self.model_(n_clusters=K,\
+            model = self.model_(n_clusters=K,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name,
                                     n_iters=2
                                     )
-                z_pred_both = model.fit(A,E,attributes).predict( A, attributes )
-                print(adjusted_rand_score( z_true, z_pred_both ),data_name)
+            z_pred_both = model.fit(A,E,attributes).predict( A, attributes )
+            scores["ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
+            scores["dataset"].append(data_name)
+        return scores
