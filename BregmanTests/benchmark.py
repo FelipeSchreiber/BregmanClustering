@@ -614,8 +614,7 @@ class BregmanBenchmark():
             model = sparseBreg(n_clusters=K,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name,
-                                    n_iters=2
+                                    weightDistribution=self.weight_distribution_name
                                     )
             
             z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
