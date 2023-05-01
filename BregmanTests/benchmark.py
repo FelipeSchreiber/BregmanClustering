@@ -598,6 +598,7 @@ class BregmanBenchmark():
             attributes = data.x
             z_true = data.y.numpy()
             K = np.unique(z_true).shape[0]
+            A = to_dense_adj(data.edge_index).to_sparse()
             """             A = to_dense_adj(data.edge_index).numpy()[0]
             n = A.shape[0]
             E = None
@@ -617,7 +618,11 @@ class BregmanBenchmark():
                                     n_iters=2
                                     )
             
-            z_pred_both = model.fit(data.edge_index,E,attributes).predict( E, attributes )
+            z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
+            A = None
+            E = None
+            attributes = None
             scores["ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
             scores["dataset"].append(data_name)
+            z_pred_both = z_true = None
         return scores
