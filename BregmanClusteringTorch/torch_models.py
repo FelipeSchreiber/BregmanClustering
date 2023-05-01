@@ -479,8 +479,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             observed = Ztilde.T@torch.sparse.mm(A,Ztilde)
             m = Ztilde.sum(dim=0)
             total_possible = torch.outer(m,m)
-            ones_ = torch.ones((self.n_clusters,self.n_clusters))
-            zeros_ = torch.zeros((self.n_clusters,self.n_clusters))
+            ones_ = torch.ones((self.n_clusters,self.n_clusters)).to(device)
+            zeros_ = 1 - ones_
+            #zeros_ = torch.zeros((self.n_clusters,self.n_clusters))
             graph_div = (observed*self.graph_divergence(ones_, self.graph_means)\
                          + (total_possible - observed)*self.graph_divergence(zeros_,self.graph_means)).sum()
             
