@@ -457,7 +457,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             #E = self.computeEdgeMeans(X,Ztilde)
             E = self.edge_means
             """
-            X has shape n x n x d
+            X has shape |E| x d
             E has shape k x k x d
             
             the edge divergence computes the difference between node i (from community q) edges and the means
@@ -487,8 +487,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             
             #print(Ztilde[self.edge_index[:,1][node_indices],:].shape,E[q,:,:].shape,node_indices)
             edge_div = self.reduce_by( self.edge_divergence(
-                                                X[node,self.edge_index[:,1][node_indices],:],
-                                                Ztilde[self.edge_index[:,1][node_indices],:]@E[q,:,:]
+                                                X[node_indices,:],
+                                                Ztilde[self.edge_index[1,node_indices],:]@E[q,:,:]
                                                 )
                                         )
             #print(L.shape,att_div.shape,graph_div.shape,edge_div.shape)
