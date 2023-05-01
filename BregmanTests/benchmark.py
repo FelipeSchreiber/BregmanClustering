@@ -6,7 +6,7 @@ from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as 
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorch as torchBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 from torch_geometric.utils import to_networkx
-from torch_geometric.datasets import Planetoid 
+from torch_geometric.datasets import Planetoid,WebKB 
 import subprocess
 from tqdm import tqdm
 from .cfg import *
@@ -392,7 +392,8 @@ class BregmanBenchmark():
             stats["r"].append(r)
             stats["ARI"].append(aris_both_mean[-1])
             #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
-       
+        
+        return stats
         x = a_range
         y = r_range
         z = np.array(stats['ARI']).reshape((len(x),len(y))).T
@@ -470,14 +471,15 @@ class BregmanBenchmark():
             stats["mu"].append(mu)
             stats["ARI"].append(aris_both_mean[-1])
             #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
-       
+        
+        return stats
         x = d_range
         y = mu_range
         z = np.array(stats['ARI']).reshape((len(x),len(y))).T
         #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
         #print(z)
         x,y = np.meshgrid(x,y)
-        make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_2_2.jpeg",plot_3d=False)
+        #make_contour_plot(x,y,z,x_label="d",y_label="mu",filename="contour_plot_2_2.jpeg",plot_3d=False)
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
     
     def run_2_3(self,n_average=10,cluster_sizes=100,\
@@ -558,6 +560,7 @@ class BregmanBenchmark():
             stats["ARI"].append(aris_both_mean[-1])
             #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
        
+        return stats
         x = d_range
         y = lambda_range
         z = a_range
@@ -565,7 +568,7 @@ class BregmanBenchmark():
         #z2 = np.array(stats['ARI_ORACLE']).reshape((len(x),len(y))).T
         #print(z)
         x,y,z = np.meshgrid(x, y, z)
-        make_4d_plot(x,y,z,v,x_label="d",y_label="lambda",z_label="a",filename="contour_plot_2_3.jpeg")
+        #make_4d_plot(x,y,z,v,x_label="d",y_label="lambda",z_label="a",filename="contour_plot_2_3.jpeg")
         #make_contour_plot(x,y,z2,filename="contour_plot_ORACLE.jpeg",plot_3d=plot_3d)
     
     def run_real_data(self):
@@ -573,4 +576,11 @@ class BregmanBenchmark():
         data_sets = ["Cora","CiteSeer","PubMed"]
         dataset = Planetoid(root=data_dir, name=data_sets[0])
         data = dataset[0]
-        return data,dataset
+
+        model = self.model_(n_clusters=n_clusters,\
+                            attributeDistribution=self.attributes_distribution_name,\
+                            edgeDistribution=self.edge_distribution_name,\
+                            weightDistribution=self.weight_distribution_name
+                            )
+        z_pred_both = model.fit(A,X,Y).predict( X, Y )
+        return data
