@@ -584,7 +584,8 @@ class BregmanBenchmark():
             dataset = WebKB(root=data_dir, name=data_set)
             data = dataset[0]
             datas.append(data)
-        return datas,data_sets.extend(data_sets2)
+        data_sets.extend(data_sets2)
+        return datas,data_sets
     
     def run_real_data(self):
         datas,data_names = self.get_real_data()
