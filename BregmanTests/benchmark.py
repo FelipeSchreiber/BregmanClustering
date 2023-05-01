@@ -4,6 +4,7 @@ from BregmanTests.distributions import *
 from BregmanClustering.models import *
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as edgeBreg
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorch as torchBreg
+from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorchSparse as sparseBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 from torch_geometric.utils import to_networkx,to_dense_adj
 from torch_geometric.datasets import Planetoid,WebKB 
@@ -603,7 +604,7 @@ class BregmanBenchmark():
                 E = A.reshape(n,n,1)
             else:
                 E = datas[0].edge_attr.numpy()
-            model = self.model_(n_clusters=K,\
+            model = sparseBreg(n_clusters=K,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name,
