@@ -403,6 +403,10 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             if self.stop_criterion(self.predicted_memberships,new_memberships,iteration):
                 convergence = False
             self.predicted_memberships = new_memberships
+        A = None
+        X = None
+        Y = None
+        self.attribute_means = self.graph_means = self.edge_means = None
         return self
     
     def computeAttributeMeans( self, Y, Z ):
