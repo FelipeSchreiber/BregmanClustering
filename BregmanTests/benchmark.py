@@ -5,7 +5,7 @@ from BregmanClustering.models import *
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as edgeBreg
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorch as torchBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
-from torch_geometric.utils import to_networkx
+from torch_geometric.utils import to_networkx,to_dense_adj
 from torch_geometric.datasets import Planetoid,WebKB 
 import subprocess
 from tqdm import tqdm
@@ -585,3 +585,25 @@ class BregmanBenchmark():
             data = dataset[0]
             datas.append(data)
         return datas,data_sets.extend(data_sets2)
+    
+    def run_real_data(self):
+        datas,data_names = self.get_real_data()
+        for data,data_name in zip(datas,data_names):
+            attributes = data.x.numpy()
+            z_true = data.y.numpy()
+            K = np.nunique(z_true)
+            A = to_dense_adj(data.edge_index).numpy()[0]
+            n = A.shape[0]
+            E = None
+            if datas[0].edge_attr is None:
+                E = A.reshape(n,n,1)
+            else:
+                E = datas[0].edge_attr.numpy()
+                model = self.model_(n_clusters=K,\
+                                    attributeDistribution=self.attributes_distribution_name,\
+                                    edgeDistribution=self.edge_distribution_name,\
+                                    weightDistribution=self.weight_distribution_name,
+                                    n_iters=2
+                                    )
+                z_pred_both = model.fit(A,E,attributes).predict( A, attributes )
+                print(adjusted_rand_score( z_true, z_pred_both ),data_name)
