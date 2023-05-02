@@ -462,7 +462,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         ## get all edges leaving node
         node_indices = torch.argwhere(self.edge_index[0,:] == node).flatten()
         a_ = torch.zeros(self.N)
-        a_[:,node_indices] = 1
+        a_[node_indices] = 1
         for q in range( self.n_clusters ):
             Ztilde = self.predicted_memberships
             Ztilde[ node, : ] = 0
