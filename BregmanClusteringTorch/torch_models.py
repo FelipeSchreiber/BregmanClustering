@@ -247,7 +247,8 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             Ztilde = self.predicted_memberships
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
-            M = Ztilde @ self.graph_means @ Ztilde.T
+            M = self.graph_means[torch.tensor([q],dtype=torch.LongTensor).expand(self.N),\
+                                 torch.argmax(Ztilde,dim=1)]
             #E = self.computeEdgeMeans(X,Ztilde)
             E = self.edge_means
             """
@@ -257,11 +258,11 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
             the edge divergence computes the difference between node i (from community q) edges and the means
             given node j belongs to community l:
             
-            sum_j phi_edge(e_ij, E[q,l,:])  
+            sum_j phi_edge(e_ij, E[q,l,:])  [node,:]
             """
             att_div = H[node,q]
             graph_div = self.reduce_by( 
-                                        self.graph_divergence( A[node,:], M[node,:] ),
+                                        self.graph_divergence( A[node,:], M ),
                                         dim=-1
                                     )
             #print(Ztilde[self.edge_index[:,1][node_indices],:].shape,E[q,:,:].shape,node_indices)
