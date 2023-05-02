@@ -355,7 +355,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         X : torch tensor
             Input (|E|,d) tensor with edges, where |E| is the number of edges  
         A : torch tensor
-            Input (2,|E|) encoding the adjacency matrix
+            Input (2,|E|) encoding the adjacency list
             The pair A[0,i], A[1,i] is the ith edge. 
             Let node u be A[0,i] and node v be A[1,i], then it encodes u->v
         Z_init: torch tensor 
