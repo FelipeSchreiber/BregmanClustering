@@ -473,8 +473,10 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                         dim=-1
                                     )  """
             """
+            THIS DOESNT WORK, WHY???
+
             Instead of computing for every pair of edges, multiply the divergence D(1,graphMeans_ql) by the total
-            of edges  observed_ql between communities q and l plus D(0,graphMeans_ql)*(Total combinations - observed_ql)
+            of edges observed_ql between communities q and l plus D(0,graphMeans_ql)*(Total combinations - observed_ql)
             """
             
             observed = Ztilde.T@torch.sparse.mm(A,Ztilde)
