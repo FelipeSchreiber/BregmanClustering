@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 
 #Bernoulli
 def logistic_loss(X,M):
-    total = BCELoss(X,M,reduction='none')
+    total = BCELoss(X,M,reduce=False)
     #total = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) )
     return total
 
