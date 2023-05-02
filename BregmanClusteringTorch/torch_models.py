@@ -438,16 +438,17 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     def assignments( self, A, X, Y ):
         ## z must be in the same device as A,X,Y
         z = torch.zeros( (Y.shape[ 0 ],self.n_clusters)).to(device)
-        """
+        
         H = self.reduce_by(
-                    self.attribute_divergence(Y[:,None], self.attribute_means[None,:]),\
+                    self.attribute_divergence(Y[:,None].float(), self.attribute_means[None,:]),\
                     dim=-1
         )
         """
         H = self.reduce_by(
-                    self.attribute_divergence(torch.unsqueeze(Y,0), torch.unsqueeze(self.attribute_means,1)),\
+                    self.attribute_divergence(torch.unsqueeze(Y,0).float(), torch.unsqueeze(self.attribute_means,1)),\
                     dim=-1
         )
+        """
         for node in range( z.shape[0] ):
             k = self.singleNodeAssignment( A, X, H, node )
             z[node,k]=1
