@@ -169,8 +169,8 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         desired output:
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
-        weights = weights.permute(1,3,0,2)[:,:,self.edge_index[:,0],self.edge_index[:,1]]
-        X = X[self.edge_index[:,0],self.edge_index[:,1],:]
+        weights = weights.permute(1,3,0,2)[:,:,self.edge_index[0,:],self.edge_index[1,:]]
+        X = X[self.edge_index[0,:],self.edge_index[1,:],:]
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
@@ -242,7 +242,7 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
     
     def singleNodeAssignment( self, A, X, H, node ):
         L = torch.zeros( self.n_clusters )
-        node_indices = torch.argwhere(self.edge_index[:,0] == node).flatten()
+        node_indices = torch.argwhere(self.edge_index[0,:] == node).flatten()
         for q in range( self.n_clusters ):
             Ztilde = self.predicted_memberships
             Ztilde[ node, : ] = 0
@@ -266,8 +266,8 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
                                     )
             #print(Ztilde[self.edge_index[:,1][node_indices],:].shape,E[q,:,:].shape,node_indices)
             edge_div = self.reduce_by( self.edge_divergence(
-                                                X[node,self.edge_index[:,1][node_indices],:],
-                                                Ztilde[self.edge_index[:,1][node_indices],:]@E[q,:,:]
+                                                X[node,self.edge_index[1,node_indices],:],
+                                                Ztilde[self.edge_index[1,node_indices],:]@E[q,:,:]
                                                 )
                                         )
             #print(L.shape,att_div.shape,graph_div.shape,edge_div.shape)
