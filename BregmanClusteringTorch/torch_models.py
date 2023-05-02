@@ -455,7 +455,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             Ztilde = self.predicted_memberships
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
-            M = Ztilde @ self.graph_means @ Ztilde.T
+            M = self.graph_means[torch.tensor([q]).expand(self.N),\
+                                 torch.argmax(Ztilde,dim=1)]
             #E = self.computeEdgeMeans(X,Ztilde)
             E = self.edge_means
             """
@@ -468,18 +469,18 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            """ 
             graph_div = self.reduce_by( 
-                                        self.graph_divergence( A[node,:], M[node,:] ),
+                                        self.graph_divergence( A[node,:], M ),
                                         dim=-1
-                                    )  """
+                                    )
             """
             THIS DOESNT WORK, WHY???
 
             Instead of computing for every pair of edges, multiply the divergence D(1,graphMeans_ql) by the total
             of edges observed_ql between communities q and l plus D(0,graphMeans_ql)*(Total combinations - observed_ql)
             """
-            
+
+            """            
             observed = Ztilde.T@torch.sparse.mm(A,Ztilde)
             m = Ztilde.sum(dim=0)
             total_possible = torch.outer(m,m)
@@ -489,7 +490,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             graph_div = (observed*self.graph_divergence(ones_, self.graph_means)\
                          + (total_possible - observed)*self.graph_divergence(zeros_,self.graph_means)).sum()
             
-            #print(Ztilde[self.edge_index[:,1][node_indices],:].shape,E[q,:,:].shape,node_indices)
+            """
             edge_div = self.reduce_by( self.edge_divergence(
                                                 X[node_indices,:],
                                                 Ztilde[self.edge_index[1,node_indices],:]@E[q,:,:]
