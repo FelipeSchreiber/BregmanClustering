@@ -598,20 +598,20 @@ class BregmanBenchmark():
             attributes = data.x
             z_true = data.y.numpy()
             K = np.unique(z_true).shape[0]
-            A = torch.tensor(to_dense_adj(data.edge_index).numpy()[0]).to_sparse()
-            """             A = to_dense_adj(data.edge_index).numpy()[0]
+            #A = torch.tensor(to_dense_adj(data.edge_index).numpy()[0]).to_sparse()
+            A = to_dense_adj(data.edge_index).numpy()[0]
             n = A.shape[0]
             E = None
             if datas[0].edge_attr is None:
                 E = A.reshape(n,n,1)
             else:
-                E = datas[0].edge_attr.numpy() """
-            E = None
+                E = datas[0].edge_attr.numpy()
+            """ E = None
             if datas[0].edge_attr is None:
                 E = torch.ones((data.edge_index.shape[1],1))
             else:
-                E = data.edge_attr
-            model = sparseBreg(n_clusters=K,\
+                E = data.edge_attr """
+            model = self.model_(n_clusters=K,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
