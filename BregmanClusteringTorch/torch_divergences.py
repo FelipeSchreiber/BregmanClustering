@@ -10,14 +10,13 @@ This code is taken from power k means bregman
 """
 
 import torch
-from torch.nn.functional import kl_div
-from torch.nn import BCELoss
+from torch.nn.functional import kl_div, binary_cross_entropy
 import warnings
 warnings.filterwarnings("ignore")
 
 #Bernoulli
 def logistic_loss(X,M):
-    total = BCELoss(X,M,reduce=False)
+    total = binary_cross_entropy(X,M,reduce=False)
     #total = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) )
     return total
 
