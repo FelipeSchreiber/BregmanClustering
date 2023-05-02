@@ -11,12 +11,14 @@ This code is taken from power k means bregman
 
 import torch
 from torch.nn.functional import kl_div
+from torch.nn import BCELoss
 import warnings
 warnings.filterwarnings("ignore")
 
 #Bernoulli
 def logistic_loss(X,M):
-    total = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) )
+    total = BCELoss(X,M,reduction='none')
+    #total = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M) )
     return total
 
 #Multinomial
