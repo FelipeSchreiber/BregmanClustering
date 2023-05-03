@@ -523,12 +523,13 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                 X[edge_indices_out,:],
                                                 E[q,z_t[v_indices_out],:]
                                                 )
-"""                                         + 
+
+                                        )
+            """                                         + 
                                         self.edge_divergence(
                                                 X[edge_indices_in,:],
                                                 E[z_t[v_indices_in],q,:]
                                                 ) """
-                                        )
             #print(L.shape,att_div.shape,graph_div.shape,edge_div.shape)
             L[ q ] = att_div + 0.5*graph_div + edge_div
         return torch.argmin( L )
