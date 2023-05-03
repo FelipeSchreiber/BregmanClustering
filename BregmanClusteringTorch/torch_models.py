@@ -475,8 +475,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             z_t = torch.argmax(Ztilde,dim=1)
-            M = self.graph_means[torch.tensor([q]).expand(self.N),\
+            M_out = self.graph_means[torch.tensor([q]).expand(self.N),\
                                  z_t]
+            M_in = self.graph_means[z_t,torch.tensor([q]).expand(self.N)]
             #E = self.computeEdgeMeans(X,Ztilde)
             E = self.edge_means
             """
@@ -490,7 +491,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             """
             att_div = H[node,q]
             graph_div = self.reduce_by( 
-                                        self.graph_divergence( a_out , M ) + self.graph_divergence( a_in , M ),
+                                        self.graph_divergence( a_out , M_out ) + self.graph_divergence( a_in , M_in ),
                                         dim=-1
                                     )
             """
