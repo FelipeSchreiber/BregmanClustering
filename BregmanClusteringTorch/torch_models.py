@@ -376,6 +376,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             model.assignInitialLabels( A_dense, Y.numpy() )
             A_dense = None  
             self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
+            self.memberships_from_graph = model.memberships_from_graph
+            self.memberships_from_attributes = model.memberships_from_attributes
         else:
             self.predicted_memberships = Z_init.type(dtype)
 

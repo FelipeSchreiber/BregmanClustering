@@ -57,8 +57,10 @@ class BregmanBenchmark():
         self.dims = dims
         self.radius=radius
         self.return_G = return_G
+        self.sparse_model = run_gpu
         if run_gpu:
-            self.model_ = torchBreg
+            #self.model_ = torchBreg
+            self.model = sparseBreg
         else:
             self.model_ = edgeBreg
             
@@ -209,10 +211,15 @@ class BregmanBenchmark():
                     ( X, Y, z_true, G) = benchmark_instance() 
                     
                     A = (X != 0).astype(int)
+                    """
+                    TO DO: SET ONLY EDGE MODEL
+                    """
+                    """
                     model = BregmanNodeAttributeGraphClustering( n_clusters = n_clusters,\
                                                                     attributeDistribution=self.attributes_distribution_name,\
                                                                     edgeDistribution=self.weight_distribution_name,\
                                                                     initializer="AIC")
+                    """
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(X,Y)
                     model.assignInitialLabels(X, Y)
@@ -287,7 +294,6 @@ class BregmanBenchmark():
                 aris_attSBM_mean.append( np.mean( aris_attSBM ) )
                 aris_IR_sLS_mean.append( np.mean( aris_IR_sLS ) )
                 aris_IR_LS_mean.append( np.mean( aris_IR_LS ) )
-                aris_both2_mean.append( np.mean( aris_both2) )
                 aris_oracle_mean.append( np.mean( aris_oracle) )
                 
                 aris_attributes_std.append( np.std( aris_attributes ) )
@@ -296,7 +302,6 @@ class BregmanBenchmark():
                 aris_attSBM_std.append( np.std( aris_attSBM ) )
                 aris_IR_sLS_std.append( np.std( aris_IR_sLS ) )
                 aris_IR_LS_std.append( np.std( aris_IR_LS ) )
-                aris_both2_std.append( np.std( aris_both2 ) )
                 aris_oracle_std.append( np.std( aris_oracle) )
                 
                 stats["varying"].append(varying)
