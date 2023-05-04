@@ -6,7 +6,7 @@ from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as 
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorch as torchBreg
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorchSparse as sparseBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
-from torch_geometric.utils import to_networkx,to_dense_adj
+from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
 from torch_geometric.datasets import Planetoid,WebKB
 import torch 
 import subprocess
@@ -30,7 +30,7 @@ class BregmanBenchmark():
                     attributes_distribution = "gaussian",\
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
-                    radius=None,return_G=False,\
+                    radius=None,return_G=True,\
                     att_centers = None, weight_centers = None, run_gpu=False):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
@@ -217,14 +217,15 @@ class BregmanBenchmark():
                                                                     edgeDistribution=self.weight_distribution_name,\
                                                                     initializer="AIC")
                     """
+                    graph_data = from_networkx(G,group_node_attrs=['attr'])
                     model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
-                    model.initialize(X,Y)
-                    model.assignInitialLabels(X, Y)
+                    model.initialize(None,graph_data.x)
+                    model.assignInitialLabels(None,None)
                     z_init = deepcopy(model.predicted_memberships)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
@@ -237,8 +238,14 @@ class BregmanBenchmark():
                     with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
                         np.save(g, csbm.convertZ(z_init)+1)
 
-                    model.fit( X, Y )
-                    z_pred_both = model.predict( X, Y )
+                    A = torch.tensor(A).to_sparse()
+                    E = None
+                    if graph_data.edge_attr is None:
+                        E = torch.ones((graph_data.edge_index.shape[1],1))
+                    else:
+                        E = graph_data.edge_attr
+                    model.fit(A,E,graph_data.x)
+                    z_pred_both = model.predict( E, graph_data.x )
                     z_pred_graph = frommembershipMatriceToVector( chernoff_graph_labels )
                     z_pred_attributes = frommembershipMatriceToVector( chernoff_att_labels )
                     
@@ -271,11 +278,11 @@ class BregmanBenchmark():
                     aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
                     
                     if chernoff_init_graph:
-                        z_pred_att_init = model.fit(X,Y,chernoff_att_labels).predict(X,Y)
+                        z_pred_att_init = model.fit(A,E,graph_data.x,chernoff_att_labels).predict( E, graph_data.x )
                         ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
                         aris_oracle.append( max(aris_both[-1], ari_att_init))
                     elif not chernoff_init_graph:
-                        z_pred_graph_init = model.fit(X,Y,chernoff_graph_labels).predict(X,Y)
+                        z_pred_graph_init = model.fit(A,E,graph_data.x,chernoff_graph_labels).predict( E, graph_data.x )
                         ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
                         aris_oracle.append( max(aris_both[-1], ari_graph_init))
                         
@@ -357,22 +364,26 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 X = X.reshape(n,n,1)
-                print(X.shape)
-                model = self.model_(n_clusters=n_clusters,
-                                    attributeDistribution=self.attributes_distribution_name,
-                                    edgeDistribution=self.edge_distribution_name,
+                graph_data = from_networkx(G,group_node_attrs=['attr'])
+                A = torch.tensor(A).to_sparse()
+                E = None
+                if graph_data.edge_attr is None:
+                    E = torch.ones((graph_data.edge_index.shape[1],1))
+                else:
+                    E = graph_data.edge_attr
+                model = self.model_(n_clusters=n_clusters,\
+                                    attributeDistribution=self.attributes_distribution_name,\
+                                    edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
-                z_pred_both = model.fit(A,X,Y).predict( X, Y )
+                z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
 
             stats["a"].append(a)
             stats["r"].append(r)
-            stats["ARI"].append(aris_both_mean[-1])
-            #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
-        
+            stats["ARI"].append(aris_both_mean[-1])        
         return stats
 
     def run_2_2(self,n_average=10,cluster_sizes=100,\
@@ -408,12 +419,19 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 X = X.reshape(n,n,1)
+                graph_data = from_networkx(G,group_node_attrs=['attr'])
+                A = torch.tensor(A).to_sparse()
+                E = None
+                if graph_data.edge_attr is None:
+                    E = torch.ones((graph_data.edge_index.shape[1],1))
+                else:
+                    E = graph_data.edge_attr
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
-                z_pred_both = model.fit(A,X,Y).predict( X, Y )
+                z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
@@ -468,12 +486,19 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 X = X.reshape(n,n,1)
+                graph_data = from_networkx(G,group_node_attrs=['attr'])
+                A = torch.tensor(A).to_sparse()
+                E = None
+                if graph_data.edge_attr is None:
+                    E = torch.ones((graph_data.edge_index.shape[1],1))
+                else:
+                    E = graph_data.edge_attr
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
-                z_pred_both = model.fit(A,X,Y).predict( X, Y )
+                z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )

@@ -482,6 +482,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         a_out[v_indices_out] = 1
         a_in = torch.zeros(self.N).to(device)
         a_in[v_indices_in] = 1
+        ## index_to_mask, select
         for q in range( self.n_clusters ):
             Ztilde = self.predicted_memberships
             Ztilde[ node, : ] = 0
