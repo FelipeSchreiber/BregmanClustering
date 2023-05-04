@@ -368,6 +368,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         self.N = Y.shape[0]
         self.row_indices = torch.arange(self.N).to(device)
         self.edge_index = A.indices().long()
+        self.constant_mul = 0.5 if is_undirected(self.edge_index) else 1
         if Z_init is None:
             model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters,initializer="AIC")
             A_dense = to_dense_adj(self.edge_index).numpy()[0]
@@ -536,7 +537,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                             )
 
             #print(L.shape,att_div.shape,graph_div.shape,edge_div.shape)
-            L[ q ] = att_div + 0.5*graph_div + edge_div
+            L[ q ] = att_div + self.constant_mul * (graph_div + edge_div)
         return torch.argmin( L )
     
     def predict(self, X, Y):
