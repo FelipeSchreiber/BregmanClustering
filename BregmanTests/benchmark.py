@@ -163,7 +163,6 @@ class BregmanBenchmark():
             aris_attSBM_mean = [ ]
             aris_IR_sLS_mean = [ ]
             aris_IR_LS_mean = [ ]
-            aris_both2_mean = [ ]
             aris_oracle_mean = [ ]
 
             aris_attributes_std = [ ]
@@ -172,7 +171,6 @@ class BregmanBenchmark():
             aris_attSBM_std = [ ]
             aris_IR_sLS_std = [ ]
             aris_IR_LS_std = [ ]
-            aris_both2_std = [ ]
             aris_oracle_std = [ ]
 
             if varying == 'graph':
@@ -199,7 +197,6 @@ class BregmanBenchmark():
                 aris_attSBM = [ ]
                 aris_IR_sLS  = [ ]
                 aris_IR_LS = [ ]
-                aris_both2 = [ ]
                 aris_oracle = [ ]
                 
                 path_ = path_to_data+f"a/{a}/r/{r}/"
@@ -220,6 +217,11 @@ class BregmanBenchmark():
                                                                     edgeDistribution=self.weight_distribution_name,\
                                                                     initializer="AIC")
                     """
+                    model = self.model_(n_clusters=n_clusters,\
+                                    attributeDistribution=self.attributes_distribution_name,\
+                                    edgeDistribution=self.edge_distribution_name,\
+                                    weightDistribution=self.weight_distribution_name
+                                    )
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(X,Y)
                     model.assignInitialLabels(X, Y)
@@ -251,13 +253,6 @@ class BregmanBenchmark():
                     # else:
                     #     model.fit(X, Y, chernoff_att_labels)
                     ### > end
-
-                    model2 = self.model_(n_clusters=n_clusters,\
-                                    attributeDistribution=self.attributes_distribution_name,\
-                                    edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name
-                                    )
-                    z_pred_both2 = model2.fit(A,X.reshape(n,n,1),Y,z_init).predict( X, Y )
                     
                     IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)
                     IR_LS_pred = csbm.iter_csbm2(X,Y,z_init,n_clusters)
@@ -274,12 +269,8 @@ class BregmanBenchmark():
                     aris_attSBM.append( adjusted_rand_score( z_true, attSBMPred ) )
                     aris_IR_sLS.append( adjusted_rand_score( z_true, IR_sLS_pred ) )
                     aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
-                    aris_both2.append( adjusted_rand_score( z_true, z_pred_both2 ))
                     
-                    if chernoff_init_graph != model.AIC_initializer(X,Y).graph_init:
-                        ## both initializations were done
-                        aris_oracle.append( max(aris_both[-1],aris_both2[-1]))
-                    elif chernoff_init_graph:
+                    if chernoff_init_graph:
                         z_pred_att_init = model.fit(X,Y,chernoff_att_labels).predict(X,Y)
                         ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
                         aris_oracle.append( max(aris_both[-1], ari_att_init))
@@ -309,16 +300,16 @@ class BregmanBenchmark():
                 stats["r"].append(r)
                 stats["agreed"].append(total/n_average)
                 stats["ARI_chernoff"].append(aris_both_mean[-1])
-                stats["ARI_AIC"].append(aris_both2_mean[-1])
+                stats["ARI_AIC"].append(aris_both_mean[-1])
                 stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
                 
             curves = [ aris_attributes_mean, aris_graph_mean,\
                     aris_both_mean , aris_attSBM_mean, aris_IR_sLS_mean,\
-                    aris_IR_LS_mean, aris_both2_mean]
+                    aris_IR_LS_mean]
 
             curves_std = [ aris_attributes_std, aris_graph_std,\
                         aris_both_std , aris_attSBM_std, aris_IR_sLS_std,\
-                        aris_IR_LS_std, aris_both2_std]
+                        aris_IR_LS_std]
 
             labels = [ 'attributes', 'graph', 'both' , 'attSBM', 'IR_sLS', 'IR_LS', "edgeBreg"]
             saveFig = True
@@ -374,16 +365,6 @@ class BregmanBenchmark():
                                     )
                 z_pred_both = model.fit(A,X,Y).predict( X, Y )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
-                """
-                if model.AIC_initializer(X,Y).graph_init:
-                    z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
-                    ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
-                    aris_oracle.append( max(aris_both[-1], ari_att_init))
-                else:
-                    z_pred_graph_init =  model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
-                    ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
-                    aris_oracle.append( max(aris_both[-1], ari_graph_init))
-                """     
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
 
@@ -434,16 +415,6 @@ class BregmanBenchmark():
                                     )
                 z_pred_both = model.fit(A,X,Y).predict( X, Y )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
-                """
-                if model.AIC_initializer(X,Y).graph_init:
-                    z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
-                    ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
-                    aris_oracle.append( max(aris_both[-1], ari_att_init))
-                else:
-                    z_pred_graph_init =  model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
-                    ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
-                    aris_oracle.append( max(aris_both[-1], ari_graph_init))
-                """     
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
             

@@ -296,7 +296,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                  edgeDistribution = "bernoulli",
                  attributeDistribution = "gaussian",
                  weightDistribution = "gaussian",
-                 initializer = 'chernoff', 
+                 initializer = 'AIC', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100, 
                  reduce_by = torch.sum
@@ -345,6 +345,22 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             return True
         return False
     
+    def initialize( self, X, Y ):
+        model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters,\
+                                                    initializer=self.initializer)
+        A_dense = to_dense_adj(self.edge_index).numpy()[0]
+        model.initialize( A_dense, Y.numpy() )
+        model.assignInitialLabels( A_dense, Y.numpy() )
+        A_dense = None  
+        self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
+        self.memberships_from_graph = model.memberships_from_graph
+        self.memberships_from_attributes = model.memberships_from_attributes
+        self.graph_init = model.graph_init
+    
+    def assignInitialLabels( self, X, Y ):
+        ## For compatibility only
+        pass
+    
     def fit( self, A, X, Y, Z_init=None ):
         """
         Training step.
@@ -370,14 +386,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         self.edge_index = A.indices().long()
         self.constant_mul = 0.5 if is_undirected(self.edge_index) else 1
         if Z_init is None:
-            model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters,initializer="AIC")
-            A_dense = to_dense_adj(self.edge_index).numpy()[0]
-            model.initialize( A_dense, Y.numpy() )
-            model.assignInitialLabels( A_dense, Y.numpy() )
-            A_dense = None  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
-            self.memberships_from_graph = model.memberships_from_graph
-            self.memberships_from_attributes = model.memberships_from_attributes
+            self.initialize(A,Y)
         else:
             self.predicted_memberships = Z_init.type(dtype)
 
@@ -478,8 +487,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             z_t = torch.argmax(Ztilde,dim=1)
-            M_out = self.graph_means[torch.tensor([q]).expand(self.N),\
-                                 z_t]
+            M_out = self.graph_means[torch.tensor([q]).expand(self.N),z_t]
             M_in = self.graph_means[z_t,torch.tensor([q]).expand(self.N)]
             #E = self.computeEdgeMeans(X,Ztilde)
             E = self.edge_means
