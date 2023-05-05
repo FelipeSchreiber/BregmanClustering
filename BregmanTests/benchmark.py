@@ -138,6 +138,13 @@ class BregmanBenchmark():
             return X,Y,labels_true,G
         return X,Y,labels_true,None
     
+    def to_pyg_data(self,X,Y):
+        X_sparse = torch.tensor(X).to_sparse()
+        graph_data = Data(x=torch.tensor(Y),
+                    edge_index=X_sparse.indices(),
+                    edge_attr=X_sparse.values())
+        return graph_data
+    
     def run_test(self,n_average=10,cluster_sizes=100,\
                  b=5,\
                  a_range=[ 5,7,9,11,13,15 ],\
@@ -364,13 +371,8 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
-                X_sparse = torch.tensor(X).to_sparse()
+                graph_data = self.to_pyg_data(X,Y)
                 X = X.reshape(n,n,1)
-                #print(G.nodes[0]["x"])
-                #graph_data = from_networkx(G,group_node_attrs=['x'])
-                graph_data = Data(x=torch.tensor(Y),
-                    edge_index=X_sparse.indices(),
-                    edge_attr=X_sparse.values())
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
@@ -424,8 +426,8 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
+                graph_data = self.to_pyg_data(X,Y)
                 X = X.reshape(n,n,1)
-                graph_data = from_networkx(G)
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
@@ -491,8 +493,8 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
+                graph_data = self.to_pyg_data(X,Y)
                 X = X.reshape(n,n,1)
-                graph_data = from_networkx(G,group_node_attrs=['attr'])
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
