@@ -123,7 +123,7 @@ class BregmanBenchmark():
          labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
          if self.return_G:
             for i in range(np.sum(self.communities_sizes)):
-                G.nodes[i]["x"] = Y[i,:]
+                G.nodes[i]["x"] = Y[i,:].tolist()
             return X,Y,labels_true,G
          return X,Y,labels_true,None
     
@@ -133,7 +133,7 @@ class BregmanBenchmark():
         labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
         if self.return_G:
             for i in range(np.sum(self.communities_sizes)):
-                G.nodes[i]["x"] = Y[i,:]
+                G.nodes[i]["x"] = Y[i,:].tolist()
             return X,Y,labels_true,G
         return X,Y,labels_true,None
     
@@ -217,7 +217,7 @@ class BregmanBenchmark():
                                                                     edgeDistribution=self.weight_distribution_name,\
                                                                     initializer="AIC")
                     """
-                    graph_data = from_networkx(G,group_node_attrs=['attr'])
+                    graph_data = from_networkx(G)
                     model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
