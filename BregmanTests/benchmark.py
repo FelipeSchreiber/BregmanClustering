@@ -120,22 +120,20 @@ class BregmanBenchmark():
     def generate_benchmark_joint(self):
          X, G = self.generate_WSBM()
          Y = self.generate_attributes()
-         print(type(Y))
          labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
          if self.return_G:
             for i in range(np.sum(self.communities_sizes)):
-                G.nodes[i]["attr"] = Y[i,:]
+                G.nodes[i]["x"] = Y[i,:]
             return X,Y,labels_true,G
          return X,Y,labels_true,None
     
     def generate_benchmark_dense(self):
         X, G = self.generate_WSBM(complete_graph=True)
         Y = self.generate_attributes()
-        print(type(Y))
         labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
         if self.return_G:
             for i in range(np.sum(self.communities_sizes)):
-                G.nodes[i]["attr"] = Y[i,:]
+                G.nodes[i]["x"] = Y[i,:]
             return X,Y,labels_true,G
         return X,Y,labels_true,None
     
@@ -366,7 +364,7 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 X = X.reshape(n,n,1)
-                graph_data = from_networkx(G,group_node_attrs=['attr'])
+                graph_data = from_networkx(G)
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
@@ -421,7 +419,7 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 X = X.reshape(n,n,1)
-                graph_data = from_networkx(G,group_node_attrs=['attr'])
+                graph_data = from_networkx(G)
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
