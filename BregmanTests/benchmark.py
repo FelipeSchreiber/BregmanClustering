@@ -364,7 +364,8 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 X = X.reshape(n,n,1)
-                graph_data = from_networkx(G)
+                print(G.nodes[0]["x"])
+                graph_data = from_networkx(G,group_node_attrs=['x'])
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
