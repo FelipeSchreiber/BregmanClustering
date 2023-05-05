@@ -7,6 +7,7 @@ from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorch as to
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorchSparse as sparseBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
+from torch_geometric.data import Data
 from torch_geometric.datasets import Planetoid,WebKB
 import torch 
 import subprocess
@@ -363,9 +364,13 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
+                X_sparse = torch.tensor(X).to_sparse()
                 X = X.reshape(n,n,1)
-                print(G.nodes[0]["x"])
-                graph_data = from_networkx(G,group_node_attrs=['x'])
+                #print(G.nodes[0]["x"])
+                #graph_data = from_networkx(G,group_node_attrs=['x'])
+                graph_data = Data(x=torch.tensor(Y),
+                    edge_index=X_sparse.indices(),
+                    edge_attr=X_sparse.values())
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
