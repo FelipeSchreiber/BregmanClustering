@@ -120,7 +120,7 @@ class BregmanBenchmark():
     def generate_benchmark_joint(self):
          X, G = self.generate_WSBM()
          Y = self.generate_attributes()
-         print(Y)
+         print(type(Y))
          labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
          if self.return_G:
             for i in range(np.sum(self.communities_sizes)):
@@ -131,7 +131,7 @@ class BregmanBenchmark():
     def generate_benchmark_dense(self):
         X, G = self.generate_WSBM(complete_graph=True)
         Y = self.generate_attributes()
-        print(Y)
+        print(type(Y))
         labels_true = np.repeat(np.arange(self.n_clusters),self.communities_sizes)
         if self.return_G:
             for i in range(np.sum(self.communities_sizes)):
