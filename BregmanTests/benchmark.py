@@ -31,7 +31,7 @@ class BregmanBenchmark():
                     attributes_distribution = "gaussian",\
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
-                    radius=None,return_G=True,\
+                    radius=None,return_G=False,\
                     att_centers = None, weight_centers = None, run_gpu=False):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
@@ -63,7 +63,8 @@ class BregmanBenchmark():
             #self.model_ = torchBreg
             self.model_ = sparseBreg
         else:
-            self.model_ = edgeBreg
+            #self.model_ = edgeBreg
+            self.model_ = sparseBreg
             
     def generate_WSBM(self,complete_graph=False):
         N = np.sum(self.communities_sizes)
@@ -216,16 +217,7 @@ class BregmanBenchmark():
                     ( X, Y, z_true, G) = benchmark_instance() 
                     
                     A = (X != 0).astype(int)
-                    """
-                    TO DO: SET ONLY EDGE MODEL
-                    """
-                    """
-                    model = BregmanNodeAttributeGraphClustering( n_clusters = n_clusters,\
-                                                                    attributeDistribution=self.attributes_distribution_name,\
-                                                                    edgeDistribution=self.weight_distribution_name,\
-                                                                    initializer="AIC")
-                    """
-                    graph_data = from_networkx(G)
+                    graph_data = self.to_pyg_data(X,Y)
                     model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
@@ -384,6 +376,7 @@ class BregmanBenchmark():
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
+                print(A.shape,E.shape,graph_data.x.shape)
                 z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
