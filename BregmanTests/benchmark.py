@@ -365,7 +365,6 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 graph_data = self.to_pyg_data(X,Y)
-                X = X.reshape(n,n,1)
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
@@ -421,7 +420,6 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 graph_data = self.to_pyg_data(X,Y)
-                X = X.reshape(n,n,1)
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
@@ -488,7 +486,6 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 graph_data = self.to_pyg_data(X,Y)
-                X = X.reshape(n,n,1)
                 A = torch.tensor(A).to_sparse()
                 E = None
                 if graph_data.edge_attr is None:
