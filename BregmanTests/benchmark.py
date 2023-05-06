@@ -8,6 +8,7 @@ from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorchSparse
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
 from torch_geometric.data import Data
+from torch_geometric.utils import *
 from torch_geometric.datasets import Planetoid,WebKB
 import torch 
 import subprocess
