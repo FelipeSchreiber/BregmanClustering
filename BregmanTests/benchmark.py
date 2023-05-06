@@ -371,7 +371,7 @@ class BregmanBenchmark():
                 if graph_data.edge_attr is None:
                     E = torch.ones((graph_data.edge_index.shape[1],1))
                 else:
-                    E = graph_data.edge_attr
+                    E = graph_data.edge_attr.reshape(-1,1)
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
@@ -427,7 +427,7 @@ class BregmanBenchmark():
                 if graph_data.edge_attr is None:
                     E = torch.ones((graph_data.edge_index.shape[1],1))
                 else:
-                    E = graph_data.edge_attr
+                    E = graph_data.edge_attr.reshape(-1,1)
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
@@ -494,7 +494,7 @@ class BregmanBenchmark():
                 if graph_data.edge_attr is None:
                     E = torch.ones((graph_data.edge_index.shape[1],1))
                 else:
-                    E = graph_data.edge_attr
+                    E = graph_data.edge_attr.reshape(-1,1)
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
