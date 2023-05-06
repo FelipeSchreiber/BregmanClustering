@@ -61,7 +61,7 @@ class BregmanBenchmark():
         self.sparse_model = run_gpu
         if run_gpu:
             #self.model_ = torchBreg
-            self.model = sparseBreg
+            self.model_ = sparseBreg
         else:
             self.model_ = edgeBreg
             
