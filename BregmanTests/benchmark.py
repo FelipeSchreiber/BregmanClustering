@@ -376,7 +376,6 @@ class BregmanBenchmark():
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name
                                     )
-                print(A.shape,E.shape,graph_data.x.shape)
                 z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
