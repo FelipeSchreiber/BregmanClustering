@@ -298,8 +298,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                  weightDistribution = "gaussian",
                  initializer = 'AIC', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
-                 n_iters = 25, init_iters=100, 
-                 reduce_by = torch.sum
+                 n_iters = None, init_iters=100, 
+                 reduce_by = "sum"
                 ):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
@@ -320,7 +320,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         None.
         """
         self.n_clusters = n_clusters
-        self.n_iters = n_iters
+        if n_iters is not None:
+            self.n_iters = n_iters
+        else:
+            self.n_iters = 1e6
+            
         self.initializer = initializer
         self.graph_initializer = graph_initializer
         self.attribute_initializer = attribute_initializer
@@ -334,7 +338,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         self.edge_divergence = dist_to_phi_dict[self.weightDistribution]
         self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
         self.edge_index = None 
-        self.reduce_by = reduce_by
+        if reduce_by == "sum":
+            self.reduce_by = torch.sum
+        else:
+            self.reduce_by = torch.mean
+
         self.N = 0
         self.row_indices = torch.arange(2)
 
