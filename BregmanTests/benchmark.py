@@ -152,6 +152,7 @@ class BregmanBenchmark():
                  a_range=[ 5,7,9,11,13,15 ],\
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
+                 binary=True,\
                  file_endings=".jpeg"):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
@@ -241,7 +242,7 @@ class BregmanBenchmark():
 
                     A = torch.tensor(A).to_sparse()
                     E = None
-                    if graph_data.edge_attr is None:
+                    if (graph_data.edge_attr is None) or binary:
                         E = torch.ones((graph_data.edge_index.shape[1],1))
                     else:
                         E = graph_data.edge_attr
