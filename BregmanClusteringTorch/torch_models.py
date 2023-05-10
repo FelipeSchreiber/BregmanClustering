@@ -359,7 +359,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         if self.edge_index is not None:
             A_dense = to_dense_adj(self.edge_index).numpy()[0]
         else:
-            A_dense = X.numpy()[0]
+            A_dense = X
         model.initialize( A_dense, Y.numpy() )
         model.assignInitialLabels( A_dense, Y.numpy() )
         A_dense = None  
