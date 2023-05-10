@@ -13,9 +13,9 @@ SIZE_LEGEND = 18
 
 def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="contour.jpeg"):
     kw = {
-        'vmin': data.min(),
-        'vmax': data.max()
-    }
+            'vmin': data.min(),
+            'vmax': data.max()
+        }
 
     # Create a figure with 3D ax
     fig = plt.figure(figsize=(5, 4))
@@ -28,26 +28,43 @@ def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="c
     ax.set(xlim=[xmin, xmax], ylim=[ymin, ymax], zlim=[zmin, zmax])
 
     # Plot contour surfaces
+    ### This is the X x Y plane for z=zmin 
     _ = ax.contourf(
-        X[:, :, 0], Y[:, :, 0], data[:, :, 0],
-        zdir='z', offset=0, **kw
-    )
-    ### This is the top of the box
+            X[:, :, 0], Y[:, :, 0], data[:, :, 0],
+            zdir='z', offset=zmin, **kw
+        )
 
-    # _ = ax.contourf(
-    #     X[:, :, -1], Y[:, :, -1], data[:, :, -1],
-    #     zdir='z', offset=Z.max(), **kw
-    # )
+    ### This is the X x Y plane for z=zmax 
     _ = ax.contourf(
-        X[0, :, :], data[0, :, :], Z[0, :, :],
-        zdir='y', offset=0, **kw
-    )
+            X[:, :, -1], Y[:, :, -1], data[:, :, -1],
+            zdir='z', offset=zmax, **kw
+        )
+
+    ### This is the X x Z plane for y=ymax 
+    _ = ax.contourf(
+            X[-1, :, :], data[-1, :, :], Z[-1, :, :],
+            zdir='y', offset=ymax, **kw
+        )
+
+    ### This is the X x Z plane for y=ymin 
+    _ = ax.contourf(
+            X[0, :, :], data[0, :, :], Z[0, :, :],
+            zdir='y', offset=ymin, **kw
+        )
+
+    ### This is the Y x Z plane for x=xmax 
+    _ = ax.contourf(
+            data[:, -1, :], Y[:, -1, :], Z[:, -1, :],
+            zdir='x', offset=xmin, **kw
+        )
+
+    ### This is the Y x Z plane for x=xmin
     C = ax.contourf(
-        data[:, 0, :], Y[:, 0, :], Z[:, 0, :],
-        zdir='x', offset=X.min(), **kw
-    )
-    # --
+            data[:, 0, :], Y[:, 0, :], Z[:, 0, :],
+            zdir='x', offset=xmin, **kw
+        )
 
+    # --
     # Plot edges
     edges_kw = dict(color='0.4', linewidth=1,zorder=-1e3)
     ax.plot([xmax, xmax], [ymin, ymax], zmin, **edges_kw)
@@ -56,10 +73,10 @@ def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="c
 
     # Set labels and zticks
     ax.set(
-        xlabel=x_label,
-        ylabel=y_label,
-        zlabel=z_label
-    )
+            xlabel=x_label,
+            ylabel=y_label,
+            zlabel=z_label
+        )
 
     # Set zoom and angle view
     ax.view_init(30, 45, 0)
@@ -68,8 +85,6 @@ def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="c
     # Colorbar
     fig.colorbar(C, ax=ax, fraction=0.02, pad=0.1, label='ARI')
 
-    plt.savefig(filename)
-    # Show Figure
     plt.show()
 
 
