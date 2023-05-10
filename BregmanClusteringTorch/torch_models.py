@@ -324,7 +324,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             self.n_iters = n_iters
         else:
             self.n_iters = 1e6
-            
+
         self.initializer = initializer
         self.graph_initializer = graph_initializer
         self.attribute_initializer = attribute_initializer
@@ -356,7 +356,10 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     def initialize( self, X, Y ):
         model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters,\
                                                     initializer=self.initializer)
-        A_dense = to_dense_adj(self.edge_index).numpy()[0]
+        if self.edge_index is not None:
+            A_dense = to_dense_adj(self.edge_index).numpy()[0]
+        else:
+            A_dense = X.numpy()[0]
         model.initialize( A_dense, Y.numpy() )
         model.assignInitialLabels( A_dense, Y.numpy() )
         A_dense = None  

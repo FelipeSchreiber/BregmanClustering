@@ -225,7 +225,7 @@ class BregmanBenchmark():
                                     weightDistribution=self.weight_distribution_name
                                     )
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
-                    model.initialize(None,graph_data.x)
+                    model.fit(A,E,graph_data.x)
                     model.assignInitialLabels(None,None)
                     z_init = deepcopy(model.predicted_memberships)
                     chernoff_init_graph = model.graph_init
