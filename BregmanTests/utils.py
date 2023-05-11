@@ -28,16 +28,16 @@ def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="c
     ax.set(xlim=[xmin, xmax], ylim=[ymin, ymax], zlim=[zmin, zmax])
 
     # Plot contour surfaces
-    ### This is the X x Y plane for z=zmin 
-    _ = ax.contourf(
-            X[:, :, 0], Y[:, :, 0], data[:, :, 0],
-            zdir='z', offset=zmin, **kw
-        )
-
     ### This is the X x Y plane for z=zmax 
     _ = ax.contourf(
             X[:, :, -1], Y[:, :, -1], data[:, :, -1],
             zdir='z', offset=zmax, **kw
+        )
+    
+    ### This is the X x Y plane for z=zmin 
+    _ = ax.contourf(
+            X[:, :, 0], Y[:, :, 0], data[:, :, 0],
+            zdir='z', offset=zmin, **kw
         )
 
     ### This is the X x Z plane for y=ymax 
@@ -55,7 +55,7 @@ def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="c
     ### This is the Y x Z plane for x=xmax 
     _ = ax.contourf(
             data[:, -1, :], Y[:, -1, :], Z[:, -1, :],
-            zdir='x', offset=xmin, **kw
+            zdir='x', offset=xmax, **kw
         )
 
     ### This is the Y x Z plane for x=xmin
