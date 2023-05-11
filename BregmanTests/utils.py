@@ -28,6 +28,14 @@ def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="c
     ax.set(xlim=[xmin, xmax], ylim=[ymin, ymax], zlim=[zmin, zmax])
 
     # Plot contour surfaces
+    """
+    SCATTER PLOT
+    fig = plt.figure(figsize=(5, 4))
+    ax = fig.add_subplot(111, projection='3d')
+    C = ax.scatter(xs=X,ys=Y,zs=Z,c=Data)
+    fig.colorbar(C, ax=ax, fraction=0.02, pad=0.1, label='ARI')
+    plt.show()
+    """
     ### This is the X x Y plane for z=zmax 
     _ = ax.contourf(
             X[:, :, -1], Y[:, :, -1], data[:, :, -1],
