@@ -88,41 +88,19 @@ def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="c
     plt.show()
 
 
-def make_contour_plot(x,y,z,x_label="a",y_label="r",filename="contour.jpeg",plot_3d=False):
-    # Create contour lines or level curves using matplotlib.pyplot module
-    x_min, x_max = np.min(x), np.max(x)
-    y_min, y_max = np.min(y), np.max(y)
-    z_min, z_max = np.min(z), np.max(z)
-    if plot_3d:
-    # Plot the 3D surface
-
-        ax = plt.figure().add_subplot(projection='3d')
-        ax.plot_surface(x, y, z, edgecolor='royalblue', lw=0.5, rstride=8, cstride=8,
-                        alpha=0.3)
-
-        # Plot projections of the contours for each dimension.  By choosing offsets
-        # that match the appropriate axes limits, the projected contours will sit on
-        # the 'walls' of the graph.
-        ax.contour(x, y, z, zdir='z', offset=z_min, cmap='coolwarm')
-        ax.contour(x, y, z, zdir='x', offset=x_min, cmap='coolwarm')
-        ax.contour(x, y, z, zdir='y', offset=y_min, cmap='coolwarm')
-
-        #xlim=(-40, 40), ylim=(-40, 40), zlim=(-100, 100),
-        ax.set(xlim=(x_min, x_max), ylim=(y_min, y_max), zlim=(z_min,z_max),\
-               xlabel='a', ylabel='r', zlabel='ARI')
-    else:
-        origin = 'lower'
-        fig1, ax = plt.subplots(layout='constrained')
-        CS = ax.contourf(x, y, z, cmap=plt.cm.bone,origin=origin)
-        # Display z values on contour lines
-        CS2 = ax.contour(CS, colors='r',origin=origin)
-        # Make a colorbar for the ContourSet returned by the contourf call.
-        cbar = fig1.colorbar(CS)
-        cbar.ax.set_ylabel('ARI')
-        # Add the contour line levels to the colorbar
-        cbar.add_lines(CS2)
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
+def make_contour_plot(x,y,z,x_label="a",y_label="r",filename="contour.jpeg"):
+    origin = 'lower'
+    fig1, ax = plt.subplots(layout='constrained')
+    CS = ax.contourf(x, y, z, cmap=plt.cm.bone,origin=origin)
+    # Display z values on contour lines
+    CS2 = ax.contour(CS, colors='r',origin=origin)
+    # Make a colorbar for the ContourSet returned by the contourf call.
+    cbar = fig1.colorbar(CS)
+    cbar.ax.set_ylabel('ARI')
+    # Add the contour line levels to the colorbar
+    cbar.add_lines(CS2)
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
     plt.savefig(filename)
     # Display the contour plot
     plt.show()
