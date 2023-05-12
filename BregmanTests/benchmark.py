@@ -230,6 +230,7 @@ class BregmanBenchmark():
                     model.initialize(A,graph_data.x)
                     model.assignInitialLabels(None,None)
                     z_init = deepcopy(model.predicted_memberships.to("cpu").numpy())
+                    print(z_init.shape)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
                     chernoff_att_labels = model.memberships_from_attributes
