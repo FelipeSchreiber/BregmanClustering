@@ -281,11 +281,11 @@ class BregmanBenchmark():
                     aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
                     
                     if chernoff_init_graph:
-                        z_pred_att_init = model.fit(A,E,graph_data.x,chernoff_att_labels).predict( E, graph_data.x )
+                        z_pred_att_init = model.fit(A,E,graph_data.x,torch.tensor(chernoff_att_labels)).predict( E, graph_data.x )
                         ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
                         aris_oracle.append( max(aris_both[-1], ari_att_init))
                     elif not chernoff_init_graph:
-                        z_pred_graph_init = model.fit(A,E,graph_data.x,chernoff_graph_labels).predict( E, graph_data.x )
+                        z_pred_graph_init = model.fit(A,E,graph_data.x,torch.tensor(chernoff_graph_labels)).predict( E, graph_data.x )
                         ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
                         aris_oracle.append( max(aris_both[-1], ari_graph_init))
                         
