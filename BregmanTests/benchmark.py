@@ -337,8 +337,8 @@ class BregmanBenchmark():
                  a_range=[ 5,7,9,11,13,15 ],\
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
-                 plot_3d=False,\
-                 binary=True):
+                 binary=True,\
+                 n_iters=25):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
@@ -376,8 +376,8 @@ class BregmanBenchmark():
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name
-                                    )
+                                    weightDistribution=self.weight_distribution_name,\
+                                    n_iters=n_iters)
                 z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
@@ -392,7 +392,8 @@ class BregmanBenchmark():
                  d_range=[ 0,1,2,3,4,5 ],\
                  mu_range = [ 0,1,2,3,4,5 ],\
                  dense=True,\
-                 binary=False):
+                 binary=False,\
+                 n_iters=25):
         
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
@@ -430,8 +431,8 @@ class BregmanBenchmark():
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name
-                                    )
+                                    weightDistribution=self.weight_distribution_name,\
+                                    n_iters=n_iters)
                 z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
@@ -452,7 +453,8 @@ class BregmanBenchmark():
                  a_range = [1,2,3],\
                  b = 5,\
                  dense=False,\
-                 binary=False):
+                 binary=False,\
+                 n_iters=25):
         
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
@@ -496,7 +498,8 @@ class BregmanBenchmark():
                 model = self.model_(n_clusters=n_clusters,\
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name
+                                    weightDistribution=self.weight_distribution_name,\
+                                    n_iters=n_iters
                                     )
                 z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
