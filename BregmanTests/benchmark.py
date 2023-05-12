@@ -322,7 +322,7 @@ class BregmanBenchmark():
                         aris_both_std , aris_attSBM_std, aris_IR_sLS_std,\
                         aris_IR_LS_std]
 
-            labels = [ 'attributes', 'graph', 'both' , 'attSBM', 'IR_sLS', 'IR_LS', "edgeBreg"]
+            labels = [ 'attributes', 'graph', 'both' , 'attSBM', 'IR_sLS', 'IR_LS']
             saveFig = True
             if varying == 'graph':    
                 fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_b_' + str(b) + '_r_' + str(r) +  '_nAverage' + str(n_average) + file_endings
