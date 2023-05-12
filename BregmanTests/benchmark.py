@@ -154,7 +154,7 @@ class BregmanBenchmark():
                  dense=False,\
                  binary=True,\
                  file_endings=".jpeg",\
-                 n_iter=25):
+                 n_iters=25):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
@@ -225,7 +225,7 @@ class BregmanBenchmark():
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name,\
-                                    n_iter=n_iter)
+                                    n_iters=n_iters)
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(A,graph_data.x)
                     model.assignInitialLabels(None,None)
