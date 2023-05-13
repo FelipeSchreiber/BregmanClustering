@@ -71,9 +71,9 @@ class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
         self.edgeDistribution = edgeDistribution
         self.attributeDistribution = attributeDistribution
         self.weightDistribution = weightDistribution
-        self.graph_divergence = dist_to_phi_dict[self.edgeDistribution]
-        self.edge_divergence = dist_to_phi_dict[self.weightDistribution]
-        self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
+        self.graph_divergence = dist_to_divergence_dict[self.edgeDistribution]
+        self.edge_divergence = dist_to_divergence_dict[self.weightDistribution]
+        self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.edge_index = None 
         self.reduce_by = reduce_by
         self.N = 0
@@ -334,9 +334,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         self.edgeDistribution = edgeDistribution
         self.attributeDistribution = attributeDistribution
         self.weightDistribution = weightDistribution
-        self.graph_divergence = dist_to_phi_dict[self.edgeDistribution]
-        self.edge_divergence = dist_to_phi_dict[self.weightDistribution]
-        self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
+        self.graph_divergence = dist_to_divergence_dict[self.edgeDistribution]
+        self.edge_divergence = dist_to_divergence_dict[self.weightDistribution]
+        self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.edge_index = None 
         if reduce_by == "sum":
             self.reduce_by = torch.sum
@@ -456,7 +456,43 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
         edges_means = torch.tensordot( weights, X, dims=[(2,),(0,)] )/(torch.sum(weights,dim=-1)[:,:,None])
-        return edges_means 
+        return edges_means
+
+    def J(self,theta_1,theta_2):
+        return 
+    def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
+        if distribution.lower() == 'bernoulli':
+            return (1-t) * a + t *b - (a**t * b**(1-t))*np.exp()
+
+    def graphChernoffDivergence( self, X, Z ):
+        graph_means = self.computeGraphMeans( X , Z )
+        n = Z.shape[ 0 ]
+        pi = np.zeros( self.n_clusters )
+        for c in range( self.n_clusters ):
+            cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
+            pi[ c ] = len(cluster_c) / n
+            
+        if self.edgeDistribution == 'bernoulli':
+            res = 10000
+            for a in range( self.n_clusters ):
+                for b in range( a ):
+                    div = lambda t : - (1-t) * np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
+                    minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
+                    if - minDiv['fun'] < res:
+                        res = - minDiv['fun']
+        return res
+    
+    def attributeChernoffDivergence( self, Y, Z ):
+        res = 10000
+        attribute_means = self.computeAttributeMeans( Y, Z )
+        for a in range( self.n_clusters ):
+            for b in range( a ):
+                div = lambda t : - t * (1-t)/2 * np.linalg.norm( attribute_means[a] - attribute_means[b] )
+                minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
+                if - minDiv['fun'] < res:
+                    res = - minDiv['fun']
+
+        return res
     
     def assignments( self, A, X, Y ):
         ## z must be in the same device as A,X,Y

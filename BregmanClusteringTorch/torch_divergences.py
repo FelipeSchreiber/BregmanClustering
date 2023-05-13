@@ -5,79 +5,110 @@ Created on Fri Feb 17 16:52:18 2023
 
 @author: maximilien, Felipe Schreiber Fernandes
 
-This code is taken from power k means bregman
+This code is taken in part from power k means bregman
 
 """
 
 import torch
-from torch.nn.functional import kl_div, binary_cross_entropy
+from torch.nn.functional import kl_div
 import warnings
 warnings.filterwarnings("ignore")
 
-#Bernoulli
+
+"""
+DIVERGENCES DEFINITIONS
+#DISTRIBUTION NAME -- DIVERGENCE NAME
+
+SEE:
+ "Clustering with Bregman Divergences" pags 1709, 
+"""
+
+#Bernoulli | Logistic loss
 def logistic_loss(X,M):
-    total = torch.where( X == 0, -torch.log( 1-M ), -torch.log(M) )
+    # total = torch.where( X == 0, -torch.log( 1-M ), -torch.log(M) )
+    total = torch.log(1 + torch.exp(- (2*X - 1) * ( torch.log(M/(1-M)) ) ))
     return total
 
-#Multinomial
+#Multinomial | KL-divergence
 def KL_div(X,M):
     total = kl_div(X,M,reduction="none")
     return total
 
-#Exponential
+#Exponential | Itakura-Saito Loss
 def itakura_saito_loss(X,M):
     total = (X/M - torch.log(X/M) - 1)
     return total
 
-#Poisson
-def relative_entropy(X,M):
+#Poisson | Generalized I-divergence
+def generalized_I_divergence(X,M):
     total = X*torch.log(X/M) + M - X
     return total
 
-#gaussian
+#gaussian | Squared Euclidean distance
 def euclidean_distance(X,M):
-    return (X-M)**2
+    return 0.5*(X-M)**2
 
-dist_to_phi_dict = {
+dist_to_divergence_dict = {
         'gaussian': euclidean_distance,
         'bernoulli': logistic_loss,
         'multinomial':KL_div,
         'exponential': itakura_saito_loss,
-        'poisson': relative_entropy
+        'poisson': generalized_I_divergence
+    }
+
+
+"""
+PHI DEFINITIONS
+#DISTRIBUTION NAME -- DIVERGENCE NAME
+
+SEE:
+ "Clustering with Bregman Divergences" pags 1725
+"""
+
+#Bernoulli | Logistic loss
+def phi_bernoulli(X):
+    total = X*torch.log(X) + (1-X)*torch.log(1-X)
+    return total.sum()
+
+#Multinomial | KL-divergence
+def phi_multinomial(X):
+    total = X*torch.log(X)
+    ## - X * log(N)
+    return total.sum()
+
+#Exponential | Itakura-Saito Loss
+def phi_exponential(X):
+    total = -torch.log(X) - 1
+    return total.sum()
+
+#Poisson | Generalized I-divergence
+def phi_poisson(X):
+    total = X*torch.log(X) - X
+    return total
+
+#gaussian | Squared Euclidean distance
+def phi_gaussian(X):
+    return 0.5*(X**2).sum() #* 1/(σ2) 
+
+dist_to_phi_dict = {
+        'gaussian': phi_gaussian,
+        'bernoulli': phi_bernoulli,
+        'multinomial': phi_multinomial,
+        'exponential': phi_exponential,
+        'poisson': phi_poisson 
     }
 
 def rbf_kernel(X,M):
     return torch.exp(-torch.norm(X-M,dim=-1))
 
-""" 
-def kullbackLeibler_binaryMatrix( X, M ):
-    essai = torch.where( X == 0, -torch.log( 1-M ), torch.log(X/M))
-    return essai
 
-def euclidean_(X,M):
-    return torch.square(X - M)
-
-def phi_kl( a ):
-    return torch.log(1+torch.exp(a))
-
-def phi_euclidean( a ):
-    return torch.square(a)
-
-def dist_to_phi(dist):
-    dist_to_phi_dict = {
-        'gaussian': 'euclidean',
-        'multinomial': 'kl_div',
-        'exponential': 'itakura_saito',
-        'poisson': 'relative_entropy',
-        'gamma': 'gamma'
-    }
-    return dist_to_phi_dict[dist] """
-
-
+### THIS SECTION WAS TAKEN FROM power k means bregman
 '''
 this function is structured weirdly: first 2 entries (phi, gradient of phi) can handle n x m theta matrix
 last entry, only designed to work in iterative bregman update function, only works with 1 x m theta matrix and thus returns an m x m hessian
 '''
+
+"""
 def get_phi(name):
     phi_dict = {
         'euclidean': [lambda theta: torch.sum(theta**2, axis=1), lambda theta: 2*theta, lambda theta: 2*torch.eye(theta.size()[1], dtype=torch.float64)],
@@ -95,11 +126,12 @@ def bregman_divergence(phi_list, x, theta):
 
     bregman_div = phi(x) - phi(theta) - torch.dot(gradient(theta), x-theta)
     return bregman_div
+"""
 
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
-def pairwise_bregman(X, Y, phi_list, shape=None):
-    phi = phi_list[0]
-    gradient = phi_list[1]
+#shape=gamma_shape
+def pairwise_bregman(X, Y, phi, shape=None):
+    phi = phi
 
     if shape:
         phi_X = phi(X, shape)[:, None]
@@ -111,13 +143,10 @@ def pairwise_bregman(X, Y, phi_list, shape=None):
     X = X[:, None]
     Y = Y[None, :]
 
-
     if shape:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * gradient(Y, shape), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * torch.gradient(phi_Y, shape), axis=-1)
     else:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * gradient(Y), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * torch.gradient(phi_Y), axis=-1)
 
     return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
-
-
 
