@@ -20,7 +20,7 @@ DIVERGENCES DEFINITIONS
 #DISTRIBUTION NAME -- DIVERGENCE NAME
 
 SEE:
- "Clustering with Bregman Divergences" pags 1709, 
+ "Clustering with Bregman Divergences" page 1725
 """
 
 #Bernoulli | Logistic loss
@@ -62,7 +62,7 @@ PHI DEFINITIONS
 #DISTRIBUTION NAME -- DIVERGENCE NAME
 
 SEE:
- "Clustering with Bregman Divergences" pags 1725
+ "Clustering with Bregman Divergences" page 1725
 """
 
 #Bernoulli | Logistic loss
