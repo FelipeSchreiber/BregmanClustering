@@ -503,14 +503,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                self.attribute_means[None,:].expand(self.N,-1,-1)),\
                     dim=-1
         )
-        
-        """
-        H = self.reduce_by(
-                    self.attribute_divergence(Y.expand(-1,self.n_clusters,-1),\
-                                               self.attribute_means.expand(self.N,-1,-1)),\
-                    dim=-1
-        )
-        """
         for node in range( z.shape[0] ):
             k = self.singleNodeAssignment( A, X, H, node )
             z[node,k]=1
@@ -537,7 +529,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             z_t = torch.argmax(Ztilde,dim=1)
             M_out = self.graph_means[torch.tensor([q]).expand(self.N),z_t]
             M_in = self.graph_means[z_t,torch.tensor([q]).expand(self.N)]
-            #E = self.computeEdgeMeans(X,Ztilde)
             E = self.edge_means
             """
             X has shape |E| x d
@@ -553,32 +544,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                         self.graph_divergence( a_out , M_out ) + self.graph_divergence( a_in , M_in ),
                                         dim=-1
                                     )
-            """
-            THIS DOESNT WORK, WHY???
-
-            Instead of computing for every pair of edges, multiply the divergence D(1,graphMeans_ql) by the total
-            of edges observed_ql between communities q and l plus D(0,graphMeans_ql)*(Total combinations - observed_ql)
-            """
-
-            """            
-            observed = Ztilde.T@torch.sparse.mm(A,Ztilde)
-            m = Ztilde.sum(dim=0)
-            total_possible = torch.outer(m,m)
-            ones_ = torch.ones((self.n_clusters,self.n_clusters)).to(device)
-            zeros_ = 1 - ones_
-            #zeros_ = torch.zeros((self.n_clusters,self.n_clusters))
-            graph_div = (observed*self.graph_divergence(ones_, self.graph_means)\
-                         + (total_possible - observed)*self.graph_divergence(zeros_,self.graph_means)).sum()
-            
-            """
-            """
-            edge_div = self.reduce_by( self.edge_divergence(
-                                                X[node_indices,:],
-                                                Ztilde[self.edge_index[1,node_indices],:]@E[q,:,:]
-                                                )
-                                        )
-            """
-            #print(len(v_indices_out),len(edge_indices_out),len(v_indices_in),len(edge_indices_in))
             edge_div = 0
             if len(v_indices_out) > 0:
                 edge_div += self.reduce_by( self.edge_divergence(
@@ -588,13 +553,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                             )
             if len(v_indices_in) > 0:
                 edge_div += self.reduce_by( 
-                                                self.edge_divergence(
+                                            self.edge_divergence(
                                                         X[edge_indices_in,:],
                                                         E[z_t[v_indices_in],q,:]
                                                     ) 
-                                            )
-
-            #print(L.shape,att_div.shape,graph_div.shape,edge_div.shape)
+                                        )
             L[ q ] = att_div + 0.5 * self.constant_mul * (graph_div + edge_div)
         return torch.argmin( L )
     
