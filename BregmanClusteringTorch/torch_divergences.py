@@ -100,6 +100,48 @@ dist_to_phi_dict = {
         'poisson': phi_poisson 
     }
 
+"""
+PSI DEFINITIONS
+#DISTRIBUTION NAME -- DIVERGENCE NAME
+p(ψ,θ)(x) = exp(〈x, θ〉- ψ(θ))
+
+SEE:
+ "Clustering with Bregman Divergences" page 1725
+"""
+
+#Bernoulli | Logistic loss
+def psi_bernoulli(θ):
+    total = torch.log(1 + torch.exp(θ))
+    return total.sum()
+
+#Multinomial | KL-divergence
+def psi_multinomial(θ):
+    total = torch.log(1 + torch.sum(torch.exp(θ)))#*N
+    return total
+
+#Exponential | Itakura-Saito Loss
+def psi_exponential(θ):
+    total = -torch.log(-θ)
+    return total.sum()
+
+#Poisson | Generalized I-divergence
+def psi_poisson(θ):
+    total = torch.exp(θ)
+    return total.sum()
+
+#gaussian | Squared Euclidean distance
+def psi_gaussian(θ):
+    return 0.5*(θ**2).sum() 
+
+dist_to_psi_dict = {
+        'gaussian': psi_gaussian,
+        'bernoulli': psi_bernoulli,
+        'multinomial': psi_multinomial,
+        'exponential': psi_exponential,
+        'poisson': psi_poisson 
+    }
+
+
 def rbf_kernel(X,M):
     return torch.exp(-torch.norm(X-M,dim=-1))
 
