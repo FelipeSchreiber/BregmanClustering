@@ -12,6 +12,7 @@ This code is taken in part from power k means bregman
 import torch
 from torch.nn.functional import kl_div
 import warnings
+from torch.autograd import grad
 warnings.filterwarnings("ignore")
 
 
@@ -144,9 +145,9 @@ def pairwise_bregman(X, Y, phi, shape=None):
     Y = Y[None, :]
 
     if shape:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * torch.gradient(phi_Y, shape), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad(outputs=phi_Y, inputs=Y), axis=-1)
     else:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * torch.gradient(phi_Y), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad(outputs=phi_Y, inputs=Y), axis=-1)
 
     return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
 
