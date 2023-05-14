@@ -6,9 +6,15 @@ from sklearn.manifold import SpectralEmbedding
 from sklearn.preprocessing import OneHotEncoder
 
 class BregmanInitializer():
-    def __init__( self, n_clusters,initializer="AIC"):
+    def __init__( self, n_clusters,initializer="AIC",\
+                        edgeDistribution = "bernoulli",
+                        attributeDistribution = "gaussian",
+                        weightDistribution = "gaussian"):
         self.initializer = initializer
         self.n_clusters = n_clusters
+        self.edgeDistribution = edgeDistribution
+        self.attributeDistribution = attributeDistribution
+        self.weightDistribution = weightDistribution
     
     def spectralEmbedding(self, X ):
         if (X<0).any():
