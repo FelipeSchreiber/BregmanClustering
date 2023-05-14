@@ -155,6 +155,10 @@ class BregmanInitializer():
         elif self.initializer == "chernoff":
             self.chernoff_initializer(X,Y)
 
+    """
+    X is N x N x 1 np.array
+    Y is N x d np.array
+    """
     def initialize(self, X, Y ):
         A = (X != 0).astype(int)
         self.edge_index = np.nonzero(A)

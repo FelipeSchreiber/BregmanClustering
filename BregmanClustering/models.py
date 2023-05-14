@@ -11,6 +11,7 @@ import scipy as sp
 from sklearn.base import BaseEstimator, ClusterMixin
 from .divergences import *
 from .phi import *
+from BregmanInitializer.init_cluster import *
 from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import pairwise_kernels, paired_distances, pairwise_distances
 from sklearn.mixture import GaussianMixture
@@ -927,25 +928,34 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return self
     
     def initialize( self, X, Y ):
-        if self.attribute_initializer == 'GMM':
-            model = GaussianMixture(n_components=self.n_clusters)
-            model.fit( Y )
-            self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
-            self.attribute_model_init = model
-            #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
-        else:
-            raise TypeError( 'The initializer provided for the attributes is not correct' )
+        model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
+                                    edgeDistribution = self.edgeDistribution,
+                                    attributeDistribution = self.attributeDistribution,
+                                    weightDistribution = self.weightDistribution)
+        model.initialize( X, Y )
+        self.predicted_memberships = model.predicted_memberships
+        self.memberships_from_graph = model.memberships_from_graph
+        self.memberships_from_attributes = model.memberships_from_attributes
+        self.graph_init = model.graph_init
+        # if self.attribute_initializer == 'GMM':
+        #     model = GaussianMixture(n_components=self.n_clusters)
+        #     model.fit( Y )
+        #     self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
+        #     self.attribute_model_init = model
+        #     #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
+        # else:
+        #     raise TypeError( 'The initializer provided for the attributes is not correct' )
             
-        if self.graph_initializer == 'spectralClustering':
-            U = self.spectralEmbedding(X)
-            model = GaussianMixture(n_components=self.n_clusters)
-            model.fit(U)
-            self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
-                                                                            n_clusters = self.n_clusters )
-            self.graph_model_init = model
-            #self.graph_means = self.computeGraphMeans(X,self.memberships_from_graph)
-        else:
-            raise TypeError( 'The initializer provided for the graph is not correct' )
+        # if self.graph_initializer == 'spectralClustering':
+        #     U = self.spectralEmbedding(X)
+        #     model = GaussianMixture(n_components=self.n_clusters)
+        #     model.fit(U)
+        #     self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
+        #                                                                     n_clusters = self.n_clusters )
+        #     self.graph_model_init = model
+        #     #self.graph_means = self.computeGraphMeans(X,self.memberships_from_graph)
+        # else:
+        #     raise TypeError( 'The initializer provided for the graph is not correct' )
     
     def AIC_initializer(self,X,Y):
         U = self.spectralEmbedding(X)
@@ -985,10 +995,12 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return self
     
     def assignInitialLabels( self, X, Y ):
+        self.initialize( X, Y )
+        return self
         if self.initializer == 'random':
             z =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
             self.predicted_memberships = fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
-        
+
         elif self.initializer == "AIC":
             self.AIC_initializer(X,Y)
         
