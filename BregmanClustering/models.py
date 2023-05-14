@@ -995,7 +995,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return self
     
     def assignInitialLabels( self, X, Y ):
-        self.initialize( X, Y )
+        # self.initialize( X, Y )
         return self
         if self.initializer == 'random':
             z =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
