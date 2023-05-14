@@ -423,7 +423,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             self.edge_means = self.computeEdgeMeans( X, new_memberships)
             
             iteration += 1
-            #if np.array_equal( new_memberships, self.predicted_memberships) or iteration >= self.n_iters:
             if self.stop_criterion(self.predicted_memberships,new_memberships,iteration):
                 convergence = False
             self.predicted_memberships = new_memberships
