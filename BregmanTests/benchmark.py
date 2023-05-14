@@ -167,7 +167,7 @@ class BregmanBenchmark():
         self.n_clusters = n_clusters
         pout = b * np.log( n ) / n
         stats = {"varying":[],"a":[],"r":[],"agreed":[],"ARI_chernoff":[],"ARI_AIC":[],"ARI_ORACLE":[]}
-        for varying in ["attributes","graph"]:
+        for varying in ["graph","attributes"]:
 
             aris_attributes_mean = [ ]
             aris_graph_mean = [ ]
