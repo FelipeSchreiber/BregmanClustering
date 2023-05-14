@@ -9,10 +9,9 @@ This code is taken in part from power k means bregman
 
 """
 
-import torch
-from torch.nn.functional import kl_div
+import numpy as np
+from scipy.special import kl_div
 import warnings
-from torch.autograd import grad
 warnings.filterwarnings("ignore")
 
 
@@ -27,23 +26,23 @@ SEE:
 
 #Bernoulli | Logistic loss
 def logistic_loss(X,M):
-    total = torch.where( X == 0, -torch.log( 1-M ), -torch.log(M) )
-    #total = torch.log(1 + torch.exp(- (2*X - 1) * ( torch.log(M/(1-M)) ) ))
+    total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
+    #total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) ))
     return total
 
 #Multinomial | KL-divergence
 def KL_div(X,M):
-    total = kl_div(X,M,reduction="none")
+    total = X*np.log(X/M)
     return total
 
 #Exponential | Itakura-Saito Loss
 def itakura_saito_loss(X,M):
-    total = (X/M - torch.log(X/M) - 1)
+    total = (X/M - np.log(X/M) - 1)
     return total
 
 #Poisson | Generalized I-divergence
 def generalized_I_divergence(X,M):
-    total = X*torch.log(X/M) + M - X
+    total = X*np.log(X/M) + M - X
     return total
 
 #gaussian | Squared Euclidean distance
@@ -69,23 +68,23 @@ SEE:
 
 #Bernoulli | Logistic loss
 def phi_bernoulli(X):
-    total = X*torch.log(X) + (1-X)*torch.log(1-X)
+    total = X*np.log(X) + (1-X)*np.log(1-X)
     return total.sum()
 
 #Multinomial | KL-divergence
 def phi_multinomial(X):
-    total = X*torch.log(X)
+    total = X*np.log(X)
     ## - X * log(N)
     return total.sum()
 
 #Exponential | Itakura-Saito Loss
 def phi_exponential(X):
-    total = -torch.log(X) - 1
+    total = -np.log(X) - 1
     return total.sum()
 
 #Poisson | Generalized I-divergence
 def phi_poisson(X):
-    total = X*torch.log(X) - X
+    total = X*np.log(X) - X
     return total
 
 #gaussian | Squared Euclidean distance
@@ -111,22 +110,22 @@ SEE:
 
 #Bernoulli | Logistic loss
 def psi_bernoulli(θ):
-    total = torch.log(1 + torch.exp(θ))
+    total = np.log(1 + np.exp(θ))
     return total.sum()
 
 #Multinomial | KL-divergence
 def psi_multinomial(θ):
-    total = torch.log(1 + torch.sum(torch.exp(θ)))#*N
+    total = np.log(1 + np.sum(np.exp(θ)))#*N
     return total
 
 #Exponential | Itakura-Saito Loss
 def psi_exponential(θ):
-    total = -torch.log(-θ)
+    total = -np.log(-θ)
     return total.sum()
 
 #Poisson | Generalized I-divergence
 def psi_poisson(θ):
-    total = torch.exp(θ)
+    total = np.exp(θ)
     return total.sum()
 
 #gaussian | Squared Euclidean distance
@@ -143,7 +142,7 @@ dist_to_psi_dict = {
 
 
 def rbf_kernel(X,M):
-    return torch.exp(-torch.norm(X-M,dim=-1))
+    return np.exp(-np.norm(X-M,dim=-1))
 
 
 ### THIS SECTION WAS TAKEN FROM power k means bregman
@@ -155,11 +154,11 @@ last entry, only designed to work in iterative bregman update function, only wor
 """
 def get_phi(name):
     phi_dict = {
-        'euclidean': [lambda theta: torch.sum(theta**2, axis=1), lambda theta: 2*theta, lambda theta: 2*torch.eye(theta.size()[1], dtype=torch.float64)],
-        'kl_div': [lambda theta: torch.sum(theta * torch.log(theta), axis=1), lambda theta: torch.log(theta) + 1, lambda theta: torch.eye(theta.size()[1], dtype=torch.float64) * 1/theta],
-        'itakura_saito': [lambda theta: torch.sum(-torch.log(theta) - 1, axis=1), lambda theta: -1/theta, lambda theta: torch.eye(theta.size()[1]) / (theta**2)],
-        'relative_entropy': [lambda theta: torch.sum(theta * torch.log(theta) - theta, axis=1), lambda theta: torch.log(theta), lambda theta: torch.eye(theta.size()[1]) / theta],
-        'gamma': [lambda theta, k: torch.sum(-k + k * torch.log(k/theta), axis=1), lambda theta, k: -k/theta, lambda theta, k: k * torch.eye(theta.size()[1]) / (theta**2)]
+        'euclidean': [lambda theta: np.sum(theta**2, axis=1), lambda theta: 2*theta, lambda theta: 2*np.eye(theta.size()[1], dtype=np.float64)],
+        'kl_div': [lambda theta: np.sum(theta * np.log(theta), axis=1), lambda theta: np.log(theta) + 1, lambda theta: np.eye(theta.size()[1], dtype=np.float64) * 1/theta],
+        'itakura_saito': [lambda theta: np.sum(-np.log(theta) - 1, axis=1), lambda theta: -1/theta, lambda theta: np.eye(theta.size()[1]) / (theta**2)],
+        'relative_entropy': [lambda theta: np.sum(theta * np.log(theta) - theta, axis=1), lambda theta: np.log(theta), lambda theta: np.eye(theta.size()[1]) / theta],
+        'gamma': [lambda theta, k: np.sum(-k + k * np.log(k/theta), axis=1), lambda theta, k: -k/theta, lambda theta, k: k * np.eye(theta.size()[1]) / (theta**2)]
     }
     return phi_dict[name]
 
@@ -168,7 +167,7 @@ def bregman_divergence(phi_list, x, theta):
     phi = phi_list[0]
     gradient = phi_list[1]
 
-    bregman_div = phi(x) - phi(theta) - torch.dot(gradient(theta), x-theta)
+    bregman_div = phi(x) - phi(theta) - np.dot(gradient(theta), x-theta)
     return bregman_div
 """
 
@@ -188,9 +187,9 @@ def pairwise_bregman(X, Y, phi, shape=None):
     Y = Y[None, :]
 
     if shape:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad(outputs=phi_Y, inputs=Y), axis=-1)
+        pairwise_distances = phi_X - phi_Y - np.sum((X - Y) * grad(outputs=phi_Y, inputs=Y), axis=-1)
     else:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad(outputs=phi_Y, inputs=Y), axis=-1)
+        pairwise_distances = phi_X - phi_Y - np.sum((X - Y) * grad(outputs=phi_Y, inputs=Y), axis=-1)
 
-    return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
+    return np.clamp(pairwise_distances, min=1e-12, max=1e6)
 
