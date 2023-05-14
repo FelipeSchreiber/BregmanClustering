@@ -11,10 +11,11 @@ import scipy as sp
 from sklearn.base import BaseEstimator, ClusterMixin
 from BregmanClustering.models import *
 from .torch_divergences import *
-from torchmin import minimize_constr
+from BregmanInitializer.init_cluster import *
 import networkx as nx
 from sys import platform
 import torch
+
 device = "cpu"
 dtype = torch.FloatTensor
 if platform == "win32":
@@ -24,6 +25,7 @@ if platform == "win32":
 elif torch.cuda.is_available():
     dtype = torch.cuda.FloatTensor
     device = "cuda"
+
 from torch_geometric.utils import *
 from torch import Tensor
 from torch.nn import Linear
@@ -356,14 +358,12 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         return False
     
     def initialize( self, X, Y ):
-        model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters,\
-                                                    initializer=self.initializer)
+        model = BregmanInitializer(self.n_clusters,initializer=self.initializer)
         if self.edge_index is not None:
             A_dense = to_dense_adj(self.edge_index).numpy()[0]
         else:
             A_dense = X
         model.initialize( A_dense, Y.numpy() )
-        model.assignInitialLabels( A_dense, Y.numpy() )
         A_dense = None  
         self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
         self.memberships_from_graph = model.memberships_from_graph
@@ -458,67 +458,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         """
         edges_means = torch.tensordot( weights, X, dims=[(2,),(0,)] )/(torch.sum(weights,dim=-1)[:,:,None])
         return edges_means
-
-    def interpolate_params(self,θ_1,θ_2,t):
-        return (1-t)*θ_1 + t*θ_2
-    
-    """
-    Computes Jensen-Bregman Divergence
-    """
-    def J(self,θ_1,θ_2,t):
-        #ψ = dist_to_psi_dict[self.weightDistribution]
-        interpolated = self.interpolate_params(θ_1,θ_2)
-        return  (1-t)*self.weight_divergence(θ_1,interpolated) +\
-                 t*self.weight_divergence(θ_2,interpolated)
-        
-    def chernoffDivergence( self, a, b, c, t, graph_means, edge_means, distribution = 'bernoulli' ):
-        p_ac = graph_means[a,c]
-        p_bc = graph_means[b,c]
-        θ_ac = edge_means[a,c]
-        θ_bc = edge_means[b,c]
-        if distribution.lower() == 'bernoulli':
-            return (1-t) * p_ac + t * p_bc - (p_ac**t * p_bc**(1-t))*\
-                torch.exp(-self.J(θ_ac,θ_bc,t))
-
-    def make_renyi_div(self,pi,graph_means,edge_means,a,b):
-        def renyi_div(t):
-            total = 0
-            for c in range(self.n_clusters):
-                total += pi[c] *self.chernoffDivergence( 
-                                                         a, b, c, t,\
-                                                         graph_means,\
-                                                         edge_means
-                                                       )
-            total = -(1-t) * total
-            return total
-        return renyi_div
-    
-    def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeGraphMeans( X , Z )
-        edge_means = self.computeEdgeMeans(X,Z)
-        pi = Z.mean(dim=0)
-            
-        if self.edgeDistribution == 'bernoulli':
-            res = 10000
-            for a in range( self.n_clusters ):
-                for b in range( a ):
-                    div = self.make_renyi_div(pi,graph_means,edge_means,a,b)
-                    minDiv = minimize_constr( div, 0,bounds = {"lb":0,"ub":1})
-                    if - minDiv['fun'] < res:
-                        res = - minDiv['fun']
-        return res
-    
-    def attributeChernoffDivergence( self, Y, Z ):
-        res = 10000
-        attribute_means = self.computeAttributeMeans( Y, Z )
-        for a in range( self.n_clusters ):
-            for b in range( a ):
-                div = lambda t : - t * (1-t)/2 * torch.linalg.norm(attribute_means[a] - attribute_means[b])
-                minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                if - minDiv['fun'] < res:
-                    res = - minDiv['fun']
-
-        return res
     
     def assignments( self, A, X, Y ):
         ## z must be in the same device as A,X,Y
