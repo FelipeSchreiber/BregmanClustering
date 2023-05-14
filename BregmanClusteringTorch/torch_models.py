@@ -520,9 +520,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         edge_indices_in = torch.argwhere(self.edge_index[1,:] == node).flatten()
         ## get the actual v nodes in v->u
         v_indices_in = self.edge_index[0,edge_indices_in]
-        a_out = torch.zeros(self.N).to(device)
+        a_out = torch.zeros(self.N,requires_grad=True).to(device)
         a_out[v_indices_out] = 1
-        a_in = torch.zeros(self.N).to(device)
+        a_in = torch.zeros(self.N,requires_grad=True).to(device)
         a_in[v_indices_in] = 1
         ## index_to_mask, select
         for q in range( self.n_clusters ):
@@ -531,8 +531,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             Ztilde[ node, q ] = 1
             z_t = torch.argmax(Ztilde,dim=1)
             M_out = self.graph_means[torch.tensor([q]).expand(self.N),z_t]
+            M_out.requires_grad =True
             M_in = self.graph_means[z_t,torch.tensor([q]).expand(self.N)]
+            M_in.requires_grad =True
             E = self.edge_means
+            E.requires_grad =True
             """
             X has shape |E| x d
             E has shape k x k x d
