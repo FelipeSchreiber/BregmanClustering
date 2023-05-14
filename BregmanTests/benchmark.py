@@ -225,7 +225,8 @@ class BregmanBenchmark():
                                     attributeDistribution=self.attributes_distribution_name,\
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name,\
-                                    n_iters=n_iters)
+                                    n_iters=n_iters,
+                                    initializer = 'chernoff')
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(A,graph_data.x)
                     model.assignInitialLabels(None,None)
