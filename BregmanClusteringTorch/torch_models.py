@@ -411,7 +411,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         self.edge_index = A.indices().long()
         self.constant_mul = 0.5 if is_undirected(self.edge_index) else 1
         if Z_init is None:
-            self.initialize(A,Y)
+            self.initialize(X.detach().numpy(),Y.detach().numpy())
         else:
             self.predicted_memberships = Z_init.type(dtype)
 
