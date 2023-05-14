@@ -158,6 +158,7 @@ class BregmanInitializer():
     def initialize(self, X, Y ):
         A = (X != 0).astype(int)
         self.edge_index = np.nonzero(A)
+        print(">>>edge_index",self.edge_index)
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
