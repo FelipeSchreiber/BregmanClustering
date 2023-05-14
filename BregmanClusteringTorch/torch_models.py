@@ -505,7 +505,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             """
             att_div = H[node,q]
             edge_div = self.reduce_by( 
-                                        self.edge_divergence( a_out , M_out ) + self.edge_divergence( a_in , M_in ),
+                                        self.edge_divergence( a_out , M_out ),
+                                        #+ self.edge_divergence( a_in , M_in )
                                         dim=-1
                                     )
             weight_div=0
@@ -515,14 +516,14 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                     E[q,z_t[v_indices_out],:]
                                                     )
                                             )
-            if len(v_indices_in) > 0:
-                weight_div += self.reduce_by( 
-                                            self.weight_divergence(
-                                                        X[edge_indices_in,:],
-                                                        E[z_t[v_indices_in],q,:]
-                                                    ) 
-                                        )
-            L[ q ] = att_div + 0.5 * self.constant_mul * (weight_div + edge_div)
+            # if len(v_indices_in) > 0:
+            #     weight_div += self.reduce_by( 
+            #                                 self.weight_divergence(
+            #                                             X[edge_indices_in,:],
+            #                                             E[z_t[v_indices_in],q,:]
+            #                                         ) 
+            #                             )
+            L[ q ] = att_div + 0.5 * (weight_div + edge_div) #* self.constant_mul
         return torch.argmin( L )
     
     def predict(self, X, Y):
