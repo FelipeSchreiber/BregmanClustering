@@ -403,6 +403,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         TYPE
             Trained model.
         """
+        A.requires_grad = True
+        X.requires_grad = True
+        Y.requires_grad = True
         self.N = Y.shape[0]
         self.row_indices = torch.arange(self.N).to(device)
         self.edge_index = A.indices().long()
