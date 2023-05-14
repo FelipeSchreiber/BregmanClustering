@@ -47,7 +47,7 @@ def generalized_I_divergence(X,M):
 def euclidean_distance(X,M):
     return 0.5*(X-M)**2
 
-dist_to_divergence_dict = {
+dist_to_divergence_dict_init = {
         'gaussian': euclidean_distance,
         'bernoulli': logistic_loss,
         'multinomial':KL_div,
@@ -89,7 +89,7 @@ def phi_poisson(X):
 def phi_gaussian(X):
     return 0.5*(X**2).sum() #* 1/(σ2) 
 
-dist_to_phi_dict = {
+dist_to_phi_dict_init = {
         'gaussian': phi_gaussian,
         'bernoulli': phi_bernoulli,
         'multinomial': phi_multinomial,
@@ -130,7 +130,7 @@ def psi_poisson(θ):
 def psi_gaussian(θ):
     return 0.5*(θ**2).sum() 
 
-dist_to_psi_dict = {
+dist_to_psi_dict_init = {
         'gaussian': psi_gaussian,
         'bernoulli': psi_bernoulli,
         'multinomial': psi_multinomial,

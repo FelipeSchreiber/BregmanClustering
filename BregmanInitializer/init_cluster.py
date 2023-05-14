@@ -90,7 +90,7 @@ class BregmanInitializer():
         return edges_means 
     
     def J(self,θ_1,θ_2,t):
-        ψ = dist_to_psi_dict[self.weightDistribution]
+        ψ = dist_to_psi_dict_init[self.weightDistribution]
         return   t * ψ( θ_1 ) + (1-t) * ψ( θ_2 ) - ψ( t * θ_1 + (1-t)* θ_2 )
         
     def chernoffDivergence( self, a, b, c, t, graph_means, edge_means, distribution = 'bernoulli' ):
