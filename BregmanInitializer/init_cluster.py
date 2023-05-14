@@ -78,8 +78,8 @@ class BregmanInitializer():
         desired output:
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
-        weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0,:],self.edge_index[1,:]]
-        X = X[self.edge_index[0,:],self.edge_index[1,:],:]
+        weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
+        X = X[self.edge_index[0],self.edge_index[1],:]
         """
         X is a |E| x d array
         weights is a k x k x |E|
@@ -158,7 +158,6 @@ class BregmanInitializer():
     def initialize(self, X, Y ):
         A = (X != 0).astype(int)
         self.edge_index = np.nonzero(A)
-        print(">>>edge_index",self.edge_index)
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
