@@ -115,7 +115,7 @@ class BregmanInitializer():
             return renyi_div
 
     def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeGraphMeans( X , Z )
+        graph_means = self.computeGraphMeans( self.A , Z )
         edge_means = self.computeEdgeMeans(X,Z)
         pi = Z.mean(axis=0)
             
@@ -141,27 +141,30 @@ class BregmanInitializer():
 
         return res
     
-    def assignInitialLabels( self, X, Y ):
+    def assignInitialLabels( self ):
         if self.initializer == 'random':
-            preds =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
+            preds =  np.random.randint( 0, self.n_clusters, size = self.X.shape[0] )
             preds = preds.reshape(-1, 1)
             ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
             self.predicted_memberships = ohe.transform(preds)
         
         elif self.initializer == "AIC":
-            self.AIC_initializer(X,Y)
+            self.AIC_initializer(self.X,self.Y)
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
-            self.chernoff_initializer(X,Y)
+            self.chernoff_initializer(self.X,self.Y)
 
     """
-    X is N x N x 1 np.array
+    X is N x N np.array
     Y is N x d np.array
     """
     def initialize(self, X, Y ):
         A = (X != 0).astype(int)
         self.edge_index = np.nonzero(A)
+        self.A = A
+        self.X = X
+        self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
@@ -177,4 +180,4 @@ class BregmanInitializer():
         self.memberships_from_graph = ohe.transform(preds)
         self.graph_model_init = model
 
-        self.assignInitialLabels( X, Y )
+        self.assignInitialLabels()
