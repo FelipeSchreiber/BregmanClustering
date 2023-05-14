@@ -327,7 +327,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         if n_iters is not None:
             self.n_iters = n_iters
         else:
-            self.n_iters = 1e6
+            self.n_iters = 30
 
         self.initializer = initializer
         self.graph_initializer = graph_initializer
@@ -516,14 +516,14 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                     E[q,z_t[v_indices_out],:]
                                                     )
                                             )
-            # if len(v_indices_in) > 0:
-            #     weight_div += self.reduce_by( 
-            #                                 self.weight_divergence(
-            #                                             X[edge_indices_in,:],
-            #                                             E[z_t[v_indices_in],q,:]
-            #                                         ) 
-            #                             )
-            L[ q ] = att_div + 0.5 * (edge_div) #* self.constant_mul
+            if len(v_indices_in) > 0:
+                weight_div += self.reduce_by( 
+                                            self.weight_divergence(
+                                                        X[edge_indices_in,:],
+                                                        E[z_t[v_indices_in],q,:]
+                                                    ) 
+                                        )
+            L[ q ] = att_div + (edge_div + weight_div) * self.constant_mul
         return torch.argmin( L )
     
     def predict(self, X, Y):

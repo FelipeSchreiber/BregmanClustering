@@ -226,7 +226,8 @@ class BregmanBenchmark():
                                     edgeDistribution=self.edge_distribution_name,\
                                     weightDistribution=self.weight_distribution_name,\
                                     n_iters=n_iters,
-                                    initializer = 'chernoff')
+                                    initializer = 'chernoff',
+                                    reduce_by="mean")
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(A,graph_data.x)
                     model.assignInitialLabels(None,None)
@@ -265,6 +266,7 @@ class BregmanBenchmark():
                     # else:
                     #     model.fit(X, Y, chernoff_att_labels)
                     ### > end
+
                     print(X.shape,Y.shape,z_init.shape,n_clusters)
                     IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)
                     IR_LS_pred = csbm.iter_csbm2(X,Y,z_init,n_clusters)
