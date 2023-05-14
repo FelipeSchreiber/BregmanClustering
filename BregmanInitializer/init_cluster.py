@@ -109,6 +109,7 @@ class BregmanInitializer():
     def assignInitialLabels( self, X, Y ):
         if self.initializer == 'random':
             preds =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
+            preds = preds.reshape(-1, 1)
             ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
             self.predicted_memberships = ohe.transform(preds)
         
@@ -122,6 +123,7 @@ class BregmanInitializer():
     def initialize(self, X, Y ):
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
+        preds = preds.reshape(-1, 1)
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
@@ -129,6 +131,7 @@ class BregmanInitializer():
         U = self.spectralEmbedding(X)
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit(U).predict(U)
+        preds = preds.reshape(-1, 1)
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
         self.graph_model_init = model
