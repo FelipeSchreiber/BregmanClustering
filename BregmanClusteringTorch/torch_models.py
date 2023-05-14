@@ -403,7 +403,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         TYPE
             Trained model.
         """
-        A.requires_grad = True
+        # A.requires_grad = True
         X.requires_grad = True
         Y.requires_grad = True
         self.N = Y.shape[0]
