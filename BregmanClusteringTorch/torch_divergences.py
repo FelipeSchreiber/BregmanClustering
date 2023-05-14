@@ -70,18 +70,18 @@ SEE:
 #Bernoulli | Logistic loss
 def phi_bernoulli(X):
     total = X*torch.log(X) + (1-X)*torch.log(1-X)
-    return total.sum()
+    return total
 
 #Multinomial | KL-divergence
 def phi_multinomial(X):
     total = X*torch.log(X)
     ## - X * log(N)
-    return total.sum()
+    return total
 
 #Exponential | Itakura-Saito Loss
 def phi_exponential(X):
     total = -torch.log(X) - 1
-    return total.sum()
+    return total
 
 #Poisson | Generalized I-divergence
 def phi_poisson(X):
@@ -90,7 +90,12 @@ def phi_poisson(X):
 
 #gaussian | Squared Euclidean distance
 def phi_gaussian(X):
-    return 0.5*(X**2).sum() #* 1/(σ2) 
+    return 0.5*(X**2) #* 1/(σ2) 
+
+def make_phi_with_reduce(reduce_func,phi):
+    def compose_phi(X):
+        return reduce_func(phi(X),dim=-1)
+    return compose_phi
 
 dist_to_phi_dict = {
         'gaussian': phi_gaussian,
@@ -162,15 +167,13 @@ def get_phi(name):
         'gamma': [lambda theta, k: torch.sum(-k + k * torch.log(k/theta), axis=1), lambda theta, k: -k/theta, lambda theta, k: k * torch.eye(theta.size()[1]) / (theta**2)]
     }
     return phi_dict[name]
+"""
 
 #x, theta are both k-dimensional
-def bregman_divergence(phi_list, x, theta):
-    phi = phi_list[0]
-    gradient = phi_list[1]
-
-    bregman_div = phi(x) - phi(theta) - torch.dot(gradient(theta), x-theta)
+def bregman_divergence(phi, x, theta):
+    phi_theta = phi(theta)
+    bregman_div = phi(x) - phi_theta - torch.dot(grad(outputs=phi_theta, inputs=theta), x-theta)
     return bregman_div
-"""
 
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
 #shape=gamma_shape
