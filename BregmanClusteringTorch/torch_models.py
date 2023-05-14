@@ -505,8 +505,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             """
             att_div = H[node,q]
             edge_div = self.reduce_by( 
-                                        self.edge_divergence( a_out , M_out ),
-                                        #+ self.edge_divergence( a_in , M_in )
+                                        self.edge_divergence( a_out , M_out )
+                                        + self.edge_divergence( a_in , M_in ),
                                         dim=-1
                                     )
             weight_div=0
