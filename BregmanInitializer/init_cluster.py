@@ -136,7 +136,7 @@ class BregmanInitializer():
         self.memberships_from_graph = ohe.transform(preds)
         self.graph_model_init = model
 
-        self.assignInitialLabels( self, X, Y )
+        self.assignInitialLabels( X, Y )
       
 # def interpolate_params(self,θ_1,θ_2,t):
 #         return (1-t)*θ_1 + t*θ_2  
