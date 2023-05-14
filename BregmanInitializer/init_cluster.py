@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sp
+from .divergences import *
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.mixture import GaussianMixture
 from sklearn.manifold import SpectralEmbedding
@@ -15,7 +16,8 @@ class BregmanInitializer():
         self.edgeDistribution = edgeDistribution
         self.attributeDistribution = attributeDistribution
         self.weightDistribution = weightDistribution
-    
+        self.edge_index = None
+
     def spectralEmbedding(self, X ):
         if (X<0).any():
             X = pairwise_kernels(X,metric='rbf')
@@ -69,32 +71,59 @@ class BregmanInitializer():
         normalisation = np.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     
-    def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
-        if distribution.lower() == 'bernoulli':
-            return (1-t) * a + t *b - a**t * b**(1-t)
+    def computeEdgeMeans( self, X, Z ):
+        weights = np.tensordot(Z, Z, axes=((), ()))
+        """
+        weights[i,q,j,l] = tau[i,q]*tau[j,l]
+        desired output:
+        weights[q,l,i,j] = tau[i,q]*tau[j,l]
+        """
+        weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0,:],self.edge_index[1,:]]
+        X = X[self.edge_index[0,:],self.edge_index[1,:],:]
+        """
+        X is a |E| x d array
+        weights is a k x k x |E|
+        desired output: 
+        out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
+        """
+        edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
+        return edges_means 
     
-    def make_renyi_div(self,pi,graph_means,a,b):
-        def renyi_div(t):
-            total = 0
-            for c in range(self.n_clusters):
-                total += pi[c] *self.chernoffDivergence( 
-                                                        graph_means[a,c],\
-                                                        graph_means[b,c],\
-                                                        t
-                                                       )
-            total = -(1-t) * total
-            return total
-        return renyi_div
+    def J(self,θ_1,θ_2,t):
+        ψ = dist_to_psi_dict[self.weightDistribution]
+        return   t * ψ( θ_1 ) + (1-t) * ψ( θ_2 ) - ψ( t * θ_1 + (1-t)* θ_2 )
+        
+    def chernoffDivergence( self, a, b, c, t, graph_means, edge_means, distribution = 'bernoulli' ):
+            p_ac = graph_means[a,c]
+            p_bc = graph_means[b,c]
+            θ_ac = edge_means[a,c]
+            θ_bc = edge_means[b,c]
+            if distribution.lower() == 'bernoulli':
+                return (1-t) * p_ac + t * p_bc - (p_ac**t * p_bc**(1-t))*\
+                    np.exp(-self.J(θ_ac,θ_bc,t))
+
+    def make_renyi_div(self,pi,graph_means,edge_means,a,b):
+            def renyi_div(t):
+                total = 0
+                for c in range(self.n_clusters):
+                    total += pi[c] *self.chernoffDivergence( 
+                                                            a, b, c, t,\
+                                                            graph_means,\
+                                                            edge_means
+                                                        )
+                return total
+            return renyi_div
 
     def graphChernoffDivergence( self, X, Z ):
         graph_means = self.computeGraphMeans( X , Z )
+        edge_means = self.computeEdgeMeans(X,Z)
         pi = Z.mean(axis=0)
-    
+            
         if self.edgeDistribution == 'bernoulli':
             res = 10000
             for a in range( self.n_clusters ):
                 for b in range( a ):
-                    renyi_div = self.make_renyi_div(pi,graph_means,a,b)
+                    renyi_div = self.make_renyi_div(pi,graph_means,edge_means,a,b)
                     minDiv = sp.optimize.minimize_scalar( renyi_div, bounds = (0,1), method ='bounded' )
                     if - minDiv['fun'] < res:
                         res = - minDiv['fun']
@@ -127,6 +156,8 @@ class BregmanInitializer():
             self.chernoff_initializer(X,Y)
 
     def initialize(self, X, Y ):
+        A = (X != 0).astype(int)
+        self.edge_index = np.nonzero(A)
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
@@ -143,63 +174,3 @@ class BregmanInitializer():
         self.graph_model_init = model
 
         self.assignInitialLabels( X, Y )
-      
-# def interpolate_params(self,θ_1,θ_2,t):
-#         return (1-t)*θ_1 + t*θ_2  
-#     """
-#     Computes Jensen-Bregman Divergence
-#     """
-# def J(self,θ_1,θ_2,t):
-#         #ψ = dist_to_psi_dict[self.weightDistribution]
-#         interpolated = self.interpolate_params(θ_1,θ_2)
-#         return  (1-t)*self.weight_divergence(θ_1,interpolated) +\
-#                  t*self.weight_divergence(θ_2,interpolated)
-        
-# def chernoffDivergence( self, a, b, c, t, graph_means, edge_means, distribution = 'bernoulli' ):
-#         p_ac = graph_means[a,c]
-#         p_bc = graph_means[b,c]
-#         θ_ac = edge_means[a,c]
-#         θ_bc = edge_means[b,c]
-#         if distribution.lower() == 'bernoulli':
-#             return (1-t) * p_ac + t * p_bc - (p_ac**t * p_bc**(1-t))*\
-#                 torch.exp(-self.J(θ_ac,θ_bc,t))
-
-# def make_renyi_div(self,pi,graph_means,edge_means,a,b):
-#         def renyi_div(t):
-#             total = 0
-#             for c in range(self.n_clusters):
-#                 total += pi[c] *self.chernoffDivergence( 
-#                                                          a, b, c, t,\
-#                                                          graph_means,\
-#                                                          edge_means
-#                                                        )
-#             total = -(1-t) * total
-#             return total
-#         return renyi_div
-    
-# def graphChernoffDivergence( self, X, Z ):
-#         graph_means = self.computeGraphMeans( X , Z )
-#         edge_means = self.computeEdgeMeans(X,Z)
-#         pi = Z.mean(dim=0)
-            
-#         if self.edgeDistribution == 'bernoulli':
-#             res = 10000
-#             for a in range( self.n_clusters ):
-#                 for b in range( a ):
-#                     div = self.make_renyi_div(pi,graph_means,edge_means,a,b)
-#                     minDiv = minimize_constr( div, torch.tensor(0),bounds = {"lb":0,"ub":1})
-#                     if - minDiv['fun'] < res:
-#                         res = - minDiv['fun']
-#         return res
-    
-# def attributeChernoffDivergence( self, Y, Z ):
-#         res = 10000
-#         attribute_means = self.computeAttributeMeans( Y, Z )
-#         for a in range( self.n_clusters ):
-#             for b in range( a ):
-#                 div = lambda t : - t * (1-t)/2 * torch.linalg.norm(attribute_means[a] - attribute_means[b])
-#                 minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-#                 if - minDiv['fun'] < res:
-#                     res = - minDiv['fun']
-
-#         return res
