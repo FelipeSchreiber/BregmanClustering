@@ -43,11 +43,11 @@ class BregmanInitializer():
         if AIC_graph < AIC_attribute:
             self.predicted_memberships = self.memberships_from_graph
             self.graph_init = True
-            print( 'Initialisation chosen from the graph')
+            #print( 'Initialisation chosen from the graph')
         else:
             self.predicted_memberships = self.memberships_from_attributes
             self.graph_init = False
-            print( 'Initialisation chosen from the attributes' )
+            #print( 'Initialisation chosen from the attributes' )
         return self
     
     def chernoff_initializer(self,X,Y):
@@ -56,11 +56,11 @@ class BregmanInitializer():
                 self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
             self.predicted_memberships = self.memberships_from_graph
             self.graph_init = True
-            print( 'Initialisation chosen from the graph')
+            #print( 'Initialisation chosen from the graph')
         else:
             self.predicted_memberships = self.memberships_from_attributes
             self.graph_init = False
-            print( 'Initialisation chosen from the attributes' )         
+            #print( 'Initialisation chosen from the attributes' )         
         return self
 
     def computeAttributeMeans( self, Y, Z ):

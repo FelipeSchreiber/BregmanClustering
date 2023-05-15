@@ -130,7 +130,8 @@ def plotting( x, curves, labels, xticks,
             plt.errorbar( x, curves[ i ], yerr = curves_std[ i ], linestyle = '-.', label = labels[ i ] )
 
     
-    legend = plt.legend( title = legendTitle, loc=4,  fancybox=True, fontsize= SIZE_LEGEND )
+    legend = plt.legend( title = legendTitle, loc=4,  fancybox=True, fontsize= SIZE_LEGEND,\
+                        bbox_to_anchor=(1, 0., 0.5, 0.5))
     plt.setp( legend.get_title(),fontsize= SIZE_LEGEND )
     plt.xlabel( xlabel, fontsize = SIZE_LABELS )
     plt.ylabel( ylabel, fontsize = SIZE_LABELS )
