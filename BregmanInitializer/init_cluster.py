@@ -119,7 +119,7 @@ class BregmanInitializer():
 
     def graphChernoffDivergence( self, X, Z ):
         graph_means = self.computeGraphMeans( self.A , Z )
-        edge_means = self.computeEdgeMeans(X[self.edge_index[0],self.edge_index[1],:],Z)
+        edge_means = self.computeEdgeMeans(X,Z)
         pi = Z.mean(axis=0)
             
         if self.edgeDistribution == 'bernoulli':
@@ -159,7 +159,7 @@ class BregmanInitializer():
             self.chernoff_initializer(self.X,self.Y)
 
     """
-    X is N x N np.array or |E| x d
+    X is N x N x 1 np.array or |E| x 1
     Y is N x d np.array
     """
     def initialize(self, X, Y , edge_index):
