@@ -3,72 +3,142 @@
 """
 Created on Fri Feb 17 16:52:18 2023
 
-@author: maximilien
+@author: maximilien, Felipe Schreiber Fernandes
 
-This code is taken from 
-https://github.com/juselara1/bregclus/blob/main/bregclus/divergences.py
+This code is taken in part from power k means bregman
+
 """
 
-
 import numpy as np
-from scipy.special import kl_div
 import warnings
 warnings.filterwarnings("ignore")
 
-def kullbackLeibler_binaryMatrix( X, M ):
-    essai = np.where( X == 0, -np.log( 1-M ), np.log(X/M) )
-    return np.sum( essai )
+"""
+DIVERGENCES DEFINITIONS
+#DISTRIBUTION NAME -- DIVERGENCE NAME
+d(X,Y) = phi(X) - phi(Y) + <X-Y, grad(phi)(Y)> 
 
-#Bernoulli
+SEE:
+ "Clustering with Bregman Divergences" page 1725
+"""
+
+#Bernoulli | Logistic loss
 def logistic_loss(X,M):
-    #total = log_loss(X.flatten(),M.flatten())
-    total = np.where( X == 0, -np.log( 1-M ), np.log(X/M) ).sum()
+    total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
+    #total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) )) as stated in the paper
     return total
 
-#Multinomial
+#Multinomial | KL-divergence
 def KL_div(X,M):
-    total = np.sum(kl_div(X.flatten(),M.flatten()))
+    total = X*np.log(X/M)
     return total
 
-#Exponential
+#Exponential | Itakura-Saito Loss
 def itakura_saito_loss(X,M):
-    total = np.sum((X/M - np.log(X/M) - 1))
+    total = (X/M - np.log(X/M) - 1)
     return total
 
-#Poisson
-def relative_entropy(X,M):
-    total = np.sum(X*np.log(X/M) + M - X)
+#Poisson | Generalized I-divergence
+def generalized_I_divergence(X,M):
+    total = X*np.log(X/M) + M - X
     return total
 
-#gaussian
+#gaussian | Squared Euclidean distance
 def euclidean_distance(X,M):
-    return np.linalg.norm(X-M)
+    return 0.5*(X-M)**2
 
-def _euclidean_vectorized(X,Y):
-    """
-    Computes a pairwise Euclidean distance between two matrices: D_ij=||x_i-y_j||^2.
-    Parameters
-    ----------
-        X: array-like, shape=(batch_size, n_features)
-           Input batch matrix.
-        Y: array-like, shape=(n_clusters, n_features)
-           Matrix in which each row represents the mean vector of each cluster.
-    Returns
-    -------
-        D: array-like, shape=(batch_size, n_clusters)
-           Matrix of paiwise dissimilarities between the batch and the cluster's parameters.
-    """
-    
-    # same computation as the _old_euclidean function, but a new axis is added
-    # to X so that Y can be directly broadcast, speeding up computations
-    return np.sqrt(np.sum((np.expand_dims(X, axis=1)-Y)**2, axis=-1))
-
-# expose the vectorized version as the default one
-euclidean = _euclidean_vectorized
-dist_to_phi_dict = {
+dist_to_divergence_dict = {
         'gaussian': euclidean_distance,
         'bernoulli': logistic_loss,
         'multinomial':KL_div,
         'exponential': itakura_saito_loss,
-        'poisson': relative_entropy
+        'poisson': generalized_I_divergence
     }
+
+
+"""
+PHI DEFINITIONS
+#DISTRIBUTION NAME -- DIVERGENCE NAME
+
+SEE:
+ "Clustering with Bregman Divergences" page 1725
+"""
+
+#Bernoulli | Logistic loss
+def phi_bernoulli(X):
+    total = X*np.log(X) + (1-X)*np.log(1-X)
+    return total.sum()
+
+#Multinomial | KL-divergence
+def phi_multinomial(X):
+    total = X*np.log(X)
+    ## - X * log(N)
+    return total.sum()
+
+#Exponential | Itakura-Saito Loss
+def phi_exponential(X):
+    total = -np.log(X) - 1
+    return total.sum()
+
+#Poisson | Generalized I-divergence
+def phi_poisson(X):
+    total = X*np.log(X) - X
+    return total
+
+#gaussian | Squared Euclidean distance
+def phi_gaussian(X):
+    return 0.5*(X**2).sum() #* 1/(σ2) 
+
+dist_to_phi_dict = {
+        'gaussian': phi_gaussian,
+        'bernoulli': phi_bernoulli,
+        'multinomial': phi_multinomial,
+        'exponential': phi_exponential,
+        'poisson': phi_poisson 
+    }
+
+"""
+PSI DEFINITIONS
+#DISTRIBUTION NAME -- DIVERGENCE NAME
+p(ψ,θ)(x) = exp(〈x, θ〉- ψ(θ))
+
+SEE:
+ "Clustering with Bregman Divergences" page 1725
+"""
+
+#Bernoulli | Logistic loss
+def psi_bernoulli(θ):
+    total = np.log(1 + np.exp(θ))
+    return total.sum()
+
+#Multinomial | KL-divergence
+def psi_multinomial(θ):
+    total = np.log(1 + np.sum(np.exp(θ)))#*N
+    return total
+
+#Exponential | Itakura-Saito Loss
+def psi_exponential(θ):
+    total = -np.log(-θ)
+    return total.sum()
+
+#Poisson | Generalized I-divergence
+def psi_poisson(θ):
+    total = np.exp(θ)
+    return total.sum()
+
+#gaussian | Squared Euclidean distance
+def psi_gaussian(θ):
+    return 0.5*(θ**2).sum() 
+
+dist_to_psi_dict = {
+        'gaussian': psi_gaussian,
+        'bernoulli': psi_bernoulli,
+        'multinomial': psi_multinomial,
+        'exponential': psi_exponential,
+        'poisson': psi_poisson 
+    }
+
+
+def rbf_kernel(X,M):
+    return np.exp(-np.norm(X-M,dim=-1))
+

@@ -311,7 +311,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         ----------
         n_clusters : INT
             Number of clustes.
-        graph_divergence, attribute_divergence : function
+        edge_divergence, attribute_divergence : function
             Pairwise divergence function. The default is euclidean.
         n_iters : INT, optional
             Number of clustering iterations. The default is 25.
@@ -333,8 +333,8 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.graph_init = False
         self.edgeDistribution = edgeDistribution
         self.attributeDistribution = attributeDistribution
-        self.graph_divergence = dist_to_phi_dict[self.edgeDistribution]
-        self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
+        self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
+        self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.edge_index = None 
 
     def fit( self, X, Y, Z_init=None ):
@@ -502,7 +502,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def likelihoodGraph(self, X, Z):
         graph_mean = self.computeGraphMeans(X,Z)
-        return 1/2 * np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
+        return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def likelihoodAttributes( self, Y, Z):
         M = self.computeAttributeMeans(Y,Z)
@@ -533,7 +533,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            graph_div = self.graph_divergence( X[node,:], M[node,:] )
+            graph_div = self.edge_divergence( X[node,:], M[node,:] )
             L[ q ] = att_div + 0.5*graph_div
         return np.argmin( L )
     
@@ -555,7 +555,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
 class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
+                 edge_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
@@ -567,7 +567,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         ----------
         n_clusters : INT
             Number of clustes.
-        graph_divergence, attribute_divergence : function
+        edge_divergence, attribute_divergence : function
             Pairwise divergence function. The default is euclidean.
         n_iters : INT, optional
             Number of clustering iterations. The default is 25.
@@ -580,7 +580,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         None.
         """
         self.n_clusters = n_clusters
-        self.graph_divergence = graph_divergence
+        self.edge_divergence = edge_divergence
         self.attribute_divergence = attribute_divergence
         self.n_iters = n_iters
         self.initializer = initializer
@@ -629,111 +629,23 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
     def likelihoodGraph(self,X,Z):
         graph_mean = self.computeGMeans(X,Z)
-        return 1/2 * np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
+        return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
     
-    def initialize( self, X, Y ):
-        if self.attribute_initializer == 'GMM':
-            model = GaussianMixture(n_components=self.n_clusters)
-            model.fit( Y )
-            self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
-            self.attribute_model_init = model
-            #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
-        else:
-            raise TypeError( 'The initializer provided for the attributes is not correct' )
-            
-        if self.graph_initializer == 'spectralClustering':
-            U = self.spectralEmbedding(X)
-            model = GaussianMixture(n_components=self.n_clusters)
-            model.fit(U)
-            self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
-                                                                            n_clusters = self.n_clusters )
-            self.graph_model_init = model
-            #self.graph_means = self.computeGraphMeans(X,self.memberships_from_graph)
-        else:
-            raise TypeError( 'The initializer provided for the graph is not correct' )
-    
-    def AIC_initializer(self,X,Y):
-        U = self.spectralEmbedding(X)
-        net_null_model = GaussianMixture(n_components=1,).fit(U)
-        null_net = net_null_model.aic(U)
-        net_model = self.graph_model_init
-        fitted_net = net_model.aic(U)
-        AIC_graph = fitted_net - null_net
+    def initialize( self, A, X, Y ):
+        model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
+                                    edgeDistribution = self.edgeDistribution,
+                                    attributeDistribution = self.attributeDistribution,
+                                    weightDistribution = self.weightDistribution)
+        if self.edge_index is None:
+            self.edge_index = np.nonzero(A)
+        model.initialize( X, Y , self.edge_index)
+        self.predicted_memberships = model.predicted_memberships
+        self.memberships_from_graph = model.memberships_from_graph
+        self.memberships_from_attributes = model.memberships_from_attributes
+        self.graph_init = model.graph_init
 
-        att_null_model = GaussianMixture(n_components=1).fit(Y)
-        null_attributes = att_null_model.aic(Y)
-        att_model = self.attribute_model_init
-        fitted_attributes = att_model.aic(Y)
-        AIC_attribute = fitted_attributes - null_attributes
-        
-        if AIC_graph < AIC_attribute:
-            self.predicted_memberships = self.memberships_from_graph
-            self.graph_init = True
-            print( 'Initialisation chosen from the graph')
-        else:
-            self.predicted_memberships = self.memberships_from_attributes
-            self.graph_init = False
-            print( 'Initialisation chosen from the attributes' )
-        return self
-    
-    def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
-        if distribution.lower() == 'bernoulli':
-            return (1-t) * a + t *b - a**t * b**(1-t)
-
-    def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeGraphMeans( X , Z )
-        n = Z.shape[ 0 ]
-        pi = np.zeros( self.n_clusters )
-        for c in range( self.n_clusters ):
-            cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
-            pi[ c ] = len(cluster_c) / n
-            
-        if self.edgeDistribution == 'bernoulli':
-            res = 10000
-            for a in range( self.n_clusters ):
-                for b in range( a ):
-                    div = lambda t : - (1-t) * np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
-                    minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                    if - minDiv['fun'] < res:
-                        res = - minDiv['fun']
-        return res
-    
-    def attributeChernoffDivergence( self, Y, Z ):
-        res = 10000
-        attribute_means = self.computeAttributeMeans( Y, Z )
-        for a in range( self.n_clusters ):
-            for b in range( a ):
-                div = lambda t : - t * (1-t)/2 * np.linalg.norm( attribute_means[a] - attribute_means[b] )
-                minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                if - minDiv['fun'] < res:
-                    res = - minDiv['fun']
-
-        return res
-
-    def chernoff_initializer(self,X,Y):
-        n = Y.shape[0]
-        if self.graphChernoffDivergence( X, self.memberships_from_graph ) > \
-                self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
-            self.predicted_memberships = self.memberships_from_graph
-            self.graph_init = True
-            print( 'Initialisation chosen from the graph')
-        else:
-            self.predicted_memberships = self.memberships_from_attributes
-            self.graph_init = False
-            print( 'Initialisation chosen from the attributes' )         
-        return self
-    
     def assignInitialLabels( self, X, Y ):
-        if self.initializer == 'random':
-            z =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
-            self.predicted_memberships = fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
-        
-        elif self.initializer == "AIC":
-            self.AIC_initializer(X,Y)
-        
-        ## Chernoff divergence
-        elif self.initializer == "chernoff":
-            self.chernoff_initializer(X,Y)
+        return self
         
     def spectralEmbedding(self, X ):
         if (X<0).any():
@@ -757,7 +669,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         net_divergences_elementwise = pairwise_distances(X.reshape(-1,1),\
                                              self.graph_means.reshape(-1,1),\
-                                             metric=self.graph_divergence)\
+                                             metric=self.edge_divergence)\
                                             .reshape((N,N,self.n_clusters,self.n_clusters))
         """
         net_divergences has shape N x N x K x K
@@ -854,7 +766,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         ----------
         n_clusters : INT
             Number of clustes.
-        graph_divergence, attribute_divergence : function
+        edge_divergence, attribute_divergence : function
             Pairwise divergence function. The default is euclidean.
         n_iters : INT, optional
             Number of clustering iterations. The default is 25.
@@ -877,9 +789,9 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.edgeDistribution = edgeDistribution
         self.attributeDistribution = attributeDistribution
         self.weightDistribution = weightDistribution
-        self.graph_divergence = dist_to_phi_dict[self.edgeDistribution]
-        self.edge_divergence = dist_to_phi_dict[self.weightDistribution]
-        self.attribute_divergence = dist_to_phi_dict[self.attributeDistribution]
+        self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
+        self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
+        self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.edge_index = None 
 
     def fit( self, A, X, Y, Z_init=None ):
@@ -919,12 +831,9 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.edge_means = self.computeEdgeMeans( X, new_memberships)
             
             iteration += 1
-            #if np.array_equal( new_memberships, self.predicted_memberships) or iteration >= self.n_iters:
             if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
                 convergence = False
-                #print( accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) )  )
             self.predicted_memberships = new_memberships
-        #print( 'number of iterations : ', iteration)
         return self
     
     def initialize( self, A, X, Y ):
@@ -939,75 +848,9 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.memberships_from_graph = model.memberships_from_graph
         self.memberships_from_attributes = model.memberships_from_attributes
         self.graph_init = model.graph_init
-        # if self.attribute_initializer == 'GMM':
-        #     model = GaussianMixture(n_components=self.n_clusters)
-        #     model.fit( Y )
-        #     self.memberships_from_attributes = fromVectorToMembershipMatrice( model.predict( Y ), n_clusters = self.n_clusters )
-        #     self.attribute_model_init = model
-        #     #self.attribute_means = self.computeAttributeMeans( Y, self.memberships_from_attributes )
-        # else:
-        #     raise TypeError( 'The initializer provided for the attributes is not correct' )
-            
-        # if self.graph_initializer == 'spectralClustering':
-        #     U = self.spectralEmbedding(X)
-        #     model = GaussianMixture(n_components=self.n_clusters)
-        #     model.fit(U)
-        #     self.memberships_from_graph = fromVectorToMembershipMatrice( model.predict( U ),\
-        #                                                                     n_clusters = self.n_clusters )
-        #     self.graph_model_init = model
-        #     #self.graph_means = self.computeGraphMeans(X,self.memberships_from_graph)
-        # else:
-        #     raise TypeError( 'The initializer provided for the graph is not correct' )
-    
-    def AIC_initializer(self,X,Y):
-        U = self.spectralEmbedding(X)
-        net_null_model = GaussianMixture(n_components=1,).fit(U)
-        null_net = net_null_model.aic(U)
-        net_model = self.graph_model_init
-        fitted_net = net_model.aic(U)
-        AIC_graph = fitted_net - null_net
 
-        att_null_model = GaussianMixture(n_components=1).fit(Y)
-        null_attributes = att_null_model.aic(Y)
-        att_model = self.attribute_model_init
-        fitted_attributes = att_model.aic(Y)
-        AIC_attribute = fitted_attributes - null_attributes
-        
-        if AIC_graph < AIC_attribute:
-            self.predicted_memberships = self.memberships_from_graph
-            self.graph_init = True
-            #print( 'Initialisation chosen from the graph')
-        else:
-            self.predicted_memberships = self.memberships_from_attributes
-            self.graph_init = False
-            #print( 'Initialisation chosen from the attributes' )
-        return self
-
-    def chernoff_initializer(self,X,Y):
-        n = Y.shape[0]
-        if self.graphChernoffDivergence( X, self.memberships_from_graph ) > \
-                self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
-            self.predicted_memberships = self.memberships_from_graph
-            self.graph_init = True
-            #print( 'Initialisation chosen from the graph')
-        else:
-            self.predicted_memberships = self.memberships_from_attributes
-            self.graph_init = False
-            #print( 'Initialisation chosen from the attributes' )         
-        return self
-    
     def assignInitialLabels( self, X, Y ):
         return self
-        if self.initializer == 'random':
-            z =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
-            self.predicted_memberships = fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
-
-        elif self.initializer == "AIC":
-            self.AIC_initializer(X,Y)
-        
-        ## Chernoff divergence
-        elif self.initializer == "chernoff":
-            self.chernoff_initializer(X,Y)
         
     def spectralEmbedding(self, X ):
         if (X<0).any():
@@ -1043,40 +886,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
         return edges_means 
     
-    def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
-        if distribution.lower() == 'bernoulli':
-            return (1-t) * a + t *b - a**t * b**(1-t)
-    
-    def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeGraphMeans( X , Z )
-        n = Z.shape[ 0 ]
-        pi = np.zeros( self.n_clusters )
-        for c in range( self.n_clusters ):
-            cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
-            pi[ c ] = len(cluster_c) / n
-            
-        if self.edgeDistribution == 'bernoulli':
-            res = 10000
-            for a in range( self.n_clusters ):
-                for b in range( a ):
-                    div = lambda t : - (1-t) * np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
-                    minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                    if - minDiv['fun'] < res:
-                        res = - minDiv['fun']
-        return res
-    
-    def attributeChernoffDivergence( self, Y, Z ):
-        res = 10000
-        attribute_means = self.computeAttributeMeans( Y, Z )
-        for a in range( self.n_clusters ):
-            for b in range( a ):
-                div = lambda t : - t * (1-t)/2 * np.linalg.norm( attribute_means[a] - attribute_means[b] )
-                minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                if - minDiv['fun'] < res:
-                    res = - minDiv['fun']
-
-        return res
-    
     def likelihood( self, X, Y, Z ):
         graphLikelihood = self.likelihoodGraph(X,Z)
         attributeLikelihood = self.likelihoodAttributes(Y,Z)
@@ -1084,7 +893,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def likelihoodGraph(self, X, Z):
         graph_mean = self.computeGraphMeans(X,Z)
-        return 1/2 * np.sum( self.graph_divergence( X, Z @ graph_mean @ Z.T ) )
+        return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def likelihoodAttributes( self, Y, Z):
         M = self.computeAttributeMeans(Y,Z)
@@ -1117,11 +926,10 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            graph_div = self.graph_divergence( A[node,:], M[node,:] )
+            graph_div = self.edge_divergence( A[node,:], M[node,:] )
             edge_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
-                                                 Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:],\
-                                                metric=self.edge_divergence))
-            #print(edge_div)
+                                                 E[q,self.edge_index[1][node_indices],:],\
+                                                metric=self.weight_divergence))
             L[ q ] = att_div + 0.5*(graph_div + edge_div)
         return np.argmin( L )
     
