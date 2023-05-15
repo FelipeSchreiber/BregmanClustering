@@ -79,7 +79,6 @@ class BregmanInitializer():
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
         weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
-        X = X[self.edge_index[0],self.edge_index[1],:]
         """
         X is a |E| x d array
         weights is a k x k x |E|
@@ -116,7 +115,7 @@ class BregmanInitializer():
 
     def graphChernoffDivergence( self, X, Z ):
         graph_means = self.computeGraphMeans( self.A , Z )
-        edge_means = self.computeEdgeMeans(X.reshape(self.N,self.N,-1),Z)
+        edge_means = self.computeEdgeMeans(X[self.edge_index[0],self.edge_index[1],:],Z)
         pi = Z.mean(axis=0)
             
         if self.edgeDistribution == 'bernoulli':
@@ -156,16 +155,24 @@ class BregmanInitializer():
             self.chernoff_initializer(self.X,self.Y)
 
     """
-    X is N x N np.array
+    X is N x N np.array or |E| x d
     Y is N x d np.array
     """
-    def initialize(self, X, Y ):
-        A = (X != 0).astype(int)
-        self.edge_index = np.nonzero(A)
+    def initialize(self, X, Y , edge_index = None):
+        self.N = Y.shape[0]
+        ## CASE X is |E| x d
+        A = None
+        if edge_index is not None:
+            self.edge_index = edge_index
+            A = np.zeros((self.N,self.N))
+            A[self.edge_index[0],self.edge_index[1]] = 1
+        ## CASE X is N x N
+        else:
+            A = (X != 0).astype(int)
+            self.edge_index = np.nonzero(A)
         self.A = A
         self.X = X
         self.Y = Y
-        self.N = A.shape[0]
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
