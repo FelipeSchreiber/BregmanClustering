@@ -5,6 +5,7 @@ from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.mixture import GaussianMixture
 from sklearn.manifold import SpectralEmbedding
 from sklearn.preprocessing import OneHotEncoder
+from scipy.sparse import csr_matrix, csc_matrix 
 
 class BregmanInitializer():
     def __init__( self, n_clusters,initializer="AIC",\
@@ -68,8 +69,11 @@ class BregmanInitializer():
         return attribute_means
     
     def computeGraphMeans( self, A, Z ):
-        normalisation = np.linalg.pinv ( Z.T @ Z )
-        return normalisation @ Z.T @ A @ Z @ normalisation
+        # normalisation = np.linalg.pinv ( Z.T @ Z )
+        # return normalisation @ Z.T @ A @ Z @ normalisation
+        normalisation = np.linalg.pinv(Z.T@Z)
+        M = Z.T@A@Z
+        return normalisation @ M @ normalisation
     
     def computeEdgeMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
@@ -158,20 +162,26 @@ class BregmanInitializer():
     X is N x N np.array or |E| x d
     Y is N x d np.array
     """
-    def initialize(self, X, Y , edge_index = None):
+    def initialize(self, X, Y , edge_index):
         self.N = Y.shape[0]
-        ## CASE X is |E| x d
         A = None
-        if edge_index is not None:
-            self.edge_index = edge_index
-            A = np.zeros((self.N,self.N))
-            A[self.edge_index[0],self.edge_index[1]] = 1
-        ## CASE X is N x N
+        ## CASE X is |E| x d: do nothing
+        self.edge_index = edge_index
+        sim_matrix = None
+        ## CASE X is N x N x d: pass to |E| x d 
+        if X.shape[0] == X.shape[1]:
+            self.X = X[self.edge_index[0],self.edge_index[1],:]
+            sim_matrix = np.squeeze(X)
         else:
-            A = (X != 0).astype(int)
-            self.edge_index = np.nonzero(A)
-        self.A = A
-        self.X = X
+            self.X = X
+            sim_matrix = np.zeros((self.N,self.N))
+            sim_matrix[self.edge_index[0],self.edge_index[1]] = X
+
+        # A = np.zeros((self.N,self.N))
+        # A[self.edge_index[0],self.edge_index[1]] = 1        
+        self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
+                             (self.edge_index[0],self.edge_index[1]))
+                            )
         self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
@@ -180,7 +190,7 @@ class BregmanInitializer():
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
 
-        U = self.spectralEmbedding(X)
+        U = self.spectralEmbedding(sim_matrix)
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit(U).predict(U)
         preds = preds.reshape(-1, 1)

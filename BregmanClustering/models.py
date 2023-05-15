@@ -899,13 +899,13 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             Trained model.
         """
         self.N = X.shape[0]
+        self.edge_index = np.nonzero(A)
         if Z_init is None:
-            self.initialize( A, Y )
-            self.assignInitialLabels( A, Y )
+            self.initialize( X, Y, self.edge_index)
+            self.assignInitialLabels( X, Y )
         else:
             self.predicted_memberships = Z_init
         #init_labels = self.predicted_memberships
-        self.edge_index = np.nonzero(A)
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
         self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
@@ -932,6 +932,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                                     edgeDistribution = self.edgeDistribution,
                                     attributeDistribution = self.attributeDistribution,
                                     weightDistribution = self.weightDistribution)
+        print(X.shape)
         model.initialize( X, Y )
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = model.memberships_from_graph
@@ -995,7 +996,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return self
     
     def assignInitialLabels( self, X, Y ):
-        # self.initialize( X, Y )
         return self
         if self.initializer == 'random':
             z =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
@@ -1092,7 +1092,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def assignments( self, A, X, Y ):
         z = np.zeros( X.shape[ 0 ], dtype = int )
-        #H = self.attribute_divergence( Y, self.attribute_means )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range( len( z ) ):
             z[ node ] = self.singleNodeAssignment( A, X, H, node )
@@ -1106,7 +1105,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             M = Ztilde @ self.graph_means @ Ztilde.T
-            #E = self.computeEdgeMeans(X,Ztilde)
             E = self.edge_means
             """
             X has shape n x n x d
