@@ -559,28 +559,13 @@ class BregmanBenchmark():
             z_pred_both = None
             K = np.unique(z_true).shape[0]
             E = None
-            if sparse:
-                A = torch.tensor(to_dense_adj(data.edge_index).numpy()[0]).to_sparse()
-                if data.edge_attr is None:
-                    E = torch.ones((data.edge_index.shape[1],1))
-                else:
-                    E = data.edge_attr
-
-                model = sparseBreg(n_clusters=K,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name
-                                    )
-                
-                z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
-            
+            A = to_dense_adj(data.edge_index).numpy()[0]
+            n = A.shape[0]
+            if datas[0].edge_attr is None:
+                E = A.reshape(n,n,1)
             else:
-                A = to_dense_adj(data.edge_index).numpy()[0]
-                n = A.shape[0]
-                if datas[0].edge_attr is None:
-                    E = A.reshape(n,n,1)
-                else:
-                    E = datas[0].edge_attr.numpy()
+                E = datas[0].edge_attr.numpy()
+            if self.torch_model:
 
                 model = self.model_(n_clusters=K,\
                                         attributeDistribution=self.attributes_distribution_name,\
@@ -589,6 +574,9 @@ class BregmanBenchmark():
                                         )
                 
                 z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
+            else:
+                z_pred_both = model.fit(A,E,attributes.numpy()).predict( None, None )
+
 
             A = None
             E = None
