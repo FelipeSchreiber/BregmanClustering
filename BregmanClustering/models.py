@@ -932,7 +932,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                                     edgeDistribution = self.edgeDistribution,
                                     attributeDistribution = self.attributeDistribution,
                                     weightDistribution = self.weightDistribution)
-        print(X.shape)
+        if self.edge_index is None:
+            self.edge_index = np.nonzero(A)
         model.initialize( X, Y , self.edge_index)
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = model.memberships_from_graph
