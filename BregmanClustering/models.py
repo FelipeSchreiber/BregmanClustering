@@ -50,7 +50,7 @@ class BregmanGraphPartitioning( BaseEstimator, ClusterMixin ):
         n_clusters : INT
             Number of clustes.
         divergence : function
-            Pairwise divergence function. The default is euclidean.
+            Pairwise divergence function. The default is euclidean_distance.
         n_iters : INT, optional
             Number of clustering iterations. The default is 1000.
         has_cov : BOOL, optional
@@ -162,7 +162,7 @@ class BregmanHard(BaseEstimator, ClusterMixin):
     #This is a copy paste from the code of the original paper on Bregman Clustering, found
     # https://github.com/juselara1/bregclus
 
-    def __init__(self, n_clusters, divergence=euclidean, n_iters=1000, has_cov=False,
+    def __init__(self, n_clusters, divergence=euclidean_distance, n_iters=1000, has_cov=False,
                  initializer="rand", init_iters=100, pretrainer=None):
         """
         Bregman Hard Clustering Algorithm
@@ -171,7 +171,7 @@ class BregmanHard(BaseEstimator, ClusterMixin):
         n_clusters : INT
             Number of clustes.
         divergence : function
-            Pairwise divergence function. The default is euclidean.
+            Pairwise divergence function. The default is euclidean_distance.
         n_iters : INT, optional
             Number of clustering iterations. The default is 1000.
         has_cov : BOOL, optional
@@ -234,18 +234,18 @@ class BregmanHard(BaseEstimator, ClusterMixin):
         init_vals = X[idx[:self.n_clusters]]
 
         for i in range(self.init_iters):
-            clus_sim = euclidean(init_vals, init_vals)
+            clus_sim = euclidean_distance(init_vals, init_vals)
             np.fill_diagonal(clus_sim, np.inf)
 
             candidate = X[np.random.randint(X.shape[0])].reshape(1, -1)
-            candidate_sims = euclidean(candidate, init_vals).flatten()
+            candidate_sims = euclidean_distance(candidate, init_vals).flatten()
             closest_sim = candidate_sims.min()
             closest = candidate_sims.argmin()
             if closest_sim>clus_sim.min():
                 replace_candidates_idx = np.array(np.unravel_index(clus_sim.argmin(), clus_sim.shape))
                 replace_candidates = init_vals[replace_candidates_idx, :]
 
-                closest_sim = euclidean(candidate, replace_candidates).flatten()
+                closest_sim = euclidean_distance(candidate, replace_candidates).flatten()
                 replace = np.argmin(closest_sim)
                 init_vals[replace_candidates_idx[replace]] = candidate
             else:
@@ -259,7 +259,7 @@ class BregmanHard(BaseEstimator, ClusterMixin):
         self.params = self.pretrainer.cluster_centers_
 
     def init_cov(self, X):
-        dists = euclidean(X, self.params)
+        dists = euclidean_distance(X, self.params)
         H = np.argmin(dists, axis=1)
         covs = []
         for k in range(self.n_clusters):
@@ -312,7 +312,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         n_clusters : INT
             Number of clustes.
         edge_divergence, attribute_divergence : function
-            Pairwise divergence function. The default is euclidean.
+            Pairwise divergence function. The default is euclidean_distance.
         n_iters : INT, optional
             Number of clustering iterations. The default is 25.
         graph_initialize, attribute_initializer : STR, optional
@@ -555,7 +555,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
 class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 edge_divergence = logistic_loss, attribute_divergence = euclidean, 
+                 edge_divergence = logistic_loss, attribute_divergence = euclidean_distance, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
@@ -568,7 +568,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         n_clusters : INT
             Number of clustes.
         edge_divergence, attribute_divergence : function
-            Pairwise divergence function. The default is euclidean.
+            Pairwise divergence function. The default is euclidean_distance.
         n_iters : INT, optional
             Number of clustering iterations. The default is 25.
         graph_initialize, attribute_initializer : STR, optional
@@ -687,7 +687,7 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             #att_divergence_total = self.scaler.fit_transform(att_divergence_total)
             #net_divergence_total = self.scaler.fit_transform(net_divergence_total)
             net_divergence_total -= phi_kl(X).sum(axis=1)[:,np.newaxis]
-            att_divergence_total -= phi_euclidean( Y ).sum(axis=1)[:,np.newaxis]
+            att_divergence_total -= phi_euclidean_distance( Y ).sum(axis=1)[:,np.newaxis]
         # print(att_divergence_total,net_divergence_total)
         temp = pi[np.newaxis,:]*np.exp(-net_divergence_total -att_divergence_total)
         if self.thresholding:
@@ -767,7 +767,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         n_clusters : INT
             Number of clustes.
         edge_divergence, attribute_divergence : function
-            Pairwise divergence function. The default is euclidean.
+            Pairwise divergence function. The default is euclidean_distance.
         n_iters : INT, optional
             Number of clustering iterations. The default is 25.
         graph_initialize, attribute_initializer : STR, optional
