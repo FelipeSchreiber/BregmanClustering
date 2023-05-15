@@ -372,6 +372,11 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 z_pred_both = None
+                model = self.model_(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters)
                 if self.torch_model:
                     graph_data = self.to_pyg_data(X,Y)
                     A = torch.tensor(A).to_sparse()
@@ -380,11 +385,6 @@ class BregmanBenchmark():
                         E = torch.ones((graph_data.edge_index.shape[1],1))
                     else:
                         E = graph_data.edge_attr.reshape(-1,1)
-                    model = self.model_(n_clusters=n_clusters,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name,\
-                                        n_iters=n_iters)
                     z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 else:
                     z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
@@ -431,6 +431,11 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 z_pred_both = None
+                model = self.model_(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters)
                 if self.torch_model:
                     graph_data = self.to_pyg_data(X,Y)
                     A = torch.tensor(A).to_sparse()
@@ -439,11 +444,6 @@ class BregmanBenchmark():
                         E = torch.ones((graph_data.edge_index.shape[1],1))
                     else:
                         E = graph_data.edge_attr.reshape(-1,1)
-                    model = self.model_(n_clusters=n_clusters,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name,\
-                                        n_iters=n_iters)
                     z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 else:
                     z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
@@ -502,6 +502,11 @@ class BregmanBenchmark():
                 if binary:
                     X = A
                 z_pred_both = None
+                model = self.model_(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters)
                 if self.torch_model:
                     graph_data = self.to_pyg_data(X,Y)
                     A = torch.tensor(A).to_sparse()
@@ -510,11 +515,6 @@ class BregmanBenchmark():
                         E = torch.ones((graph_data.edge_index.shape[1],1))
                     else:
                         E = graph_data.edge_attr.reshape(-1,1)
-                    model = self.model_(n_clusters=n_clusters,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name,\
-                                        n_iters=n_iters)
                     z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 else:
                     z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
