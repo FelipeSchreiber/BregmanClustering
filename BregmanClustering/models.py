@@ -41,7 +41,7 @@ def frommembershipMatriceToVector( Z ):
 
 class BregmanGraphPartitioning( BaseEstimator, ClusterMixin ):
     
-    def __init__( self, n_clusters, divergence = kullbackLeibler_binaryMatrix, 
+    def __init__( self, n_clusters, divergence = logistic_loss, 
                  n_iters = 25, initializer="spectralClustering", init_iters=100 ):
         """
         Bregman Hard Clustering Algorithm
@@ -137,7 +137,7 @@ class BregmanGraphPartitioning( BaseEstimator, ClusterMixin ):
             Ztilde[ node, : ] = 0
             Ztilde[ node, k ] = 1
             M = Ztilde @ self.means @ Ztilde.T
-            L[ k ] = kullbackLeibler_binaryMatrix( X, M )
+            L[ k ] = logistic_loss( X, M )
             #print( L[k] )
         return np.argmin( L )
     
@@ -555,7 +555,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
 class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 edge_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean, 
+                 edge_divergence = logistic_loss, attribute_divergence = euclidean, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
