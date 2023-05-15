@@ -927,13 +927,13 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         #print( 'number of iterations : ', iteration)
         return self
     
-    def initialize( self, X, Y ):
+    def initialize( self, A, X, Y ):
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
                                     edgeDistribution = self.edgeDistribution,
                                     attributeDistribution = self.attributeDistribution,
                                     weightDistribution = self.weightDistribution)
         print(X.shape)
-        model.initialize( X, Y )
+        model.initialize( X, Y , self.edge_index)
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = model.memberships_from_graph
         self.memberships_from_attributes = model.memberships_from_attributes
