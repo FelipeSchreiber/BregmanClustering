@@ -593,7 +593,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
 
 class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_distance, 
+                 graph_divergence = logistic_loss, attribute_divergence = euclidean_distance, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
@@ -778,7 +778,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
 
 class SoftBregmanClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_distance, 
+                 graph_divergence = logistic_loss, attribute_divergence = euclidean_distance, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
@@ -985,7 +985,7 @@ class my_GCN(torch.nn.Module):
         
 class GNNBregmanClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 graph_divergence = kullbackLeibler_binaryMatrix, attribute_divergence = euclidean_distance, 
+                 graph_divergence = logistic_loss, attribute_divergence = euclidean_distance, 
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
