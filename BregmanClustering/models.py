@@ -1121,7 +1121,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                                                  Ztilde[self.edge_index[1][node_indices],:]@E[q,:,:],\
                                                 metric=self.edge_divergence))
             #print(edge_div)
-            L[ q ] = att_div + 0.5*graph_div + edge_div
+            L[ q ] = att_div + 0.5*(graph_div + edge_div)
         return np.argmin( L )
     
     def predict(self, X, Y):
