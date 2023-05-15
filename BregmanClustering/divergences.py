@@ -26,26 +26,26 @@ SEE:
 def logistic_loss(X,M):
     total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
     #total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) )) as stated in the paper
-    return total
+    return total.sum()
 
 #Multinomial | KL-divergence
 def KL_div(X,M):
     total = X*np.log(X/M)
-    return total
+    return total.sum()
 
 #Exponential | Itakura-Saito Loss
 def itakura_saito_loss(X,M):
     total = (X/M - np.log(X/M) - 1)
-    return total
+    return total.sum()
 
 #Poisson | Generalized I-divergence
 def generalized_I_divergence(X,M):
     total = X*np.log(X/M) + M - X
-    return total
+    return total.sum()
 
 #gaussian | Squared Euclidean distance
 def euclidean_distance(X,M):
-    return 0.5*(X-M)**2
+    return (0.5*(X-M)**2).sum()
 
 dist_to_divergence_dict = {
         'gaussian': euclidean_distance,
