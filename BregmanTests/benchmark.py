@@ -35,7 +35,7 @@ class BregmanBenchmark():
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
                     radius=None,return_G=False,\
-                    att_centers = None, weight_centers = None, run_gpu=False):
+                    att_centers = None, weight_centers = None, run_torch=False):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle
@@ -61,13 +61,12 @@ class BregmanBenchmark():
         self.dims = dims
         self.radius=radius
         self.return_G = return_G
-        self.sparse_model = run_gpu
-        if run_gpu:
+        self.torch_model = run_torch
+        if run_torch:
             #self.model_ = torchBreg
             self.model_ = sparseBreg
         else:
-            #self.model_ = edgeBreg
-            self.model_ = sparseBreg
+            self.model_ = edgeBreg
             
     def generate_WSBM(self,complete_graph=False):
         N = np.sum(self.communities_sizes)
@@ -372,19 +371,23 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
-                graph_data = self.to_pyg_data(X,Y)
-                A = torch.tensor(A).to_sparse()
-                E = None
-                if graph_data.edge_attr is None:
-                    E = torch.ones((graph_data.edge_index.shape[1],1))
+                z_pred_both = None
+                if self.torch_model:
+                    graph_data = self.to_pyg_data(X,Y)
+                    A = torch.tensor(A).to_sparse()
+                    E = None
+                    if graph_data.edge_attr is None:
+                        E = torch.ones((graph_data.edge_index.shape[1],1))
+                    else:
+                        E = graph_data.edge_attr.reshape(-1,1)
+                    model = self.model_(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters)
+                    z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 else:
-                    E = graph_data.edge_attr.reshape(-1,1)
-                model = self.model_(n_clusters=n_clusters,\
-                                    attributeDistribution=self.attributes_distribution_name,\
-                                    edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name,\
-                                    n_iters=n_iters)
-                z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
+                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
@@ -427,19 +430,23 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
-                graph_data = self.to_pyg_data(X,Y)
-                A = torch.tensor(A).to_sparse()
-                E = None
-                if graph_data.edge_attr is None:
-                    E = torch.ones((graph_data.edge_index.shape[1],1))
+                z_pred_both = None
+                if self.torch_model:
+                    graph_data = self.to_pyg_data(X,Y)
+                    A = torch.tensor(A).to_sparse()
+                    E = None
+                    if graph_data.edge_attr is None:
+                        E = torch.ones((graph_data.edge_index.shape[1],1))
+                    else:
+                        E = graph_data.edge_attr.reshape(-1,1)
+                    model = self.model_(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters)
+                    z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 else:
-                    E = graph_data.edge_attr.reshape(-1,1)
-                model = self.model_(n_clusters=n_clusters,\
-                                    attributeDistribution=self.attributes_distribution_name,\
-                                    edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name,\
-                                    n_iters=n_iters)
-                z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
+                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
@@ -494,20 +501,23 @@ class BregmanBenchmark():
                 A = (X != 0).astype(int)
                 if binary:
                     X = A
-                graph_data = self.to_pyg_data(X,Y)
-                A = torch.tensor(A).to_sparse()
-                E = None
-                if graph_data.edge_attr is None:
-                    E = torch.ones((graph_data.edge_index.shape[1],1))
+                z_pred_both = None
+                if self.torch_model:
+                    graph_data = self.to_pyg_data(X,Y)
+                    A = torch.tensor(A).to_sparse()
+                    E = None
+                    if graph_data.edge_attr is None:
+                        E = torch.ones((graph_data.edge_index.shape[1],1))
+                    else:
+                        E = graph_data.edge_attr.reshape(-1,1)
+                    model = self.model_(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters)
+                    z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 else:
-                    E = graph_data.edge_attr.reshape(-1,1)
-                model = self.model_(n_clusters=n_clusters,\
-                                    attributeDistribution=self.attributes_distribution_name,\
-                                    edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name,\
-                                    n_iters=n_iters
-                                    )
-                z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
+                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
