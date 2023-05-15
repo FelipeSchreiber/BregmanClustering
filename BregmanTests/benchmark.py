@@ -548,7 +548,7 @@ class BregmanBenchmark():
         data_sets.extend(data_sets2)
         return datas,data_sets
     
-    def run_real_data(self,sparse=True):
+    def run_real_data(self):
         datas,data_names = self.get_real_data()
         scores = {}
         scores["dataset"] = []
@@ -565,14 +565,12 @@ class BregmanBenchmark():
                 E = A.reshape(n,n,1)
             else:
                 E = datas[0].edge_attr.numpy()
-            if self.torch_model:
-
-                model = self.model_(n_clusters=K,\
+            model = self.model_(n_clusters=K,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name
                                         )
-                
+            if self.torch_model:
                 z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
             else:
                 z_pred_both = model.fit(A,E,attributes.numpy()).predict( None, None )
