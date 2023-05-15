@@ -116,7 +116,7 @@ class BregmanInitializer():
 
     def graphChernoffDivergence( self, X, Z ):
         graph_means = self.computeGraphMeans( self.A , Z )
-        edge_means = self.computeEdgeMeans(X,Z)
+        edge_means = self.computeEdgeMeans(X.reshape(self.N,self.N,-1),Z)
         pi = Z.mean(axis=0)
             
         if self.edgeDistribution == 'bernoulli':
@@ -165,6 +165,7 @@ class BregmanInitializer():
         self.A = A
         self.X = X
         self.Y = Y
+        self.N = A.shape[0]
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
