@@ -69,8 +69,6 @@ class BregmanInitializer():
         return attribute_means
     
     def computeGraphMeans( self, A, Z ):
-        # normalisation = np.linalg.pinv ( Z.T @ Z )
-        # return normalisation @ Z.T @ A @ Z @ normalisation
         normalisation = np.linalg.pinv(Z.T@Z)
         M = Z.T@A@Z
         return normalisation @ M @ normalisation
@@ -168,7 +166,7 @@ class BregmanInitializer():
         ## CASE X is |E| x d: do nothing
         self.edge_index = edge_index
         sim_matrix = None
-        ## CASE X is N x N x d: pass to |E| x d 
+        ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
             self.X = X[self.edge_index[0],self.edge_index[1],:]
             sim_matrix = np.squeeze(X)

@@ -900,7 +900,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         self.N = X.shape[0]
         self.edge_index = np.nonzero(A)
-        print("X SHAPE ",X.shape)
         if Z_init is None:
             self.initialize( A, X, Y)
             self.assignInitialLabels( X, Y )
