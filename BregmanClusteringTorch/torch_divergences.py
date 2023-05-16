@@ -190,7 +190,7 @@ def pairwise_bregman(X, Y, phi, shape=None):
     X = X[:, None]
     Y = Y[None, :]
 
-    print(phi_Y.squeeze())
+    print(phi_Y.squeeze().shape)
     if shape:
         pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad(outputs=phi_Y.squeeze(), inputs=Y), axis=-1)
     else:
