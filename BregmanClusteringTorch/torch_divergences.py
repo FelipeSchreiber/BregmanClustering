@@ -181,8 +181,8 @@ def pairwise_bregman(X, Y, phi, shape=None):
     phi = phi
 
     if shape:
-        phi_X = phi(X, shape)[:, None]
-        phi_Y = phi(Y, shape)[None, :]
+        phi_X = phi(X, shape)#[:, None]
+        phi_Y = phi(Y, shape)#[None, :]
     else:
         phi_X = phi(X)
         phi_Y = phi(Y)
