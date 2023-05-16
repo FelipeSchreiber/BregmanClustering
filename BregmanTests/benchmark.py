@@ -661,7 +661,7 @@ class BregmanBenchmark():
                 aris_IR_LS = [ ]
                 aris_oracle = [ ]
                 
-                path_ = path_to_data+f"lw/{lw}/la/{la}/"
+                path_ = path_to_data+f"a/{lw}/r/{la}/"
                 if not os.path.exists(path_):
                     os.makedirs(path_)
                 
