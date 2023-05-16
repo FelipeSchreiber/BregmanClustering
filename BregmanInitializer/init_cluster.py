@@ -172,9 +172,11 @@ class BregmanInitializer():
             self.X = X[self.edge_index[0],self.edge_index[1],:]
             sim_matrix = np.squeeze(X)
         else:
-            self.X = X
-            sim_matrix = np.zeros((self.N,self.N))
-            sim_matrix[self.edge_index[0],self.edge_index[1]] = np.squeeze(X)
+            self.X = csr_matrix((np.squeeze(X)),\
+                             (self.edge_index[0],self.edge_index[1]))
+                            
+            # sim_matrix = np.zeros((self.N,self.N))
+            # sim_matrix[self.edge_index[0],self.edge_index[1]] = np.squeeze(X)
       
         self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
                              (self.edge_index[0],self.edge_index[1]))
