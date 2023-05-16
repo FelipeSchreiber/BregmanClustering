@@ -173,7 +173,7 @@ def get_phi(name):
 #x, theta are both k-dimensional
 def bregman_divergence(phi, x, theta):
     phi_theta = phi(theta)
-    phi_theta.backwards()
+    phi_theta.backward()
     bregman_div = phi(x) - phi_theta - torch.dot(theta.grad, x-theta)
     return bregman_div
 
