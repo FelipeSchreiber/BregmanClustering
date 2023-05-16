@@ -600,6 +600,181 @@ class BregmanBenchmark():
        
         return stats
     
+    def run_2_5(self,n_average=10,cluster_sizes=[100],\
+                 w_averages = [ 1, 2, 3, 4, 5],\
+                 att_averages = [ 1, 2, 3, 4, 5],\
+                 b = 5,\
+                 dense=False,\
+                 binary=False,\
+                 n_iters=25):
+        
+        self.communities_sizes = cluster_sizes
+        benchmark_instance = None
+        if dense:
+            benchmark_instance = self.generate_benchmark_dense
+        else:
+            benchmark_instance = self.generate_benchmark_joint
+
+        n = np.sum(cluster_sizes)
+        n_clusters = len(cluster_sizes)
+        self.n_clusters = n_clusters
+        stats = {"lambda_att":[],"lambda_w":[],"ARI":[]}
+        aris_both_mean = [ ]
+        aris_both_std = [ ]
+        pout = b * np.log( n ) / n
+
+        for varying in ["graph","attributes"]:
+            aris_attributes_mean = [ ]
+            aris_graph_mean = [ ]
+            aris_both_mean = [ ]
+            aris_attSBM_mean = [ ]
+            aris_IR_sLS_mean = [ ]
+            aris_IR_LS_mean = [ ]
+            aris_oracle_mean = [ ]
+
+            aris_attributes_std = [ ]
+            aris_graph_std = [ ]
+            aris_both_std = [ ]
+            aris_attSBM_std = [ ]
+            aris_IR_sLS_std = [ ]
+            aris_IR_LS_std = [ ]
+            aris_oracle_std = [ ]
+
+            if varying == 'graph':
+                loop = tqdm( range( len( w_averages ) ) )
+            else:
+                loop = tqdm( range( len( att_averages ) ) )
+
+            for dummy in loop:
+                if varying == 'graph':
+                    lw = w_averages[ dummy ]
+                    la = 2
+                elif varying == 'attributes':
+                    lw = 2
+                    la = att_averages[ dummy ]
+                
+                aris_attributes = [ ]
+                aris_graph = [ ]
+                aris_both = [ ]
+                aris_attSBM = [ ]
+                aris_IR_sLS  = [ ]
+                aris_IR_LS = [ ]
+                aris_oracle = [ ]
+                
+                path_ = path_to_data+f"lw/{lw}/la/{la}/"
+                if not os.path.exists(path_):
+                    os.makedirs(path_)
+                
+                self.dims=1
+                ### HERE ATT_CENTERS IS K x 1
+                self.att_centers=np.array([1,la]).reshape(-1,1)
+                self.weight_centers = np.eye(self.n_clusters)*lw
+                self.weight_centers[self.weight_centers == 0] = 1
+                
+                pin = b * np.log( n ) / n
+                # p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
+                p = np.ones((self.n_clusters,self.n_clusters))*pin
+                self.probability_matrix = p
+
+                for trial in range( n_average ):
+                    ( X, Y, z_true, G) = benchmark_instance() 
+                        
+                    A = (X != 0).astype(int)
+                    if binary:
+                        X = A
+                    
+                    model = self.model_(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters)
+                    ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
+                    model.initialize(A,X.reshape(n,n,-1),Y)
+                    model.assignInitialLabels(A, Y)
+                    z_init = deepcopy(model.predicted_memberships)
+                    chernoff_init_graph = model.graph_init
+                    chernoff_graph_labels = model.memberships_from_graph
+                    chernoff_att_labels = model.memberships_from_attributes
+
+                    with open(f'{path_}att_{trial}.npy', 'wb') as g:
+                        np.save(g, Y)
+                    with open(f'{path_}net_{trial}.npy', 'wb') as g:
+                        np.save(g, A)
+                    with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
+                        np.save(g, csbm.convertZ(z_init)+1)
+
+                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
+                    z_pred_graph = frommembershipMatriceToVector( chernoff_graph_labels )
+                    z_pred_attributes = frommembershipMatriceToVector( chernoff_att_labels )
+                    
+                    IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)
+                    IR_LS_pred = csbm.iter_csbm2(X,Y,z_init,n_clusters)
+                        
+                    subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
+                                    f'{path_}att_{trial}.npy',\
+                                    f'{path_}net_{trial}.npy',\
+                                    f'{path_}z_init_{trial}.npy'])
+                    attSBMPred = np.load("predict.npy")
+
+                    aris_attributes.append( adjusted_rand_score( z_true, z_pred_attributes ) )
+                    aris_graph.append( adjusted_rand_score( z_true, z_pred_graph ) )
+                    aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
+                    aris_attSBM.append( adjusted_rand_score( z_true, attSBMPred ) )
+                    aris_IR_sLS.append( adjusted_rand_score( z_true, IR_sLS_pred ) )
+                    aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
+                    
+                    if chernoff_init_graph:
+                        z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
+                        ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
+                        aris_oracle.append( max(aris_both[-1], ari_att_init))
+                    elif not chernoff_init_graph:
+                        z_pred_graph_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
+                        ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
+                        aris_oracle.append( max(aris_both[-1], ari_graph_init))
+                        
+                aris_attributes_mean.append( np.mean( aris_attributes ) )
+                aris_graph_mean.append( np.mean( aris_graph ) )
+                aris_both_mean.append( np.mean( aris_both ) )
+                aris_attSBM_mean.append( np.mean( aris_attSBM ) )
+                aris_IR_sLS_mean.append( np.mean( aris_IR_sLS ) )
+                aris_IR_LS_mean.append( np.mean( aris_IR_LS ) )
+                aris_oracle_mean.append( np.mean( aris_oracle) )
+                
+                aris_attributes_std.append( np.std( aris_attributes ) )
+                aris_graph_std.append( np.std( aris_graph ) )
+                aris_both_std.append( np.std( aris_both ) )
+                aris_attSBM_std.append( np.std( aris_attSBM ) )
+                aris_IR_sLS_std.append( np.std( aris_IR_sLS ) )
+                aris_IR_LS_std.append( np.std( aris_IR_LS ) )
+                aris_oracle_std.append( np.std( aris_oracle) )
+                
+                stats["varying"].append(varying)
+                stats["lambda_w"].append(1/lw)
+                stats["lambda_att"].append(1/la)
+                stats["ARI"].append(aris_both_mean[-1])
+                stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
+                
+            curves = [ aris_attributes_mean, aris_graph_mean,\
+                    aris_both_mean , aris_attSBM_mean, aris_IR_sLS_mean,\
+                    aris_IR_LS_mean]
+
+            curves_std = [ aris_attributes_std, aris_graph_std,\
+                        aris_both_std , aris_attSBM_std, aris_IR_sLS_std,\
+                        aris_IR_LS_std]
+
+            labels = [ 'attributes', 'graph', 'both' , 'attSBM', 'IR_sLS', 'IR_LS']
+            saveFig = True
+            if varying == 'graph':    
+                fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_att_' + str(la)  +  '_nAverage' + str(n_average) + '.jpeg'
+                plotting( w_averages, curves, labels, curves_std = curves_std, xticks = w_averages, xlabel = 'w_averages', saveFig = saveFig, fileName = fileName )
+                plt.close()
+            elif varying == 'attributes':
+                fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_w_' + str(lw) + '_nAverage_' + str(n_average) + '.jpeg'
+                plotting( att_averages, curves, labels, curves_std = curves_std, xticks = att_averages, xlabel = 'att_averages', saveFig = saveFig, fileName = fileName )
+                plt.close()
+        
+            return stats
+    
     def get_real_data(self):
         data_dir = "../../RealDataSets/"
         data_sets = ["Cora","CiteSeer"]
