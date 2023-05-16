@@ -12,8 +12,9 @@ This code is taken in part from power k means bregman
 import torch
 from torch.nn.functional import kl_div
 import warnings
-from torch.autograd import grad
-from torch.autograd.functional import jacobian
+# from torch.autograd import grad
+# from torch.autograd.functional import jacobian
+from torch.func import grad
 warnings.filterwarnings("ignore")
 
 
@@ -173,7 +174,7 @@ def get_phi(name):
 #x, theta are both k-dimensional
 def bregman_divergence(phi, x, theta):
     phi_theta = phi(theta)
-    print("phi shape ",phi_theta.shape)
+    
     phi_theta.backward()
     bregman_div = phi(x) - phi_theta - torch.dot(theta.grad, x-theta)
     return bregman_div
@@ -181,7 +182,7 @@ def bregman_divergence(phi, x, theta):
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
 #shape=gamma_shape
 def pairwise_bregman(X, Y, phi, shape=None):
-    phi = phi
+    grad_phi = grad(phi)
 
     if shape:
         phi_X = phi(X, shape)[:, None]
@@ -193,9 +194,9 @@ def pairwise_bregman(X, Y, phi, shape=None):
     X = X[:, None]
     Y = Y[None, :]
     if shape:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * jacobian(phi,Y), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y), axis=-1)
     else:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * jacobian(phi,Y), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y), axis=-1)
 
     return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
 
