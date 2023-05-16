@@ -532,6 +532,73 @@ class BregmanBenchmark():
        
         return stats
     
+    def run_2_4(self,n_average=10,cluster_sizes=[100],\
+                 w_averages = [ 1, 2, 3, 4, 5],\
+                 att_averages = [ 1, 2, 3, 4, 5],\
+                 b = 5,\
+                 dense=False,\
+                 binary=False,\
+                 n_iters=25):
+        
+        self.communities_sizes = cluster_sizes
+        benchmark_instance = None
+        if dense:
+            benchmark_instance = self.generate_benchmark_dense
+        else:
+            benchmark_instance = self.generate_benchmark_joint
+
+        n = np.sum(cluster_sizes)
+        n_clusters = len(cluster_sizes)
+        self.n_clusters = n_clusters
+        stats = {"lambda_att":[],"lambda_w":[],"ARI":[]}
+        aris_both_mean = [ ]
+        aris_both_std = [ ]
+        pout = b * np.log( n ) / n
+        for lw, la in tqdm(product(w_averages,att_averages)):
+            aris_both = [ ]
+            self.dims=1
+            ### HERE ATT_CENTERS IS K x 1
+            self.att_centers=np.array([1,la]).reshape(-1,1)
+            self.weight_centers = np.eye(self.n_clusters)*lw
+            self.weight_centers[self.weight_centers == 0] = 1
+            
+            pin = b * np.log( n ) / n
+            p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
+            self.probability_matrix = p
+            for _ in range( n_average ):
+                ( X, Y, z_true, G) = benchmark_instance() 
+                    
+                A = (X != 0).astype(int)
+                if binary:
+                    X = A
+                z_pred_both = None
+                model = self.model_(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters)
+                if self.torch_model:
+                    graph_data = self.to_pyg_data(X,Y)
+                    A = torch.tensor(A).to_sparse()
+                    E = None
+                    if graph_data.edge_attr is None:
+                        E = torch.ones((graph_data.edge_index.shape[1],1))
+                    else:
+                        E = graph_data.edge_attr.reshape(-1,1)
+                    z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
+                else:
+                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
+                aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
+                aris_both_mean.append( np.mean( aris_both ) )
+                aris_both_std.append( np.std( aris_both ) )
+            
+            ## gather stats
+            stats["lambda_w"].append(1/lw)
+            stats["lambda_att"].append(1/la)
+            stats["ARI"].append(aris_both_mean[-1])
+       
+        return stats
+    
     def get_real_data(self):
         data_dir = "../../RealDataSets/"
         data_sets = ["Cora","CiteSeer"]
