@@ -476,7 +476,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         Apply permute to change indexes, and select only the weights for the existing edges
         """
         weights = weights.permute(1,3,0,2)[:,:,self.edge_index[0,:],self.edge_index[1,:]]
-        print(">>>W shape ",weights.shape)
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
@@ -554,14 +553,14 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             edge_div = bregman_divergence(self.edge_phi,a_out,M_out) + bregman_divergence(self.edge_phi,a_in,M_in)
             weight_div=0
             if len(v_indices_out) > 0:
-                weight_div += bregman_divergence(self.edge_phi,X[edge_indices_out,:], E[q,z_t[v_indices_out],:])
+                weight_div += bregman_divergence(self.weight_phi,X[edge_indices_out,:], E[q,z_t[v_indices_out],:])
                 # weight_div += self.reduce_by( self.weight_divergence(
                 #                                     X[edge_indices_out,:],
                 #                                     E[q,z_t[v_indices_out],:]
                 #                                     )
                 #                             )
             if len(v_indices_in) > 0:
-                weight_div += bregman_divergence(self.edge_phi,X[edge_indices_in,:], E[z_t[v_indices_in],q,:])
+                weight_div += bregman_divergence(self.weight_phi,X[edge_indices_in,:], E[z_t[v_indices_in],q,:])
                 # weight_div += self.reduce_by( 
                 #                             self.weight_divergence(
                 #                                         X[edge_indices_in,:],
