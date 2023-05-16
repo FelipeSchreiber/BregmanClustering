@@ -363,17 +363,13 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         return False
     
     """
-    Input: X a numpy array N x N of the adjacency matrix
-           Y a numpy array N x d of node attributes
+    Input: X a numpy array |E| x d = 1 edge_attributes 
+    Y a numpy array N x d of node attributes
+    edge_index is a tuple (indices_i, indices_j)
     """
-    def initialize( self, X, Y ):
+    def initialize( self, X, Y , edge_index):
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer)
-        if self.edge_index is not None:
-            A_dense = to_dense_adj(self.edge_index).numpy()[0]
-        else:
-            A_dense = X
-        model.initialize( A_dense, Y )
-        A_dense = None  
+        model.initialize( X, Y , edge_index)  
         self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
         self.memberships_from_graph = model.memberships_from_graph
         self.memberships_from_attributes = model.memberships_from_attributes
@@ -411,7 +407,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         self.edge_index = A.indices().long()
         self.constant_mul = 0.5 if is_undirected(self.edge_index) else 1
         if Z_init is None:
-            self.initialize(X.detach().numpy(),Y.detach().numpy())
+            e_ind = self.edge_index.detach().numpy()
+            self.initialize(X.detach().numpy(),Y.detach().numpy(), (e_ind[0,:],e_ind[1,:]))
         else:
             self.predicted_memberships = Z_init.type(dtype)
 

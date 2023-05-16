@@ -159,6 +159,7 @@ class BregmanInitializer():
     """
     X is N x N x 1 np.array or |E| x 1
     Y is N x d np.array
+    edge_index is a tuple (indices_i, indices_j)
     """
     def initialize(self, X, Y , edge_index):
         self.N = Y.shape[0]
@@ -174,9 +175,7 @@ class BregmanInitializer():
             self.X = X
             sim_matrix = np.zeros((self.N,self.N))
             sim_matrix[self.edge_index[0],self.edge_index[1]] = X
-
-        # A = np.zeros((self.N,self.N))
-        # A[self.edge_index[0],self.edge_index[1]] = 1        
+      
         self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
                              (self.edge_index[0],self.edge_index[1]))
                             )
