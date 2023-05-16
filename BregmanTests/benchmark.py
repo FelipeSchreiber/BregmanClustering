@@ -723,14 +723,14 @@ class BregmanBenchmark():
                     aris_IR_sLS.append( adjusted_rand_score( z_true, IR_sLS_pred ) )
                     aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
                     
-                    if chernoff_init_graph:
-                        z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
-                        ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
-                        aris_oracle.append( max(aris_both[-1], ari_att_init))
-                    elif not chernoff_init_graph:
-                        z_pred_graph_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
-                        ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
-                        aris_oracle.append( max(aris_both[-1], ari_graph_init))
+                    # if chernoff_init_graph:
+                    #     z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
+                    #     ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
+                    #     aris_oracle.append( max(aris_both[-1], ari_att_init))
+                    # elif not chernoff_init_graph:
+                    #     z_pred_graph_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
+                    #     ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
+                    #     aris_oracle.append( max(aris_both[-1], ari_graph_init))
                         
                 aris_attributes_mean.append( np.mean( aris_attributes ) )
                 aris_graph_mean.append( np.mean( aris_graph ) )
@@ -738,7 +738,7 @@ class BregmanBenchmark():
                 #aris_attSBM_mean.append( np.mean( aris_attSBM ) )
                 aris_IR_sLS_mean.append( np.mean( aris_IR_sLS ) )
                 aris_IR_LS_mean.append( np.mean( aris_IR_LS ) )
-                aris_oracle_mean.append( np.mean( aris_oracle) )
+                #aris_oracle_mean.append( np.mean( aris_oracle) )
                 
                 aris_attributes_std.append( np.std( aris_attributes ) )
                 aris_graph_std.append( np.std( aris_graph ) )
@@ -746,13 +746,13 @@ class BregmanBenchmark():
                 #aris_attSBM_std.append( np.std( aris_attSBM ) )
                 aris_IR_sLS_std.append( np.std( aris_IR_sLS ) )
                 aris_IR_LS_std.append( np.std( aris_IR_LS ) )
-                aris_oracle_std.append( np.std( aris_oracle) )
+                #aris_oracle_std.append( np.std( aris_oracle) )
                 
                 stats["varying"].append(varying)
                 stats["lambda_w"].append(1/lw)
                 stats["lambda_att"].append(1/la)
                 stats["ARI"].append(aris_both_mean[-1])
-                stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
+                #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
                 
             curves = [ aris_attributes_mean, aris_graph_mean,\
                     aris_both_mean , aris_IR_sLS_mean,\
