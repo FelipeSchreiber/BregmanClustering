@@ -13,6 +13,7 @@ import torch
 from torch.nn.functional import kl_div
 import warnings
 from torch.autograd import grad
+from torch.autograd.functional import jacobian
 warnings.filterwarnings("ignore")
 
 
@@ -189,11 +190,10 @@ def pairwise_bregman(X, Y, phi, shape=None):
 
     X = X[:, None]
     Y = Y[None, :]
-    print(">>> phi:",phi_Y.shape)
     if shape:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * Y.grad, axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * jacobian(phi,Y), axis=-1)
     else:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * Y.grad, axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * jacobian(phi,Y), axis=-1)
 
     return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
 
