@@ -536,7 +536,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             M_in = self.graph_means[z_t,torch.tensor([q]).expand(self.N)]
             M_in.requires_grad =True
             E = self.edge_means
-            E.requires_grad =True
             """
             X has shape |E| x d
             E has shape k x k x d
