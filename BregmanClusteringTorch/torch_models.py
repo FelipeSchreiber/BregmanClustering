@@ -400,6 +400,10 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             Trained model.
         """
         # A.requires_grad = True
+        ## send data to device
+        A = A.type(dtype)
+        X = X.type(dtype)
+        Y = Y.type(dtype)
         X.requires_grad = True
         Y.requires_grad = True
         self.N = Y.shape[0]
@@ -411,11 +415,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             self.initialize(X.detach().numpy(),Y.detach().numpy(), (e_ind[0,:],e_ind[1,:]))
         else:
             self.predicted_memberships = Z_init.type(dtype)
-
-        ## send data to device
-        A = A.type(dtype)
-        X = X.type(dtype)
-        Y = Y.type(dtype)
 
         ## compute initial params
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
