@@ -731,7 +731,8 @@ class BregmanBenchmark():
                     #     z_pred_graph_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
                     #     ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
                     #     aris_oracle.append( max(aris_both[-1], ari_graph_init))
-                        
+                
+                ### End of trials for a pair (lw,la)        
                 aris_attributes_mean.append( np.mean( aris_attributes ) )
                 aris_graph_mean.append( np.mean( aris_graph ) )
                 aris_both_mean.append( np.mean( aris_both ) )
@@ -753,14 +754,15 @@ class BregmanBenchmark():
                 stats["lambda_att"].append(1/la)
                 stats["ARI"].append(aris_both_mean[-1])
                 #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
-                
+            
+            ## End of dummy loop
             curves = [ aris_attributes_mean, aris_graph_mean,\
                     aris_both_mean , aris_IR_sLS_mean,\
                     aris_IR_LS_mean]
 
             curves_std = [ aris_attributes_std, aris_graph_std,\
-                        aris_both_std , aris_IR_sLS_std,\
-                        aris_IR_LS_std]
+                            aris_both_std , aris_IR_sLS_std,\
+                            aris_IR_LS_std]
 
             labels = [ 'attributes', 'graph', 'both', 'IR_sLS', 'IR_LS']
             saveFig = True
