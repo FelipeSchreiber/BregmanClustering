@@ -710,11 +710,11 @@ class BregmanBenchmark():
                     IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)
                     IR_LS_pred = csbm.iter_csbm2(X,Y,z_init,n_clusters)
                         
-                    subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
-                                    f'{path_}att_{trial}.npy',\
-                                    f'{path_}net_{trial}.npy',\
-                                    f'{path_}z_init_{trial}.npy'])
-                    attSBMPred = np.load("predict.npy")
+                    # subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
+                    #                 f'{path_}att_{trial}.npy',\
+                    #                 f'{path_}net_{trial}.npy',\
+                    #                 f'{path_}z_init_{trial}.npy'])
+                    # attSBMPred = np.load("predict.npy")
 
                     aris_attributes.append( adjusted_rand_score( z_true, z_pred_attributes ) )
                     aris_graph.append( adjusted_rand_score( z_true, z_pred_graph ) )
@@ -735,7 +735,7 @@ class BregmanBenchmark():
                 aris_attributes_mean.append( np.mean( aris_attributes ) )
                 aris_graph_mean.append( np.mean( aris_graph ) )
                 aris_both_mean.append( np.mean( aris_both ) )
-                aris_attSBM_mean.append( np.mean( aris_attSBM ) )
+                #aris_attSBM_mean.append( np.mean( aris_attSBM ) )
                 aris_IR_sLS_mean.append( np.mean( aris_IR_sLS ) )
                 aris_IR_LS_mean.append( np.mean( aris_IR_LS ) )
                 aris_oracle_mean.append( np.mean( aris_oracle) )
@@ -743,7 +743,7 @@ class BregmanBenchmark():
                 aris_attributes_std.append( np.std( aris_attributes ) )
                 aris_graph_std.append( np.std( aris_graph ) )
                 aris_both_std.append( np.std( aris_both ) )
-                aris_attSBM_std.append( np.std( aris_attSBM ) )
+                #aris_attSBM_std.append( np.std( aris_attSBM ) )
                 aris_IR_sLS_std.append( np.std( aris_IR_sLS ) )
                 aris_IR_LS_std.append( np.std( aris_IR_LS ) )
                 aris_oracle_std.append( np.std( aris_oracle) )
@@ -755,11 +755,11 @@ class BregmanBenchmark():
                 stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
                 
             curves = [ aris_attributes_mean, aris_graph_mean,\
-                    aris_both_mean , aris_attSBM_mean, aris_IR_sLS_mean,\
+                    aris_both_mean , aris_IR_sLS_mean,\
                     aris_IR_LS_mean]
 
             curves_std = [ aris_attributes_std, aris_graph_std,\
-                        aris_both_std , aris_attSBM_std, aris_IR_sLS_std,\
+                        aris_both_std , aris_IR_sLS_std,\
                         aris_IR_LS_std]
 
             labels = [ 'attributes', 'graph', 'both' , 'attSBM', 'IR_sLS', 'IR_LS']
