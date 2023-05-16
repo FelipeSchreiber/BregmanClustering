@@ -719,7 +719,7 @@ class BregmanBenchmark():
                     aris_attributes.append( adjusted_rand_score( z_true, z_pred_attributes ) )
                     aris_graph.append( adjusted_rand_score( z_true, z_pred_graph ) )
                     aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
-                    aris_attSBM.append( adjusted_rand_score( z_true, attSBMPred ) )
+                    #aris_attSBM.append( adjusted_rand_score( z_true, attSBMPred ) )
                     aris_IR_sLS.append( adjusted_rand_score( z_true, IR_sLS_pred ) )
                     aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
                     
