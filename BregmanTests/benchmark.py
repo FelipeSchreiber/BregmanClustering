@@ -776,7 +776,7 @@ class BregmanBenchmark():
                 plotting( att_averages, curves, labels, curves_std = curves_std, xticks = att_averages, xlabel = 'att_averages', saveFig = saveFig, fileName = fileName )
                 plt.close()
         
-            return stats
+        return stats
     
     def get_real_data(self):
         data_dir = "../../RealDataSets/"
