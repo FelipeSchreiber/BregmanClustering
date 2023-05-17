@@ -624,6 +624,7 @@ class BregmanBenchmark():
         pout = b * np.log( n ) / n
 
         for varying in ["graph","attributes"]:
+            print(">>> ",varying)
             aris_attributes_mean = [ ]
             aris_graph_mean = [ ]
             aris_both_mean = [ ]
