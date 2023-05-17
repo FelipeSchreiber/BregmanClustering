@@ -705,7 +705,7 @@ class BregmanBenchmark():
                     z_pred_attributes = frommembershipMatriceToVector( chernoff_att_labels )
                     
                     IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)
-                    IR_LS_pred = csbm.iter_csbm2(X,Y,z_init,n_clusters)
+                    # IR_LS_pred = csbm.iter_csbm2(X,Y,z_init,n_clusters)
                         
                     subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
                                     f'{path_}att_{trial}.npy',\
@@ -718,7 +718,7 @@ class BregmanBenchmark():
                     aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                     aris_attSBM.append( adjusted_rand_score( z_true, attSBMPred ) )
                     aris_IR_sLS.append( adjusted_rand_score( z_true, IR_sLS_pred ) )
-                    aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
+                    # aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
                     
                     # if chernoff_init_graph:
                     #     z_pred_att_init = model.fit(A,X.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
@@ -735,7 +735,7 @@ class BregmanBenchmark():
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_attSBM_mean.append( np.mean( aris_attSBM ) )
                 aris_IR_sLS_mean.append( np.mean( aris_IR_sLS ) )
-                aris_IR_LS_mean.append( np.mean( aris_IR_LS ) )
+                # aris_IR_LS_mean.append( np.mean( aris_IR_LS ) )
                 #aris_oracle_mean.append( np.mean( aris_oracle) )
                 
                 aris_attributes_std.append( np.std( aris_attributes ) )
@@ -743,7 +743,7 @@ class BregmanBenchmark():
                 aris_both_std.append( np.std( aris_both ) )
                 aris_attSBM_std.append( np.std( aris_attSBM ) )
                 aris_IR_sLS_std.append( np.std( aris_IR_sLS ) )
-                aris_IR_LS_std.append( np.std( aris_IR_LS ) )
+                # aris_IR_LS_std.append( np.std( aris_IR_LS ) )
                 #aris_oracle_std.append( np.std( aris_oracle) )
                 
                 stats["varying"].append(varying)
@@ -754,14 +754,13 @@ class BregmanBenchmark():
             
             ## End of dummy loop
             curves = [ aris_attributes_mean, aris_graph_mean,\
-                    aris_both_mean , aris_attSBM_mean, aris_IR_sLS_mean,\
-                    aris_IR_LS_mean]
+                    aris_both_mean , aris_attSBM_mean, aris_IR_sLS_mean]
 
             curves_std = [ aris_attributes_std, aris_graph_std,\
-                            aris_both_std ,aris_attSBM_std, aris_IR_sLS_std,\
-                            aris_IR_LS_std]
+                            aris_both_std ,aris_attSBM_std, aris_IR_sLS_std
+                        ]
 
-            labels = [ 'attributes', 'graph', 'both', 'attSBM','IR_sLS', 'IR_LS']
+            labels = [ 'attributes', 'graph', 'ours', 'attSBM','IR_sLS']
             saveFig = True
             if varying == 'graph':    
                 fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_att_' + str(la)  +  '_nAverage' + str(n_average) + '.jpeg'
