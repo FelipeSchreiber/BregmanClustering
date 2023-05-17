@@ -617,7 +617,7 @@ class BregmanBenchmark():
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
         self.n_clusters = n_clusters
-        stats = {"attributes_avg":[],"weights_avg":[],"ARI":[], "varying":[], "ARI_ORACLE":[]}
+        stats = {"attributes_avg":[],"weights_avg":[],"ARI":[], "varying":[], "ARI_std":[],"algorithm":[]}
         aris_both_mean = [ ]
         aris_both_std = [ ]
         pout = b * np.log( n ) / n
