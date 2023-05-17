@@ -617,7 +617,7 @@ class BregmanBenchmark():
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
         self.n_clusters = n_clusters
-        stats = {"lambda_att":[],"lambda_w":[],"ARI":[], "varying":[], "ARI_ORACLE":[]}
+        stats = {"attributes_avg":[],"weights_avg":[],"ARI":[], "varying":[], "ARI_ORACLE":[]}
         aris_both_mean = [ ]
         aris_both_std = [ ]
         pout = b * np.log( n ) / n
@@ -747,8 +747,8 @@ class BregmanBenchmark():
                 #aris_oracle_std.append( np.std( aris_oracle) )
                 
                 stats["varying"].append(varying)
-                stats["lambda_w"].append(1/lw)
-                stats["lambda_att"].append(1/la)
+                stats["weights_avg"].append(lw)
+                stats["attributes_avg"].append(1/la)
                 stats["ARI"].append(aris_both_mean[-1])
                 #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
             
@@ -764,11 +764,11 @@ class BregmanBenchmark():
             saveFig = True
             if varying == 'graph':    
                 fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_att_' + str(la)  +  '_nAverage' + str(n_average) + '.jpeg'
-                plotting( w_averages, curves, labels, curves_std = curves_std, xticks = w_averages, xlabel = 'w_averages', saveFig = saveFig, fileName = fileName )
+                plotting( w_averages, curves, labels, curves_std = curves_std, xticks = w_averages, xlabel = 'weights_avg', saveFig = saveFig, fileName = fileName )
                 plt.close()
             elif varying == 'attributes':
                 fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_w_' + str(lw) + '_nAverage_' + str(n_average) + '.jpeg'
-                plotting( att_averages, curves, labels, curves_std = curves_std, xticks = att_averages, xlabel = 'att_averages', saveFig = saveFig, fileName = fileName )
+                plotting( att_averages, curves, labels, curves_std = curves_std, xticks = att_averages, xlabel = 'attributes_avg', saveFig = saveFig, fileName = fileName )
                 plt.close()
         
         return stats
