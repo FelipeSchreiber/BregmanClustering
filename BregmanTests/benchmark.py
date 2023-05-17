@@ -790,7 +790,7 @@ class BregmanBenchmark():
                             aris_both_std ,aris_attSBM_std, aris_IR_sLS_std
                         ]
 
-            labels = [ 'attributes', 'graph', 'ours', 'attSBM','IR_sLS']
+            labels = [ 'EM-GMM', 'SC', 'Algo1', 'attSBM','IR_sLS']
             saveFig = True
             if varying == 'graph':    
                 fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_att_' + str(la)  +  '_nAverage' + str(n_average) + '.jpeg'
