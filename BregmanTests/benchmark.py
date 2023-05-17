@@ -661,7 +661,7 @@ class BregmanBenchmark():
                 aris_IR_LS = [ ]
                 aris_oracle = [ ]
                 
-                path_ = path_to_data+f"a/{lw}/r/{la}/"
+                path_ = path_to_data+f"lw/{lw}/la/{la}/"
                 if not os.path.exists(path_):
                     os.makedirs(path_)
                 
@@ -748,8 +748,38 @@ class BregmanBenchmark():
                 
                 stats["varying"].append(varying)
                 stats["weights_avg"].append(lw)
-                stats["attributes_avg"].append(1/la)
+                stats["attributes_avg"].append(la)
                 stats["ARI"].append(aris_both_mean[-1])
+                stats["ARI_std"].append(aris_both_std[-1])
+                stats["algorithm"].append("ours")
+
+                stats["varying"].append(varying)
+                stats["weights_avg"].append(lw)
+                stats["attributes_avg"].append(la)
+                stats["ARI"].append(aris_IR_sLS_mean[-1])
+                stats["ARI_std"].append(aris_IR_sLS_std[-1])
+                stats["algorithm"].append("IR_sLS")
+
+                stats["varying"].append(varying)
+                stats["weights_avg"].append(lw)
+                stats["attributes_avg"].append(la)
+                stats["ARI"].append(aris_attSBM_mean[-1])
+                stats["ARI_std"].append(aris_attSBM_std[-1])
+                stats["algorithm"].append("attSBM")
+
+                stats["varying"].append(varying)
+                stats["weights_avg"].append(lw)
+                stats["attributes_avg"].append(la)
+                stats["ARI"].append(aris_graph_mean[-1])
+                stats["ARI_std"].append(aris_graph_std[-1])
+                stats["algorithm"].append("graph")
+
+                stats["varying"].append(varying)
+                stats["weights_avg"].append(lw)
+                stats["attributes_avg"].append(la)
+                stats["ARI"].append(aris_attributes_mean[-1])
+                stats["ARI_std"].append(aris_attributes_std[-1])
+                stats["algorithm"].append("attributes")
                 #stats["ARI_ORACLE"].append(aris_oracle_mean[-1])
             
             ## End of dummy loop
