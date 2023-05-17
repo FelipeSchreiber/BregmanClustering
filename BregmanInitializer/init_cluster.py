@@ -6,6 +6,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.manifold import SpectralEmbedding
 from sklearn.preprocessing import OneHotEncoder
 from scipy.sparse import csr_matrix, csc_matrix 
+from sklearn.cluster import SpectralClustering
 
 class BregmanInitializer():
     def __init__( self, n_clusters,initializer="AIC",\
@@ -187,12 +188,15 @@ class BregmanInitializer():
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
 
-        U = self.spectralEmbedding(sim_matrix)
-        model = GaussianMixture(n_components=self.n_clusters)
-        preds = model.fit(U).predict(U)
-        preds = preds.reshape(-1, 1)
+        # U = self.spectralEmbedding(sim_matrix)
+        # model = GaussianMixture(n_components=self.n_clusters)
+        # preds = model.fit(U).predict(U)
+        clustering = SpectralClustering(n_clusters=self.n_clusters,
+            assign_labels='discretize',
+            random_state=0).fit(sim_matrix)
+        preds = clustering.labels_.reshape(-1, 1)
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
         self.graph_model_init = model
-
+        
         self.assignInitialLabels()
