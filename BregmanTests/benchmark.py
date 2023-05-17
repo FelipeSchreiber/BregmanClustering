@@ -696,7 +696,7 @@ class BregmanBenchmark():
                     with open(f'{path_}att_{trial}.npy', 'wb') as g:
                         np.save(g, Y)
                     with open(f'{path_}net_{trial}.npy', 'wb') as g:
-                        np.save(g, A)
+                        np.save(g, X)
                     with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
                         np.save(g, csbm.convertZ(z_init)+1)
 
