@@ -14,7 +14,7 @@ from torch.nn.functional import kl_div
 import warnings
 # from torch.autograd import grad
 # from torch.autograd.functional import jacobian
-from torch.func import grad
+from torch.func import grad,jacrev
 warnings.filterwarnings("ignore")
 
 
@@ -175,13 +175,14 @@ def get_phi(name):
 def bregman_divergence(phi, x, theta):
     phi_theta = phi(theta)
     phi_theta.backward()
+    # grad_phi = grad(phi)
     bregman_div = phi(x) - phi_theta - torch.dot(theta.grad, x-theta)
     return bregman_div
 
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
 #shape=gamma_shape
 def pairwise_bregman(X, Y, phi, shape=None):
-    grad_phi = grad(phi)
+    grad_phi = jacrev(phi)
 
     if shape:
         phi_X = phi(X, shape)[:, None]
