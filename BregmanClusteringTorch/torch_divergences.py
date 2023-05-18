@@ -186,7 +186,7 @@ def pairwise_bregman(X, Y, phi, shape=None):
     ## phi R^n -> R
     ## grad_phi R^n -> R^n
     ## vmap(grad_phi) R^(k x n) -> R^(k x n)
-    grad_phi = vmap(grad(phi),in_dims=(None,))
+    grad_phi = vmap(grad(phi))
     print(">>>>",Y.shape)
     if shape:
         phi_X = phi(X, shape)[:, None]
