@@ -175,7 +175,7 @@ def get_phi(name):
 def bregman_divergence(phi, x, theta):
     ## phi R^m -> R
     ## grad_phi R^m -> R^m
-    print(phi(x).shape)
+    print(phi(x))
     grad_phi = grad(phi)
     bregman_div = phi(x) - phi(theta) - torch.dot(grad_phi(theta), x-theta)
     return bregman_div
