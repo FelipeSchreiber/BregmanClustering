@@ -14,8 +14,7 @@ from torch.nn.functional import kl_div
 import warnings
 # from torch.autograd import grad
 # from torch.autograd.functional import jacobian
-from torch.func import grad,jacrev
-from torch import vmap
+from torch.func import grad,jacrev,vmap
 warnings.filterwarnings("ignore")
 
 
@@ -187,7 +186,7 @@ def pairwise_bregman(X, Y, phi, shape=None):
     ## grad_phi R^n -> R^n
     ## vmap(grad_phi) R^(k x n) -> R^(k x n)
     grad_phi = grad(phi)
-    print(">>>>",Y[0,:].shape,grad_phi(Y[0,:]))
+    print(">>>>",Y[0,:].shape,grad_phi(Y[0,:]),vmap(grad_phi)(Y))
     if shape:
         phi_X = phi(X, shape)[:, None]
         phi_Y = phi(Y, shape)[None, :]
