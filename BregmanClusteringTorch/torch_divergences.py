@@ -182,11 +182,10 @@ def bregman_divergence(phi, x, theta):
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
 #shape=gamma_shape
 def pairwise_bregman(X, Y, phi, shape=None):
-    ## phi R^n -> R
-    ## grad_phi R^n -> R^n
-    ## vmap(grad_phi) R^(k x n) -> R^(k x n)
+    ## phi R^m -> R
+    ## grad_phi R^m -> R^m
+    ## vmap(grad_phi) R^(k x m) -> R^(k x m)
     grad_phi = vmap(grad(phi))
-    # print(">>>>",Y[0,:].shape,grad_phi(Y[0,:]),vmap(grad_phi)(Y))
     if shape:
         phi_X = phi(X, shape)[:, None]
         phi_Y = phi(Y, shape)[None, :]
@@ -196,11 +195,12 @@ def pairwise_bregman(X, Y, phi, shape=None):
 
     X = X[:, None]
     Y = Y[None, :]
-    print((X-Y).shape)
+    ## X - Y iS n x k x m
+    ## (X - Y) x vmap(grad_phi) -> n x k
     if shape:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y)[None, :], axis=-1)
     else:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y)[None, :], axis=-1)
 
     return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
 
