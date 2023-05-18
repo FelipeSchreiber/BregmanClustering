@@ -171,10 +171,11 @@ def get_phi(name):
     return phi_dict[name]
 """
 
-#x, theta are both k-dimensional
+#x, theta are both m-dimensional
 def bregman_divergence(phi, x, theta):
-    # phi_theta = phi(theta)
-    # phi_theta.backward()
+    ## phi R^m -> R
+    ## grad_phi R^m -> R^m
+    print(phi(x).shape)
     grad_phi = grad(phi)
     bregman_div = phi(x) - phi(theta) - torch.dot(grad_phi(theta), x-theta)
     return bregman_div
@@ -195,7 +196,7 @@ def pairwise_bregman(X, Y, phi, shape=None):
 
     X = X[:, None]
     Y = Y[None, :]
-    ## X - Y iS n x k x m
+    ## X - Y is n x k x m
     ## (X - Y) x vmap(grad_phi) -> n x k
     if shape:
         pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi[None, :], axis=-1)
