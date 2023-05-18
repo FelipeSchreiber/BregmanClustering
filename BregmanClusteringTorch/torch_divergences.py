@@ -173,10 +173,10 @@ def get_phi(name):
 
 #x, theta are both k-dimensional
 def bregman_divergence(phi, x, theta):
-    phi_theta = phi(theta)
+    # phi_theta = phi(theta)
     # phi_theta.backward()
     grad_phi = grad(phi)
-    bregman_div = phi(x) - phi_theta - torch.dot(grad_phi(theta), x-theta)
+    bregman_div = phi(x) - phi(theta) - torch.dot(grad_phi(theta), x-theta)
     return bregman_div
 
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
