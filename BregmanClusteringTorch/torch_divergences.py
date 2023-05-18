@@ -185,7 +185,8 @@ def bregman_divergence(phi, x, theta):
 def pairwise_bregman(X, Y, phi, shape=None):
     ## phi R^n -> R
     ## grad_phi R^n -> R^n
-    grad_phi = grad(phi)
+    ## vmap(grad_phi) R^(k x n) -> R^(k x n)
+    grad_phi = vmap(grad(phi))
     print(">>>>",Y.shape)
     if shape:
         phi_X = phi(X, shape)[:, None]
@@ -197,9 +198,9 @@ def pairwise_bregman(X, Y, phi, shape=None):
     X = X[:, None]
     Y = Y[None, :]
     if shape:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y.squeeze()), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y), axis=-1)
     else:
-        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y.squeeze()), axis=-1)
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi(Y), axis=-1)
 
     return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
 
