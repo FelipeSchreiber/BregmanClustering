@@ -34,7 +34,7 @@ class BregmanBenchmark():
                     attributes_distribution = "gaussian",\
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
-                    radius=None,return_G=False,\
+                    radius=None,return_G=False,reduce_by="sum",\
                     att_centers = None, weight_centers = None, run_torch=False):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
@@ -45,6 +45,7 @@ class BregmanBenchmark():
         # If not specified, then the weights are taken from linspace between [min_, max_]
         self.weight_centers=weight_centers
         self.probability_matrix=P
+        self.reduce_by = reduce_by
         self.communities_sizes=communities_sizes
         ## min and max specifies the range of the weight distribution means in 1D
         self.min_ = min_
@@ -376,7 +377,8 @@ class BregmanBenchmark():
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name,\
-                                        n_iters=n_iters)
+                                        n_iters=n_iters,
+                                        reduce_by=self.reduce_by)
                 if self.torch_model:
                     graph_data = self.to_pyg_data(X,Y)
                     A = torch.tensor(A).to_sparse()
