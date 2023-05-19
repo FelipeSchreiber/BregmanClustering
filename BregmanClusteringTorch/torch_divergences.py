@@ -104,7 +104,6 @@ def make_breg_div(phi):
     def bregman_divergence(x, theta):
         ## phi R^m -> R
         ## grad_phi R^m -> R^m
-        print("phi ",phi(x).shape,x.shape)
         grad_phi = grad(phi)
         bregman_div = phi(x) - phi(theta) - torch.dot(grad_phi(theta), x-theta)
         return bregman_div
