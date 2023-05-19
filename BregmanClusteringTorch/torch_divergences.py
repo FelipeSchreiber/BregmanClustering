@@ -99,6 +99,17 @@ def make_phi_with_reduce(reduce_func,phi):
         return reduce_func(phi(X),dim=-1)
     return compose_phi
 
+#x, theta are both m-dimensional
+def make_breg_div(phi):
+    def bregman_divergence(x, theta):
+        ## phi R^m -> R
+        ## grad_phi R^m -> R^m
+        print("phi ",phi(x).shape,x.shape)
+        grad_phi = grad(phi)
+        bregman_div = phi(x) - phi(theta) - torch.dot(grad_phi(theta), x-theta)
+        return bregman_div
+    return bregman_divergence
+
 dist_to_phi_dict = {
         'gaussian': phi_gaussian,
         'bernoulli': phi_bernoulli,
@@ -170,15 +181,6 @@ def get_phi(name):
     }
     return phi_dict[name]
 """
-
-#x, theta are both m-dimensional
-def bregman_divergence(phi, x, theta):
-    ## phi R^m -> R
-    ## grad_phi R^m -> R^m
-    print("phi ",phi(x).shape,x.shape)
-    grad_phi = grad(phi)
-    bregman_div = phi(x) - phi(theta) - torch.dot(grad_phi(theta), x-theta)
-    return bregman_div
 
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
 #shape=gamma_shape
