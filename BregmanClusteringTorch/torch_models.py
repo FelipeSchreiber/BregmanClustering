@@ -586,7 +586,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                 #                                         E[z_t[v_indices_in],q,:]
                 #                                     ) 
                 #                         )
-            L[ q ] = att_div + (edge_div + weight_div) * self.constant_mul
+            L[ q ] = att_div + (edge_div + weight_div) * self.constant_mul * 0.5
         return torch.argmin( L )
     
     def predict(self, X, Y):
