@@ -12,6 +12,7 @@ from sklearn.base import BaseEstimator, ClusterMixin
 from BregmanClustering.models import *
 from .torch_divergences import *
 from BregmanInitializer.init_cluster import *
+from torch.func import vmap
 import networkx as nx
 from sys import platform
 import torch
@@ -553,14 +554,22 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             edge_div = bregman_divergence(self.edge_phi,a_out,M_out) + bregman_divergence(self.edge_phi,a_in,M_in)
             weight_div=0
             if len(v_indices_out) > 0:
-                weight_div += bregman_divergence(self.weight_phi,X[edge_indices_out,:], E[q,z_t[v_indices_out],:])
+                weight_div += self.reduce_by( 
+                                                vmap(bregman_divergence(self.weight_phi,X[edge_indices_out,:],\
+                                                       E[q,z_t[v_indices_out],:])
+                                                    )
+                                                                                            
+                                            )
                 # weight_div += self.reduce_by( self.weight_divergence(
                 #                                     X[edge_indices_out,:],
                 #                                     E[q,z_t[v_indices_out],:]
                 #                                     )
                 #                             )
             if len(v_indices_in) > 0:
-                weight_div += bregman_divergence(self.weight_phi,X[edge_indices_in,:], E[z_t[v_indices_in],q,:])
+                weight_div += self.reduce_by( 
+                                                vmap(bregman_divergence(self.weight_phi,X[edge_indices_in,:],\
+                                                                        E[z_t[v_indices_in],q,:]))
+                                            )
                 # weight_div += self.reduce_by( 
                 #                             self.weight_divergence(
                 #                                         X[edge_indices_in,:],
