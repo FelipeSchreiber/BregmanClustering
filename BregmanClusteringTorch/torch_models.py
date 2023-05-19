@@ -573,20 +573,20 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                 #                                     )
                 #                             )
             
-            if len(v_indices_in) > 0:
-                weight_div += self.reduce_by( 
-                                                vectorized_breg(
-                                                                X[edge_indices_in,:],\
-                                                                E[z_t[v_indices_in],q,:]
-                                                            )
-                                            )
+            # if len(v_indices_in) > 0:
+            #     weight_div += self.reduce_by( 
+            #                                     vectorized_breg(
+            #                                                     X[edge_indices_in,:],\
+            #                                                     E[z_t[v_indices_in],q,:]
+            #                                                 )
+            #                                 )
                 # weight_div += self.reduce_by( 
                 #                             self.weight_divergence(
                 #                                         X[edge_indices_in,:],
                 #                                         E[z_t[v_indices_in],q,:]
                 #                                     ) 
                 #                         )
-            L[ q ] = att_div + (edge_div + weight_div) * self.constant_mul * 0.5
+            L[ q ] = att_div + (edge_div + weight_div) * 0.5
         return torch.argmin( L )
     
     def predict(self, X, Y):
