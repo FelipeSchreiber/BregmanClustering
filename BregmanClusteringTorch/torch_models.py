@@ -331,6 +331,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         else:
             self.n_iters = 30
 
+        self.N = 0
+        self.row_indices = torch.arange(2)
         self.initializer = initializer
         self.graph_initializer = graph_initializer
         self.attribute_initializer = attribute_initializer
@@ -382,10 +384,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                 )
             
             ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
-            self.attribute_divergence = make_pairwise_breg(make_phi_with_reduce(self.reduce_by,self.attribute_phi))        
-        
-        self.N = 0
-        self.row_indices = torch.arange(2)
+            self.attribute_divergence = make_pairwise_breg(make_phi_with_reduce(self.reduce_by,self.attribute_phi))
 
     ## return true when fit proccess is finished
     def stop_criterion(self,old,new,iteration):
