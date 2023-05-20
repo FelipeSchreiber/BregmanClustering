@@ -35,7 +35,8 @@ class BregmanBenchmark():
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
                     radius=None,return_G=False,reduce_by="sum",\
-                    att_centers = None, weight_centers = None, run_torch=False):
+                    att_centers = None, weight_centers = None, run_torch=False,\
+                    divergence_precomputed=True):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle
@@ -63,6 +64,7 @@ class BregmanBenchmark():
         self.radius=radius
         self.return_G = return_G
         self.torch_model = run_torch
+        self.divergence_precomputed = divergence_precomputed
         if run_torch:
             #self.model_ = torchBreg
             self.model_ = sparseBreg
@@ -378,7 +380,8 @@ class BregmanBenchmark():
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name,\
                                         n_iters=n_iters,
-                                        reduce_by=self.reduce_by)
+                                        reduce_by=self.reduce_by,
+                                        divergence_precomputed=self.divergence_precomputed)
                 if self.torch_model:
                     graph_data = self.to_pyg_data(X,Y)
                     A = torch.tensor(A).to_sparse()

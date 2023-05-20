@@ -760,7 +760,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
-                 reduce_by=None ):
+                 reduce_by=None,
+                 divergence_precomputed=True):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
