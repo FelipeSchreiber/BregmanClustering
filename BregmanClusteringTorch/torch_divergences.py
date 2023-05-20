@@ -121,14 +121,15 @@ def make_breg_div(phi):
 
 def make_pairwise_breg(phi):
     vectorized_grad = vmap(grad(phi))
+    vectorized_phi = vmap(phi)
     #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
     def pairwise_bregman(X, Y):
         ## phi R^m -> R
         ## grad_phi R^m -> R^m
         ## vmap(grad_phi) R^(k x m) -> R^(k x m)
         grad_phi = vectorized_grad(Y)
-        phi_X = phi(X)[:, None]
-        phi_Y = phi(Y)[None, :]
+        phi_X = vectorized_phi(X)[:, None]
+        phi_Y = vectorized_phi(Y)[None, :]
 
         X = X[:, None]
         Y = Y[None, :]
