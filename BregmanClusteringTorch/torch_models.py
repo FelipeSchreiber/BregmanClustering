@@ -353,8 +353,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         
         if divergence_precomputed:
             ## SET DIVERGENCES precomputed
-            self.edge_divergence = make_phi_with_reduce(self.reduce_by,\
-                                                        dist_to_divergence_dict[self.edgeDistribution])
+            self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
             self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
             self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         else: 
@@ -556,12 +555,12 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            # edge_div = self.reduce_by( 
-            #                             self.edge_divergence( a_out , M_out )
-            #                             + self.edge_divergence( a_in , M_in ),
-            #                             dim=-1
-            #                         )
-            edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
+            edge_div = self.reduce_by( 
+                                        self.edge_divergence( a_out , M_out )
+                                        + self.edge_divergence( a_in , M_in ),
+                                        dim=-1
+                                    )
+            # edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
             weight_div=0
             if len(v_indices_out) > 0:
                 weight_div += self.reduce_by( 
@@ -589,7 +588,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                 #                                         E[z_t[v_indices_in],q,:]
                 #                                     ) 
                 #                         )
-            print(att_div.shape,edge_div.shape,weight_div.shape)
+            print(att_div.shape,edge_div.shape,weight_div)
             L[ q ] = att_div + (edge_div + weight_div) * 0.5
         return torch.argmin( L )
     
