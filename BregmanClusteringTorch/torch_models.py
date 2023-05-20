@@ -359,13 +359,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                         dist_to_divergence_dict[self.edgeDistribution]
                                                     )
             
-            single_vec_w_div = make_phi_with_reduce(self.reduce_by,
+            ## X is |E| x D, Y is |E| x D, output is scalar
+            self.weight_divergence = make_pair_breg(
+                                                    self.reduce_by,\
                                                     dist_to_divergence_dict[self.weightDistribution]
-                                                    )
-            ## X is |E| x D, E is |E| x D, output is scalar
-            self.weight_divergence = make_phi_with_reduce(self.reduce_by,\
-                                                          vmap(single_vec_w_div)
-                                                    )
+                                                )
             
             self.attribute_divergence = make_att_div(
                                         dist_to_divergence_dict[self.attributeDistribution],\
@@ -377,11 +375,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             ## inputs are vectors of length |V|, output is scalar
             self.edge_divergence = make_breg_div(self.edge_phi)
             
-            single_vec_w_div = make_breg_div(self.weight_phi)
             ## X is |E| x D, Y is |E| x D, output is scalar
-            self.weight_divergence = make_phi_with_reduce(self.reduce_by,
-                                                          vmap(make_pair_breg(single_vec_w_div))
-                                                        )
+            self.weight_divergence = make_pair_breg(
+                                                    self.reduce_by,\
+                                                    make_breg_div(self.weight_phi)
+                                                )
             
             ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
             self.attribute_divergence = make_pairwise_breg(make_phi_with_reduce(self.reduce_by,self.attribute_phi))        
