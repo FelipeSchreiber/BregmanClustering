@@ -353,14 +353,22 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         
         if divergence_precomputed:
             ## SET DIVERGENCES precomputed
-            self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
+            self.edge_divergence = make_phi_with_reduce(self.reduce_by,\
+                                                        dist_to_divergence_dict[self.edgeDistribution]
+                                                    )
             self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
             self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         else: 
             ##SET DIVERGENCES from definition: D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)> 
+           
+            ## inputs are vectors of length |V|
             self.edge_divergence = make_breg_div(self.edge_phi)
+            
+            ## X is |E| x D, y is k x m, output is n x k containing all the pairwise bregman divergences
             self.weight_divergence = vmap(make_breg_div(self.weight_phi))
-            self.attribute_divergence = make_breg_div(self.attribute_phi)        
+            
+            ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
+            self.attribute_divergence = make_pairwise_breg(make_breg_div(self.attribute_phi))        
         
         self.N = 0
         self.row_indices = torch.arange(2)
@@ -515,7 +523,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         #                                        self.attribute_means[None,:].expand(self.N,-1,-1)),\
         #             dim=-1
         # )
-        H = pairwise_bregman(Y, self.attribute_means, self.attribute_phi)
+        H = self.attribute_divergence(Y, self.attribute_means)
         for node in range( self.N ):
             k = self.singleNodeAssignment( A, X, H, node )
             z[node,k]=1
@@ -555,13 +563,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            edge_div = self.reduce_by( 
-                                        self.edge_divergence( a_out , M_out )
-                                        + self.edge_divergence( a_in , M_in ),
-                                        dim=-1
-                                    )
-            # edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
+            edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
             weight_div=0
+            print(">>>",E[q,z_t[v_indices_out],:].shape,X[edge_indices_out,:].shape)
             if len(v_indices_out) > 0:
                 weight_div += self.reduce_by( 
                                                 self.weight_divergence(

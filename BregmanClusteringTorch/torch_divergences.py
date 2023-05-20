@@ -96,18 +96,37 @@ def phi_gaussian(X):
 
 def make_phi_with_reduce(reduce_func,phi):
     def compose_phi(X):
-        return reduce_func(phi(X),dim=-1)
+        return reduce_func(phi(X))
     return compose_phi
 
 #x, theta are both m-dimensional
 def make_breg_div(phi):
+    ## phi R^m -> R
+    ## grad_phi R^m -> R^m
+    grad_phi = grad(phi)
     def bregman_divergence(x, theta):
-        ## phi R^m -> R
-        ## grad_phi R^m -> R^m
-        grad_phi = grad(phi)
         bregman_div = phi(x) - phi(theta) - torch.dot(grad_phi(theta), x-theta)
         return bregman_div
     return bregman_divergence
+
+def make_pairwise_breg(phi):
+    vectorized_grad = vmap(grad(phi))
+    #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
+    def pairwise_bregman(X, Y):
+        ## phi R^m -> R
+        ## grad_phi R^m -> R^m
+        ## vmap(grad_phi) R^(k x m) -> R^(k x m)
+        grad_phi = vectorized_grad(Y)
+        phi_X = phi(X)[:, None]
+        phi_Y = phi(Y)[None, :]
+
+        X = X[:, None]
+        Y = Y[None, :]
+        ## X - Y is n x k x m
+        ## (X - Y) x vmap(grad_phi) -> n x k
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi[None, :], axis=-1)
+        return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
+    return pairwise_bregman
 
 dist_to_phi_dict = {
         'gaussian': phi_gaussian,
@@ -183,17 +202,13 @@ def get_phi(name):
 
 #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
 #shape=gamma_shape
-def pairwise_bregman(X, Y, phi, shape=None):
+def pairwise_bregman(X, Y):
     ## phi R^m -> R
     ## grad_phi R^m -> R^m
     ## vmap(grad_phi) R^(k x m) -> R^(k x m)
     grad_phi = vmap(grad(phi))(Y)
-    if shape:
-        phi_X = phi(X, shape)[:, None]
-        phi_Y = phi(Y, shape)[None, :]
-    else:
-        phi_X = phi(X)[:, None]
-        phi_Y = phi(Y)[None, :]
+    phi_X = phi(X)[:, None]
+    phi_Y = phi(Y)[None, :]
 
     X = X[:, None]
     Y = Y[None, :]
