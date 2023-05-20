@@ -377,9 +377,10 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             ## inputs are vectors of length |V|, output is scalar
             self.edge_divergence = make_breg_div(self.edge_phi)
             
-            ## X is |E| x D, E is |E| x D, output is scalar
+            single_vec_w_div = make_breg_div(self.weight_phi)
+            ## X is |E| x D, Y is |E| x D, output is scalar
             self.weight_divergence = make_phi_with_reduce(self.reduce_by,
-                                                          vmap(make_breg_div(self.weight_phi))
+                                                          vmap(make_pair_breg(single_vec_w_div))
                                                         )
             
             ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences

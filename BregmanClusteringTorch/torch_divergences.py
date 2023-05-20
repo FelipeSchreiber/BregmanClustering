@@ -94,11 +94,13 @@ def phi_poisson(X):
 def phi_gaussian(X):
     return 0.5*(X**2) #* 1/(σ2) 
 
+## Takes a func R^(n x m) -> R^(n x m) and reduce
 def make_phi_with_reduce(reduce_func,phi):
     def compose_phi(X):
         return reduce_func(phi(X))
     return compose_phi
 
+## This func applies phi to every pair of X,Y
 def make_att_div(phi,N,n_clusters):
     def pairwise_div(X,Y):
         total = phi(
@@ -107,7 +109,6 @@ def make_att_div(phi,N,n_clusters):
         )
         return total
     return pairwise_div
-
 
 #x, theta are both m-dimensional
 def make_breg_div(phi):
@@ -118,6 +119,14 @@ def make_breg_div(phi):
         bregman_div = phi(x) - phi(theta) - torch.dot(grad_phi(theta), x-theta)
         return bregman_div
     return bregman_divergence
+
+## given X in R^{N x M} and Θ in R^{N x M}, computes the bregman divergence for each
+# pair X_i, Θ_i, and returns a vector R^N 
+def make_pair_breg(breg_div):
+    vectorized_breg = vmap(breg_div)
+    def pair_breg(X,Y):
+        return vectorized_breg(X,Y)
+    return pair_breg
 
 def make_pairwise_breg(phi):
     vectorized_grad = vmap(grad(phi))
