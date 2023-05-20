@@ -101,9 +101,9 @@ def make_phi_with_reduce(reduce_func,phi):
     return compose_phi
 
 ## This func applies phi to every pair of X,Y
-def make_att_div(phi,N,n_clusters):
+def make_att_div(div,N,n_clusters):
     def pairwise_div(X,Y):
-        total = phi(
+        total = div(
             X[:,None],#.expand(-1,n_clusters,-1),
             Y[None,:]#.expand(N,-1,-1)
         )
