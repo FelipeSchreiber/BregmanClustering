@@ -572,7 +572,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             att_div = H[node,q]
             edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
             weight_div=0
-            print(">>>",E[q,z_t[v_indices_out],:].shape,X[edge_indices_out,:].shape)
+            # print(">>>",E[q,z_t[v_indices_out],:].shape,X[edge_indices_out,:].shape)
             if len(v_indices_out) > 0:
                 weight_div += self.weight_divergence(X[edge_indices_out,:],\
                                                      E[q,z_t[v_indices_out],:])
