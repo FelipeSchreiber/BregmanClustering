@@ -304,7 +304,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                  graph_initializer = "spectralClustering", 
                  attribute_initializer = 'GMM', 
                  n_iters = None, init_iters=100, 
-                 reduce_by = "sum"
+                 reduce_by = "sum",
+                 divergence_precomputed=True
                 ):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
@@ -344,20 +345,22 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         self.edgeDistribution = edgeDistribution
         self.attributeDistribution = attributeDistribution
         self.weightDistribution = weightDistribution
-        ## SET DIVERGENCES
-        # self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
-        # self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
-        # self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         
         ## SET PHI
         self.edge_phi = make_phi_with_reduce(self.reduce_by, dist_to_phi_dict[self.edgeDistribution])
         self.weight_phi = make_phi_with_reduce(self.reduce_by, dist_to_phi_dict[self.weightDistribution])
         self.attribute_phi = make_phi_with_reduce(self.reduce_by, dist_to_phi_dict[self.attributeDistribution])
         
-        ##SET DIVERGENCES
-        self.edge_divergence = make_breg_div(self.edge_phi)
-        self.weight_divergence = make_breg_div(self.weight_phi)
-        self.attribute_divergence = make_breg_div(self.attribute_phi)        
+        if divergence_precomputed:
+            ## SET DIVERGENCES precomputed
+            self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
+            self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
+            self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
+        else: 
+            ##SET DIVERGENCES from definition: D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)> 
+            self.edge_divergence = make_breg_div(self.edge_phi)
+            self.weight_divergence = vmap(make_breg_div(self.weight_phi))
+            self.attribute_divergence = make_breg_div(self.attribute_phi)        
         
         self.N = 0
         self.row_indices = torch.arange(2)
@@ -559,10 +562,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             #                         )
             edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
             weight_div=0
-            vectorized_breg = vmap(self.weight_divergence)
             if len(v_indices_out) > 0:
                 weight_div += self.reduce_by( 
-                                                vectorized_breg(
+                                                self.weight_divergence(
                                                                 X[edge_indices_out,:],\
                                                                 E[q,z_t[v_indices_out],:]
                                                             )                                
