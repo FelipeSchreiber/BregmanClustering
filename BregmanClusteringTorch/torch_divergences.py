@@ -120,12 +120,23 @@ def make_breg_div(phi):
     return bregman_divergence
 
 def make_pairwise_breg(phi):
-    # vectorized_grad = vmap(grad(phi))
-    # vectorized_phi = phi
-    breg_div = make_breg_div(phi)
+    vectorized_grad = vmap(grad(phi))
+    vectorized_phi = vmap(phi)
+    # breg_div = make_breg_div(phi)
     #X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
     def pairwise_bregman(X, Y):
-        pairwise_distances = breg_div(X[:,None],Y[None,:])
+        ## phi R^m -> R
+        ## grad_phi R^m -> R^m
+        ## vmap(grad_phi) R^(k x m) -> R^(k x m)
+        grad_phi = vectorized_grad(Y)
+        phi_X = vectorized_phi(X)[:, None]
+        phi_Y = vectorized_phi(Y)[None, :]
+
+        X = X[:, None]
+        Y = Y[None, :]
+        ## X - Y is n x k x m
+        ## (X - Y) x vmap(grad_phi) -> n x k
+        pairwise_distances = phi_X - phi_Y - torch.sum((X - Y) * grad_phi[None, :], axis=-1)
         return torch.clamp(pairwise_distances, min=1e-12, max=1e6)
     return pairwise_bregman
 
