@@ -751,7 +751,8 @@ class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             Assigned cluster for each data point (n, )
         """
         return frommembershipMatriceToVector( self.predicted_memberships)
-    
+
+## reduce_by and divergence_precomputed are for compatibility only with torch models
 class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
                  edgeDistribution = "bernoulli",
