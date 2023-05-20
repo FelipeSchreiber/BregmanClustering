@@ -356,16 +356,25 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             self.edge_divergence = make_phi_with_reduce(self.reduce_by,\
                                                         dist_to_divergence_dict[self.edgeDistribution]
                                                     )
-            self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
-            self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
+            
+            self.weight_divergence = make_phi_with_reduce(self.reduce_by,\
+                                                          dist_to_divergence_dict[self.weightDistribution]
+                                                    )
+            
+            self.attribute_divergence = make_att_div(
+                                        dist_to_divergence_dict[self.attributeDistribution],\
+                                        self.N,self.n_clusters
+                                    )
         else: 
             ##SET DIVERGENCES from definition: D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)> 
            
-            ## inputs are vectors of length |V|
+            ## inputs are vectors of length |V|, output is scalar
             self.edge_divergence = make_breg_div(self.edge_phi)
             
-            ## X is |E| x D, y is k x m, output is n x k containing all the pairwise bregman divergences
-            self.weight_divergence = vmap(make_breg_div(self.weight_phi))
+            ## X is |E| x D, E is |E| x D, output is scalar
+            self.weight_divergence = make_phi_with_reduce(self.reduce_by,
+                                                          vmap(make_breg_div(self.weight_phi))
+                                                        )
             
             ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
             self.attribute_divergence = make_pairwise_breg(make_breg_div(self.attribute_phi))        
@@ -519,8 +528,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         z = torch.zeros( (self.N,self.n_clusters)).to(device)
         
         # H = self.reduce_by(
-        #             self.attribute_divergence(Y[:,None].expand(-1,self.n_clusters,-1),\
-        #                                        self.attribute_means[None,:].expand(self.N,-1,-1)),\
+        #             self.attribute_divergence(,\
         #             dim=-1
         # )
         H = self.attribute_divergence(Y, self.attribute_means)
@@ -557,9 +565,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             X has shape |E| x d
             E has shape k x k x d
             
-            the edge divergence computes the difference between node i (from community q) edges and the means
-            given node j belongs to community l:
-            
+            the edge divergence computes the difference between node i (from community q) edges
+            and the expected value given node j belongs to community l:
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
@@ -567,12 +574,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             weight_div=0
             print(">>>",E[q,z_t[v_indices_out],:].shape,X[edge_indices_out,:].shape)
             if len(v_indices_out) > 0:
-                weight_div += self.reduce_by( 
-                                                self.weight_divergence(
-                                                                X[edge_indices_out,:],\
-                                                                E[q,z_t[v_indices_out],:]
-                                                            )                                
-                                            )
+                weight_div += self.weight_divergence(X[edge_indices_out,:],\
+                                                     E[q,z_t[v_indices_out],:])
                 # weight_div += self.reduce_by( self.weight_divergence(
                 #                                     X[edge_indices_out,:],
                 #                                     E[q,z_t[v_indices_out],:]
