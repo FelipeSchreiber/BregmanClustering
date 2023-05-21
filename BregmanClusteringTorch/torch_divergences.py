@@ -142,7 +142,7 @@ def make_pairwise_breg2(phi):
         n_clusters = Y.shape[0]
         N = X.shape[0]
         X_ = torch.repeat_interleave(X, n_clusters, dim=0)
-        Y_ = torch.repeat(N)
+        Y_ = Y.repeat(N,1)
         return vectorized_breg(X_,Y_).reshape(N,n_clusters)
     return pairwise_breg
 
