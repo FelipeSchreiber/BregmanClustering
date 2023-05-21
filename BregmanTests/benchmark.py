@@ -76,7 +76,8 @@ class BregmanBenchmark():
         ## Generate binary connectivity matrix
         G = None
         if complete_graph:
-            G = nx.stochastic_block_model(self.communities_sizes,np.ones(shape=(self.n_clusters,self.n_clusters)),seed=42)
+            G = nx.stochastic_block_model(self.communities_sizes,\
+                                          np.ones(shape=(self.n_clusters,self.n_clusters)),seed=42)
         else:
             G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
         ## Draw the means of the weight distributions for each pair of community interaction
@@ -392,11 +393,11 @@ class BregmanBenchmark():
                         E = graph_data.edge_attr.reshape(-1,1)
                     z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 else:
-                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
+                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y)
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
-
+                X = Y = z_true = G = None
             stats["a"].append(a)
             stats["r"].append(r)
             stats["ARI"].append(aris_both_mean[-1])        

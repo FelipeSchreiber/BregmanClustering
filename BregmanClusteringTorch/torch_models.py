@@ -374,8 +374,10 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             ##SET DIVERGENCES from definition: D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)> 
            
             ## inputs are vectors of length |V|, output is scalar
-            self.edge_divergence = make_breg_div(self.edge_phi)
-            
+            #self.edge_divergence = make_breg_div(self.edge_phi)
+            self.edge_divergence = make_div_with_reduce(self.reduce_by,\
+                                 make_breg_div(self.edge_phi)  
+                                )
             ## X is |E| x D, Y is |E| x D, output is scalar
             self.weight_divergence = make_pair_breg(
                                                     self.reduce_by,\
@@ -383,8 +385,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                 )
             
             ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
-            self.attribute_divergence = make_pairwise_breg(make_phi_with_reduce(self.reduce_by,self.attribute_phi))
-
+            #self.attribute_divergence = make_pairwise_breg(make_phi_with_reduce(self.reduce_by,self.attribute_phi))
+            self.attribute_divergence = make_att_div(
+                                        make_breg_div(self.weight_phi)
+                                    )
+            
     ## return true when fit proccess is finished
     def stop_criterion(self,old,new,iteration):
         correct = (old.argmin(dim=1) == new.argmin(dim=1)).float().sum()
