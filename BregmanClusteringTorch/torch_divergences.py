@@ -113,7 +113,7 @@ def make_att_div(div):
             X[:,None],#.expand(-1,n_clusters,-1),
             Y[None,:]#.expand(N,-1,-1)
         )
-        return total
+        return torch.sum(total,dim=-1)
     return pairwise_div
 
 #x, theta are both m-dimensional
