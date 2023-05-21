@@ -134,6 +134,18 @@ def make_pair_breg(reduce_func,breg_div):
         return reduce_func(vectorized_breg(X,Y))
     return pair_breg
 
+def make_pairwise_breg2(phi):
+    breg_div = make_breg_div(phi)
+    vectorized_breg = vmap(breg_div)
+    def pairwise_breg(X,Y):
+        n_clusters = Y.shape[0]
+        N = X.shape[0]
+        X_ = torch.repeat_interleave(X, n_clusters, dim=0)
+        Y_ = torch.repeat(N)
+        return vectorized_breg(X_,Y_).reshape(N,n_clusters)
+    return pairwise_breg
+
+
 def make_pairwise_breg(phi):
     vectorized_grad = vmap(grad(phi))
     vectorized_phi = vmap(phi)
