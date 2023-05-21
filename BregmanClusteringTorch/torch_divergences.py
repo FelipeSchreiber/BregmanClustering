@@ -30,7 +30,7 @@ SEE:
 #Bernoulli | Logistic loss
 def logistic_loss(X,M):
     total = torch.where( X == 0, -torch.log( 1-M ), -torch.log(M) )
-    #total = torch.log(1 + torch.exp(- (2*X - 1) * ( torch.log(M/(1-M)) ) ))
+    # total = torch.log(1 + torch.exp(- (2*X - 1) * ( torch.log(M/(1-M)) ) ))
     return total
 
 #Multinomial | KL-divergence
@@ -71,7 +71,8 @@ SEE:
 
 #Bernoulli | Logistic loss
 def phi_bernoulli(X):
-    total = X*torch.log(X) + (1-X)*torch.log(1-X)
+    one_minus = 1 - X
+    total = torch.log(torch.pow(X,X)) + torch.log(torch.pow(one_minus,one_minus))
     return total
 
 #Multinomial | KL-divergence
