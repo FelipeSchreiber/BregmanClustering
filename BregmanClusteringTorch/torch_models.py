@@ -357,7 +357,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             ## SET DIVERGENCES precomputed
 
             ## inputs are vectors of length |V|, output is scalar
-            self.edge_divergence = make_phi_with_reduce(self.reduce_by,\
+            self.edge_divergence = make_div_with_reduce(self.reduce_by,\
                                                         dist_to_divergence_dict[self.edgeDistribution]
                                                     )
             
@@ -368,8 +368,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                 )
             
             self.attribute_divergence = make_att_div(
-                                        dist_to_divergence_dict[self.attributeDistribution],\
-                                        self.N,self.n_clusters
+                                        dist_to_divergence_dict[self.attributeDistribution]
                                     )
         else: 
             ##SET DIVERGENCES from definition: D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)> 

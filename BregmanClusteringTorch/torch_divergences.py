@@ -100,8 +100,14 @@ def make_phi_with_reduce(reduce_func,phi):
         return reduce_func(phi(X))
     return compose_phi
 
+## Takes a func (R^{n x d}, R^{n x d} ) -> R^n and reduce -> R
+def make_div_with_reduce(reduce_func,div):
+    def compose_div(X,Y):
+        return reduce_func(div(X,Y))
+    return compose_div
+
 ## This func applies phi to every pair of X,Y
-def make_att_div(div,N,n_clusters):
+def make_att_div(div):
     def pairwise_div(X,Y):
         total = div(
             X[:,None],#.expand(-1,n_clusters,-1),
