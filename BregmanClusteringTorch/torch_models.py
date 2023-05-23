@@ -364,10 +364,12 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             ## X is |E| x D, Y is |E| x D, output is scalar
             self.weight_divergence = make_pair_breg(
                                                     self.reduce_by,\
-                                                    dist_to_divergence_dict[self.weightDistribution]
+                                                    make_div_with_reduce(self.reduce_by,\
+                                                        dist_to_divergence_dict[self.weightDistribution]
+                                                    )
                                                 )
             
-            self.attribute_divergence = make_att_div(
+            self.attribute_divergence = make_att_div(self.reduce_by,
                                         dist_to_divergence_dict[self.attributeDistribution]
                                     )
         else: 

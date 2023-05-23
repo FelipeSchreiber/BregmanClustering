@@ -14,7 +14,7 @@ from torch.nn.functional import kl_div
 import warnings
 # from torch.autograd import grad
 # from torch.autograd.functional import jacobian
-from torch.func import grad,jacrev,vmap
+from torch.func import grad,vmap
 warnings.filterwarnings("ignore")
 
 
@@ -30,8 +30,8 @@ SEE:
 
 #Bernoulli | Logistic loss
 def logistic_loss(X,M):
-    #total = torch.where( X == 0, -torch.log( 1-M ), -torch.log(M) )
-    total = torch.log(1 + torch.exp(- (2*X - 1) * ( torch.log(M/(1-M)) ) ))
+    total = torch.where( X == 0, -torch.log( 1-M ), -torch.log(M) )
+    # total = torch.log(1 + torch.exp(- (2*X - 1) * ( torch.log(M/(1-M)) ) ))
     return total
 
 #Multinomial | KL-divergence
@@ -97,29 +97,32 @@ def phi_poisson(X):
 def phi_gaussian(X):
     return 0.5*(X**2) #* 1/(σ2) 
 
-## Takes a func R^(n x m) -> R^(n x m) and reduce
+## Takes a func R^m -> R^m and reduce 
 def make_phi_with_reduce(reduce_func,phi):
     def compose_phi(X):
         return reduce_func(phi(X))
     return compose_phi
 
-## Takes a func (R^{n x d}, R^{n x d} ) -> R^n and reduce -> R
+## Takes a func (R^{n x d}, R^{n x d} ) -> R^n, specified by div, and reduce -> R
 def make_div_with_reduce(reduce_func,div):
     def compose_div(X,Y):
         return reduce_func(div(X,Y))
     return compose_div
 
-## This func applies phi to every pair of X,Y
-def make_att_div(div):
+## This func applies (PRECOMPUTED) bregman div to every pair of X,Y
+## X is N x M and Y is K x M 
+def make_att_div(reduce_func,div):
     def pairwise_div(X,Y):
         total = div(
             X[:,None],#.expand(-1,n_clusters,-1),
             Y[None,:]#.expand(N,-1,-1)
         )
-        return torch.sum(total,dim=-1)
+        # total has shape N x K x D. Applies reduce in the last axis.
+        return reduce_func(total,dim=-1)
     return pairwise_div
 
-#x, theta are both m-dimensional
+#x, theta are both m-dimensional. Creates the divergence func that map x,theta -> scalar
+## Apply definition D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)> 
 def make_breg_div(phi):
     ## phi R^m -> R
     ## grad_phi R^m -> R^m
@@ -130,14 +133,17 @@ def make_breg_div(phi):
     return bregman_divergence
 
 ## given X in R^{N x M} and Θ in R^{N x M}, computes the bregman divergence for each
-# pair X_{i:}, Θ_{i:}, and reduce the vector, returning a scalar 
+# pair X_{i:}, Θ_{i:}, returns a vector R^N, and finally reduce the vector, returning a scalar 
 def make_pair_breg(reduce_func,breg_div):
     vectorized_breg = vmap(breg_div)
     def pair_breg(X,Y):
         return reduce_func(vectorized_breg(X,Y))
     return pair_breg
 
-def make_pairwise_breg2(phi):
+# This func is similar to make_att_div, but instead of taking the
+#  precomputed bregman divergence, it computes using the definition
+#  D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)>.
+def make_pairwise_breg(phi):
     breg_div = make_breg_div(phi)
     vectorized_breg = vmap(breg_div)
     def pairwise_breg(X,Y):
@@ -148,8 +154,9 @@ def make_pairwise_breg2(phi):
         return vectorized_breg(X_,Y_).reshape(N,n_clusters)
     return pairwise_breg
 
-
-def make_pairwise_breg(phi):
+# This func is the same as make_pairwise_breg, but taken from
+# power k means bregman https://github.com/avellal14/bregman_power_kmeans.
+def make_pairwise_breg2(phi):
     vectorized_grad = vmap(grad(phi))
     vectorized_phi = vmap(phi)
     # breg_div = make_breg_div(phi)
