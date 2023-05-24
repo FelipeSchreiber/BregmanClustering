@@ -41,7 +41,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                  edgeDistribution = "bernoulli",
                  attributeDistribution = "gaussian",
                  weightDistribution = "gaussian",
-                 initializer = 'Chernoff', 
+                 initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", 
                  attribute_initializer = 'GMM', 
                  n_iters = None, init_iters=100, 
