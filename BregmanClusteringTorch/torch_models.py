@@ -315,7 +315,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             # M_out.requires_grad =True
             # M_in = self.graph_means[z_t,torch.tensor([q]).expand(self.N)]
             # M_in.requires_grad =True
-            E = self.edge_means
+            E = self.weight_means
             """
             X has shape |E| x d
             E has shape k x k x d
@@ -325,7 +325,6 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            #edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
             edge_div = self.reduce_by(
                             torch.hstack(
                                     (
