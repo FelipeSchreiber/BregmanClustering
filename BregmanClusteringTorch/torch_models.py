@@ -296,11 +296,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         edge_indices_out = torch.argwhere(self.edge_index[0,:] == node).flatten()
         ## get the actual v nodes in u->v
         v_indices_out = self.edge_index[1,edge_indices_out]
-        # edge_indices_in = torch.argwhere(self.edge_index[1,:] == node).flatten()
+        edge_indices_in = torch.argwhere(self.edge_index[1,:] == node).flatten()
         ## get the actual v nodes in v->u
-        # v_indices_in = self.edge_index[0,edge_indices_in]
+        v_indices_in = self.edge_index[0,edge_indices_in]
         a_out_mask = index_to_mask(v_indices_out,size=self.N).to(device)
-        # a_in_mask = index_to_mask(v_indices_in,size=self.N).to(device)
+        a_in_mask = index_to_mask(v_indices_in,size=self.N).to(device)
         # a_out = torch.zeros(self.N,requires_grad=False).to(device)
         # a_out[v_indices_out] = 1
         # a_in = torch.zeros(self.N,requires_grad=False).to(device)
@@ -329,9 +329,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                             torch.hstack(
                                     (
                                     select(self.ones_div[torch.tensor([q]).expand(self.N),z_t],\
-                                        a_out_mask,dim=0),
+                                        a_in_mask,dim=0),
                                     select(self.zeros_div[torch.tensor([q]).expand(self.N),z_t],\
-                                        ~a_out_mask,dim=0))
+                                        ~a_in_mask,dim=0))
                             )
             )
                                
