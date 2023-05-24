@@ -12,10 +12,10 @@ from sklearn.base import BaseEstimator, ClusterMixin
 from BregmanClustering.models import *
 from .torch_divergences import *
 from BregmanInitializer.init_cluster import *
-from torch.func import vmap
 import networkx as nx
 from sys import platform
 import torch
+from torch_geometric.utils import index_to_mask,select
 
 device = "cpu"
 dtype = torch.FloatTensor
@@ -35,265 +35,6 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.data import Data
 import warnings
 warnings.filterwarnings("ignore")
-
-class BregmanEdgeClusteringTorch( BaseEstimator, ClusterMixin ):
-    def __init__( self, n_clusters, 
-                 edgeDistribution = "bernoulli",
-                 attributeDistribution = "gaussian",
-                 weightDistribution = "gaussian",
-                 initializer = 'chernoff', 
-                 graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
-                 n_iters = 25, init_iters=100, 
-                 reduce_by = torch.sum
-                ):
-        """
-        Bregman Hard Clustering Algorithm for partitioning graph with node attributes
-        Parameters
-        ----------
-        n_clusters : INT
-            Number of clustes.
-        graph_divergence, attribute_divergence : function
-            Pairwise divergence function. The default is euclidean.
-        n_iters : INT, optional
-            Number of clustering iterations. The default is 25.
-        graph_initialize, attribute_initializer : STR, optional
-            Specifies if the centroids are initialized at random "rand", K-Means++ "kmeans++", or a pretrained K-Means model "pretrained". The default is "rand".
-        init_iters : INT, optional
-            Number of iterations for K-Means++. The default is 100.
-        Returns
-        -------
-        None.
-        """
-        self.n_clusters = n_clusters
-        self.n_iters = n_iters
-        self.initializer = initializer
-        self.graph_initializer = graph_initializer
-        self.attribute_initializer = attribute_initializer
-        self.init_iters = init_iters
-        ## Variable that stores which initialization was chosen
-        self.graph_init = False
-        self.edgeDistribution = edgeDistribution
-        self.attributeDistribution = attributeDistribution
-        self.weightDistribution = weightDistribution
-        self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
-        self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
-        self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
-        self.edge_index = None 
-        self.reduce_by = reduce_by
-        self.N = 0
-        self.row_indices = torch.arange(2)
-
-    ## return true when fit proccess is finished
-    def stop_criterion(self,old,new,iteration):
-        correct = (old.argmin(dim=1) == new.argmin(dim=1)).float().sum()
-        if correct < 0.02*self.N or iteration >= self.n_iters:
-            return True
-        return False
-    
-    def fit( self, A, X, Y, Z_init=None ):
-        """
-        Training step.
-        Parameters
-        ----------
-        Y : ARRAY
-            Input data matrix (n, m) of n samples and m features.
-        X : ARRAY
-            Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
-        A : ARRAY
-            Input (n,n) matrix encoding the adjacency matrix
-        Returns
-        -------
-        TYPE
-            Trained model.
-        """
-        self.N = Y.shape[0]
-        self.row_indices = torch.arange(self.N).to(device)
-        if Z_init is None:
-            model = BregmanNodeAttributeGraphClustering(n_clusters=self.n_clusters,initializer="AIC")
-            model.initialize( A, Y )
-            model.assignInitialLabels( A, Y )  
-            self.predicted_memberships = torch.tensor(model.predicted_memberships).type(dtype)
-        else:
-            self.predicted_memberships = torch.tensor(Z_init).type(dtype)
-
-        if platform == "win32":
-            self.predicted_memberships = self.predicted_memberships.to(device)
-            A = torch.tensor(A).type(dtype).to(device)
-            X = torch.tensor(X).type(dtype).to(device)
-            Y = torch.tensor(Y).type(dtype).to(device)
-            self.edge_index = torch.nonzero(A).to(device)
-            self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-            self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
-            self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
-            new_memberships = self.assignments( A, X, Y ) 
-            
-        else:
-            A = torch.tensor(A).type(dtype)
-            X = torch.tensor(X).type(dtype)
-            Y = torch.tensor(Y).type(dtype)
-            self.edge_index = torch.nonzero(A).to(device)
-            self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
-            self.graph_means = self.computeGraphMeans(A,self.predicted_memberships).to(device)
-            self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships).to(device)
-            new_memberships = self.assignments( A, X, Y ).to(device)
-        #print(new_memberships.device,self.attribute_means.device,self.graph_means.device,self.edge_means.device)
-        convergence = True
-        iteration = 0
-        while convergence:
-            new_memberships = self.assignments( A, X, Y )
-
-            self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
-            self.graph_means = self.computeGraphMeans( A, new_memberships )
-            self.edge_means = self.computeEdgeMeans( X, new_memberships)
-            
-            iteration += 1
-            #if np.array_equal( new_memberships, self.predicted_memberships) or iteration >= self.n_iters:
-            if self.stop_criterion(self.predicted_memberships,new_memberships,iteration):
-                convergence = False
-            self.predicted_memberships = new_memberships
-        return self
-    
-    def computeAttributeMeans( self, Y, Z ):
-        attribute_means = (Z.T@Y)/(Z.sum(dim=0) + 10 * torch.finfo(Z.dtype).eps)[:, None]
-        return attribute_means
-    
-    def computeGraphMeans( self, A, Z ):
-        if platform =="win32":
-            D = torch.diag(Z.sum(dim=0)).type(dtype)
-            W = Z@torch.linalg.pinv(D)
-            B = W.T@A@W
-            return B
-        normalisation = torch.linalg.pinv(Z.T@Z)
-        return normalisation @ Z.T @ A @ Z @ normalisation
-    
-    def computeEdgeMeans( self, X, Z ):
-        weights = torch.tensordot(Z, Z, dims=((), ()))
-        """
-        weights[i,q,j,l] = tau[i,q]*tau[j,l]
-        desired output:
-        weights[q,l,i,j] = tau[i,q]*tau[j,l]
-        """
-        weights = weights.permute(1,3,0,2)[:,:,self.edge_index[0,:],self.edge_index[1,:]]
-        X = X[self.edge_index[0,:],self.edge_index[1,:],:]
-        """
-        X is a |E| x d tensor
-        weights is a k x k x |E|
-        desired output: 
-        out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
-        """
-        edges_means = torch.tensordot( weights, X, dims=[(2,),(0,)] )/(torch.sum(weights,dim=-1)[:,:,None])
-        return edges_means 
-    
-    def chernoffDivergence( self, a, b, t, distribution = 'bernoulli' ):
-        if distribution.lower() == 'bernoulli':
-            return (1-t) * a + t *b - a**t * b**(1-t)
-    
-    def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeGraphMeans( X , Z )
-        n = Z.shape[ 0 ]
-        pi = torch.zeros( self.n_clusters )
-        for c in range( self.n_clusters ):
-            cluster_c = [ i for i in range( n ) if Z[i,c] == 1 ]
-            pi[ c ] = len(cluster_c) / n
-            
-        if self.edgeDistribution == 'bernoulli':
-            res = 10000
-            for a in range( self.n_clusters ):
-                for b in range( a ):
-                    div = lambda t : - (1-t) * np.sum(  [ pi[c] * self.chernoffDivergence( graph_means[a,c], graph_means[b,c], t ) for c in range( self.n_clusters ) ] )
-                    minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                    if - minDiv['fun'] < res:
-                        res = - minDiv['fun']
-        return res
-    
-    def attributeChernoffDivergence( self, Y, Z ):
-        res = 10000
-        attribute_means = self.computeAttributeMeans( Y, Z )
-        for a in range( self.n_clusters ):
-            for b in range( a ):
-                div = lambda t : - t * (1-t)/2 * np.linalg.norm( attribute_means[a] - attribute_means[b] )
-                minDiv = sp.optimize.minimize_scalar( div, bounds = (0,1), method ='bounded' )
-                if - minDiv['fun'] < res:
-                    res = - minDiv['fun']
-
-        return res
-    
-    def likelihood( self, X, Y, Z ):
-        graphLikelihood = self.likelihoodGraph(X,Z)
-        attributeLikelihood = self.likelihoodAttributes(Y,Z)
-        return graphLikelihood + attributeLikelihood
-    
-    def likelihoodGraph(self, X, Z):
-        graph_mean = self.computeGraphMeans(X,Z)
-        return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
-    
-    def likelihoodAttributes( self, Y, Z):
-        M = self.computeAttributeMeans(Y,Z)
-        total = np.sum( paired_distances(Y,Z@M) )
-        return total 
-    
-    def assignments( self, A, X, Y ):
-        ## z must be in the same device as A,X,Y
-        z = torch.zeros( (Y.shape[ 0 ],self.n_clusters)).to(device)
-        H = self.reduce_by(
-                    self.attribute_divergence(Y[:,None], self.attribute_means[None,:]),\
-                    dim=-1
-        )
-        for node in range( z.shape[0] ):
-            k = self.singleNodeAssignment( A, X, H, node )
-            z[node,k]=1
-        return z     
-    
-    def singleNodeAssignment( self, A, X, H, node ):
-        L = torch.zeros( self.n_clusters )
-        node_indices = torch.argwhere(self.edge_index[0,:] == node).flatten()
-        for q in range( self.n_clusters ):
-            Ztilde = self.predicted_memberships
-            Ztilde[ node, : ] = 0
-            Ztilde[ node, q ] = 1
-            M = self.graph_means[torch.tensor([q]).expand(self.N),\
-                                 torch.argmax(Ztilde,dim=1)]
-            #E = self.computeEdgeMeans(X,Ztilde)
-            E = self.edge_means
-            """
-            X has shape n x n x d
-            E has shape k x k x d
-            
-            the edge divergence computes the difference between node i (from community q) edges and the means
-            given node j belongs to community l:
-            
-            sum_j phi_edge(e_ij, E[q,l,:])  [node,:]
-            """
-            att_div = H[node,q]
-            graph_div = self.reduce_by( 
-                                        self.edge_divergence( A[node,:], M ),
-                                        dim=-1
-                                    )
-            #print(Ztilde[self.edge_index[:,1][node_indices],:].shape,E[q,:,:].shape,node_indices)
-            edge_div = self.reduce_by( self.weight_divergence(
-                                                X[node,self.edge_index[1,node_indices],:],
-                                                Ztilde[self.edge_index[1,node_indices],:]@E[q,:,:]
-                                                )
-                                        )
-            #print(L.shape,att_div.shape,graph_div.shape,edge_div.shape)
-            L[ q ] = att_div + graph_div + edge_div
-        return torch.argmin( L )
-    
-    def predict(self, X, Y):
-        """
-        Prediction step.
-        Parameters
-        ----------
-        X : ARRAY
-            Input data matrix (n, n) of the node interactions
-        Y : ARRAY
-            Input data matrix (n, m) of the attributes of the n nodes (each attribute has m features).
-        Returns
-        -------
-        z: Array
-            Assigned cluster for each data point (n, )
-        """
-        return torch.argmax(self.predicted_memberships,dim=1).to("cpu").numpy()
 
 class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
@@ -353,42 +94,40 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         self.weight_phi = make_phi_with_reduce(self.reduce_by, dist_to_phi_dict[self.weightDistribution])
         self.attribute_phi = make_phi_with_reduce(self.reduce_by, dist_to_phi_dict[self.attributeDistribution])
         
+
         if divergence_precomputed:
             ## SET DIVERGENCES precomputed
 
             ## inputs are vectors of length |V|, output is scalar
             self.edge_divergence = make_div_with_reduce(self.reduce_by,\
-                                                        dist_to_divergence_dict[self.edgeDistribution]
-                                                    )
+                                                        dist_to_divergence_dict[self.edgeDistribution])
             
-            ## X is |E| x D, Y is |E| x D, output is scalar
-            self.weight_divergence = make_pair_breg(
-                                                    self.reduce_by,\
-                                                    make_div_with_reduce(self.reduce_by,\
-                                                        dist_to_divergence_dict[self.weightDistribution]
-                                                    )
-                                                )
-            
-            self.attribute_divergence = make_att_div(self.reduce_by,
-                                        dist_to_divergence_dict[self.attributeDistribution]
-                                    )
-        else: 
+            self.weight_divergence = make_div_with_reduce(self.reduce_by,\
+                                                          dist_to_divergence_dict[self.weightDistribution])
+            self.attribute_divergence = make_div_with_reduce(self.reduce_by,\
+                                                             dist_to_divergence_dict[self.attributeDistribution])
+
+        else:
             ##SET DIVERGENCES from definition: D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)> 
-           
-            ## inputs are vectors of length |V|, output is scalar
-            #self.edge_divergence = make_breg_div(self.edge_phi)
-            self.edge_divergence = make_div_with_reduce(self.reduce_by,\
-                                 make_breg_div(self.edge_phi)  
-                                )
-            ## X is |E| x D, Y is |E| x D, output is scalar
-            self.weight_divergence = make_pair_breg(
+            
+            self.edge_divergence = make_breg_div(self.edge_phi)
+            self.weight_divergence = make_breg_div(self.weight_phi)
+            self.attribute_divergence = make_breg_div(self.attribute_phi)
+    
+        ## X is |E| x D, Y is |E| x D, output is scalar
+        self.weight_divergence_reduced = make_pair_breg(
                                                     self.reduce_by,\
-                                                    make_breg_div(self.weight_phi)
+                                                    self.weight_divergence
                                                 )
-            
-            ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
-            self.attribute_divergence = make_pairwise_breg2(make_phi_with_reduce(self.reduce_by,self.attribute_phi))
-            
+
+        ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
+        self.attribute_divergence_reduced = make_pairwise_breg(self.attribute_divergence)
+        
+        ## This func takes the probability matrix of SBM and precompute the divergences,
+        ## which output two other matrices of size KxK. The first is the divergence if 
+        ## A_ij = 1, and the other if A_ij = 0 
+        self.edge_divergence_sparse = dist_to_divergence_dict[self.edgeDistribution]
+        
     ## return true when fit proccess is finished
     def stop_criterion(self,old,new,iteration):
         correct = (old.argmin(dim=1) == new.argmin(dim=1)).float().sum()
@@ -453,17 +192,29 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         Y.requires_grad = True
         ## compute initial params
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
-        self.graph_means = self.computeGraphMeans(A,self.predicted_memberships).to(device)
-        self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships).to(device)
+        
+        self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships).to(device)
+        self.ones = torch.ones((self.n_clusters,self.n_clusters)).to(device)
+        self.zeros = torch.zeros((self.n_clusters,self.n_clusters)).to(device)
+        self.ones_div = self.edge_divergence_sparse(self.ones,self.edge_means) 
+        self.zeros_div = self.edge_divergence_sparse(self.zeros,self.edge_means)
+
+        self.weight_means = self.computeWeightMeans(X,self.predicted_memberships).to(device)
+        
         new_memberships = self.assignments( A, X, Y ).to(device)
+        
         convergence = True
         iteration = 0
         while convergence:
             new_memberships = self.assignments( A, X, Y )
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
-            self.graph_means = self.computeGraphMeans( A, new_memberships )
-            self.edge_means = self.computeEdgeMeans( X, new_memberships)
+            
+            self.edge_means = self.computeEdgeMeans( A, new_memberships )
+            self.ones_div = self.edge_divergence_sparse(self.ones,self.edge_means) 
+            self.zeros_div = self.edge_divergence_sparse(self.zeros,self.edge_means)
+            
+            self.weight_means = self.computeWeightMeans( X, new_memberships)
             
             iteration += 1
             if self.stop_criterion(self.predicted_memberships,new_memberships,iteration):
@@ -472,7 +223,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         A = None
         X = None
         Y = None
-        self.attribute_means = self.graph_means = self.edge_means = new_memberships = None
+        # self.attribute_means = self.graph_means = self.edge_means = new_memberships = None
         return self
     
     """
@@ -489,7 +240,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     A is a 2 x |E| sparse tensor enconding adjacency matrix and 
     Z is a N x K node memberships
     """
-    def computeGraphMeans( self, A, Z ):
+    def computeEdgeMeans( self, A, Z ):
         normalisation = torch.linalg.pinv(Z.T@Z)
         M = Z.T@torch.sparse.mm(A,Z)
         return normalisation @ M @ normalisation
@@ -499,7 +250,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     X is a |E| x d tensor with edge attributes, where |E| is the number of edges   
     Z is a N x K node memberships
     """  
-    def computeEdgeMeans( self, X, Z ):
+    def computeWeightMeans( self, X, Z ):
         weights = torch.tensordot(Z, Z, dims=((), ()))
         """
         weights[i,q,j,l] = z[i,q]*z[j,l]
@@ -515,8 +266,8 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        edges_means = torch.tensordot( weights, X, dims=[(2,),(0,)] )/(torch.sum(weights,dim=-1)[:,:,None])
-        return edges_means
+        weights_means = torch.tensordot( weights, X, dims=[(2,),(0,)] )/(torch.sum(weights,dim=-1)[:,:,None])
+        return weights_means
 
     """
     Inputs:
@@ -544,23 +295,25 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
         edge_indices_out = torch.argwhere(self.edge_index[0,:] == node).flatten()
         ## get the actual v nodes in u->v
         v_indices_out = self.edge_index[1,edge_indices_out]
-        edge_indices_in = torch.argwhere(self.edge_index[1,:] == node).flatten()
+        # edge_indices_in = torch.argwhere(self.edge_index[1,:] == node).flatten()
         ## get the actual v nodes in v->u
-        v_indices_in = self.edge_index[0,edge_indices_in]
-        a_out = torch.zeros(self.N,requires_grad=False).to(device)
-        a_out[v_indices_out] = 1
-        a_in = torch.zeros(self.N,requires_grad=False).to(device)
-        a_in[v_indices_in] = 1
+        # v_indices_in = self.edge_index[0,edge_indices_in]
+        a_out_mask = index_to_mask(v_indices_out,size=self.N).to(device)
+        # a_in_mask = index_to_mask(v_indices_in,size=self.N).to(device)
+        # a_out = torch.zeros(self.N,requires_grad=False).to(device)
+        # a_out[v_indices_out] = 1
+        # a_in = torch.zeros(self.N,requires_grad=False).to(device)
+        # a_in[v_indices_in] = 1
         ## index_to_mask, select
         for q in range( self.n_clusters ):
             Ztilde = self.predicted_memberships
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             z_t = torch.argmax(Ztilde,dim=1)
-            M_out = self.graph_means[torch.tensor([q]).expand(self.N),z_t]
-            M_out.requires_grad =True
-            M_in = self.graph_means[z_t,torch.tensor([q]).expand(self.N)]
-            M_in.requires_grad =True
+            # M_out = self.graph_means[torch.tensor([q]).expand(self.N),z_t]
+            # M_out.requires_grad =True
+            # M_in = self.graph_means[z_t,torch.tensor([q]).expand(self.N)]
+            # M_in.requires_grad =True
             E = self.edge_means
             """
             X has shape |E| x d
@@ -571,7 +324,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
+            #edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
+            edge_div = select(self.ones_div[torch.tensor([q]).expand(self.N),z_t],\
+                              a_out_mask)\
+                     + select(self.zeros_div[torch.tensor([q]).expand(self.N),z_t],\
+                              ~a_out_mask) 
             weight_div=0
             # print(">>>",E[q,z_t[v_indices_out],:].shape,X[edge_indices_out,:].shape)
             if len(v_indices_out) > 0:
@@ -672,7 +429,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         attribute_means = (Z.T@Y)/(Z.sum(dim=0) + 10 * torch.finfo(Z.dtype).eps)[:, None]
         return attribute_means
 
-    def computeGraphMeans(self,X,tau):
+    def computeEdgeMeans(self,X,tau):
         #graph_means = torch.zeros((self.n_clusters,self.n_clusters))
         tau_sum = tau.sum(0)
         weights = torch.tensordot(tau, tau, dims=((), ()))
@@ -696,7 +453,7 @@ class SoftBregmanClusteringTorch( BaseEstimator, ClusterMixin ):
         return total
 
     def likelihoodGraph(self,X,Z):
-        graph_mean = self.computeGraphMeans(X,Z)
+        graph_mean = self.computeEdgeMeans(X,Z)
         return 1/2 * torch.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
  
     def VE_step(self,X,Y,tau):

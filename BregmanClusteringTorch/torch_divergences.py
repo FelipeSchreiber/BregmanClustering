@@ -121,7 +121,7 @@ def make_att_div(reduce_func,div):
         return reduce_func(total,dim=-1)
     return pairwise_div
 
-#x, theta are both m-dimensional. Creates the divergence func that map x,theta -> scalar
+#x, theta are both m-dimensional. Creates the divergence func that maps x,theta -> scalar
 ## Apply definition D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)> 
 def make_breg_div(phi):
     ## phi R^m -> R
@@ -143,8 +143,7 @@ def make_pair_breg(reduce_func,breg_div):
 # This func is similar to make_att_div, but instead of taking the
 #  precomputed bregman divergence, it computes using the definition
 #  D_φ(X,Y) = φ(x) - φ(y) - <x - y, φ'(y)>.
-def make_pairwise_breg(phi):
-    breg_div = make_breg_div(phi)
+def make_pairwise_breg(breg_div):
     vectorized_breg = vmap(breg_div)
     def pairwise_breg(X,Y):
         n_clusters = Y.shape[0]
