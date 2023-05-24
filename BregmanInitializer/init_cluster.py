@@ -88,6 +88,7 @@ class BregmanInitializer():
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
+        print(">>>init:",X.shape,weights.shape)
         edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
         return edges_means 
     
