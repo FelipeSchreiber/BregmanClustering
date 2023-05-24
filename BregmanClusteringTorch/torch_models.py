@@ -48,6 +48,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                  reduce_by = "sum",
                  divergence_precomputed=True
                 ):
+        
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
