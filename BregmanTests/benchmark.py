@@ -396,7 +396,6 @@ class BregmanBenchmark():
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
-                print(X.sum())
                 X = Y = z_true = G = None
             stats["a"].append(a)
             stats["r"].append(r)
