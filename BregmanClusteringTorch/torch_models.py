@@ -121,7 +121,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
                                                 )
 
         ## X is n x m, y is k x m, output is n x k containing all the pairwise bregman divergences
-        self.attribute_divergence_reduced = make_pairwise_breg(self.attribute_divergence)
+        self.attribute_divergence_pairwise = make_pairwise_breg(self.attribute_divergence)
         
         ## This func takes the probability matrix of SBM and precompute the divergences,
         ## which output two other matrices of size KxK. The first is the divergence if 
@@ -283,7 +283,7 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
     def assignments( self, A, X, Y ):
         ## z must be in the same device as A,X,Y
         z = torch.zeros( (self.N,self.n_clusters)).to(device)
-        H = self.attribute_divergence(Y, self.attribute_means)
+        H = self.attribute_divergence_pairwise(Y, self.attribute_means)
         for node in range( self.N ):
             k = self.singleNodeAssignment( A, X, H, node )
             z[node,k]=1
