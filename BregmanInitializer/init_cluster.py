@@ -69,12 +69,12 @@ class BregmanInitializer():
         attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeGraphMeans( self, A, Z ):
+    def computeEdgeMeans( self, A, Z ):
         normalisation = np.linalg.pinv(Z.T@Z)
         M = Z.T@A@Z
         return normalisation @ M @ normalisation
     
-    def computeEdgeMeans( self, X, Z ):
+    def computeWeightMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -118,8 +118,8 @@ class BregmanInitializer():
             return renyi_div
 
     def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeGraphMeans( self.A , Z )
-        edge_means = self.computeEdgeMeans(X,Z)
+        graph_means = self.computeEdgeMeans( self.A , Z )
+        edge_means = self.computeWeightMeans(X,Z)
         pi = Z.mean(axis=0)
             
         if self.edgeDistribution == 'bernoulli':
@@ -176,7 +176,7 @@ class BregmanInitializer():
         else:           
             sim_matrix = np.zeros((self.N,self.N))
             sim_matrix[self.edge_index[0],self.edge_index[1]] = np.squeeze(X)
-            self.X = sim_matrix
+            self.X = X
 
         self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
                              (self.edge_index[0],self.edge_index[1]))
@@ -192,12 +192,12 @@ class BregmanInitializer():
         # U = self.spectralEmbedding(sim_matrix)
         # model = GaussianMixture(n_components=self.n_clusters)
         # preds = model.fit(U).predict(U)
-        clustering = SpectralClustering(n_clusters=self.n_clusters,
+        SC = SpectralClustering(n_clusters=self.n_clusters,
             assign_labels='discretize',
             random_state=0).fit(sim_matrix)
-        preds = clustering.labels_.reshape(-1, 1)
+        preds = SC.labels_.reshape(-1, 1)
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
-        self.graph_model_init = model
+        self.graph_model_init = SC
         
         self.assignInitialLabels()
