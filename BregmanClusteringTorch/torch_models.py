@@ -336,31 +336,9 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             )
                                
             weight_div=0
-            # print(">>>",E[q,z_t[v_indices_out],:].shape,X[edge_indices_out,:].shape)
             if len(v_indices_out) > 0:
-                print(X[edge_indices_out,:].shape,E.shape)
                 weight_div += self.weight_divergence(X[edge_indices_out,:],\
                                                      E[q,z_t[v_indices_out],:])
-                # weight_div += self.reduce_by( self.weight_divergence(
-                #                                     X[edge_indices_out,:],
-                #                                     E[q,z_t[v_indices_out],:]
-                #                                     )
-                #                             )
-            
-            # if len(v_indices_in) > 0:
-            #     weight_div += self.reduce_by( 
-            #                                     vectorized_breg(
-            #                                                     X[edge_indices_in,:],\
-            #                                                     E[z_t[v_indices_in],q,:]
-            #                                                 )
-            #                                 )
-                # weight_div += self.reduce_by( 
-                #                             self.weight_divergence(
-                #                                         X[edge_indices_in,:],
-                #                                         E[z_t[v_indices_in],q,:]
-                #                                     ) 
-                #                         )
-            # print(att_div.shape,edge_div.shape,weight_div)
             L[ q ] = att_div + (edge_div + weight_div) * 0.5
         return torch.argmin( L )
     
