@@ -397,6 +397,10 @@ class BregmanBenchmark():
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
                 X = Y = z_true = G = None
+                print("attribute_means: ",model.attribute_means,\
+                    "edge_means: ",model.edge_means,\
+                    "weight_means: ",model.weight_means
+                )
             stats["a"].append(a)
             stats["r"].append(r)
             stats["ARI"].append(aris_both_mean[-1])        
