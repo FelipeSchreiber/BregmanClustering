@@ -328,10 +328,11 @@ class BregmanEdgeClusteringTorchSparse( BaseEstimator, ClusterMixin ):
             #edge_div = self.edge_divergence(a_out,M_out) + self.edge_divergence(a_in,M_in)
             edge_div = self.reduce_by(
                             torch.hstack(
+                                    (
                                     select(self.ones_div[torch.tensor([q]).expand(self.N),z_t],\
                                         a_out_mask,dim=0),
                                     select(self.zeros_div[torch.tensor([q]).expand(self.N),z_t],\
-                                        ~a_out_mask,dim=0)
+                                        ~a_out_mask,dim=0))
                             )
             )
                                
