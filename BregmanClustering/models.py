@@ -822,16 +822,16 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = Z_init
         #init_labels = self.predicted_memberships
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-        self.graph_means = self.computeGraphMeans(A,self.predicted_memberships)
-        self.edge_means = self.computeEdgeMeans(X,self.predicted_memberships)
+        self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
+        self.weight_means = self.computeWeightMeans(X,self.predicted_memberships)
         convergence = True
         iteration = 0
         while convergence:
             new_memberships = self.assignments( A, X, Y )
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
-            self.graph_means = self.computeGraphMeans( A, new_memberships )
-            self.edge_means = self.computeEdgeMeans( X, new_memberships)
+            self.edge_means = self.computeEdgeMeans( A, new_memberships )
+            self.weight_means = self.computeWeightMeans( X, new_memberships)
             
             iteration += 1
             if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
@@ -867,11 +867,11 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeGraphMeans( self, A, Z ):
+    def computeEdgeMeans( self, A, Z ):
         normalisation = np.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     
-    def computeEdgeMeans( self, X, Z ):
+    def computeWeightMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -895,7 +895,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         return graphLikelihood + attributeLikelihood
     
     def likelihoodGraph(self, X, Z):
-        graph_mean = self.computeGraphMeans(X,Z)
+        graph_mean = self.computeEdgeMeans(X,Z)
         return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def likelihoodAttributes( self, Y, Z):
@@ -919,8 +919,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             z_t = np.argmax(Ztilde,axis=1)
-            M = self.graph_means[np.repeat(q, self.N),z_t]
-            E = self.edge_means
+            M = self.edge_means[np.repeat(q, self.N),z_t]
+            E = self.weight_means
             """
             X has shape n x n x d
             E has shape k x k x d
