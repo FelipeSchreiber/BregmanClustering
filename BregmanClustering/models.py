@@ -1057,6 +1057,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         self.communities_weights = Z.mean(axis=0)
 
     def logprob(self,A,X,Y,Z):
+        self.M_projection(A,X,Y,Z)
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         log_prob_total = 0
         for node in range(self.N):
@@ -1068,8 +1069,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         return log_prob_total
     
     def stop_criterion(self,A,X,Y,Z_old,Z_new,iteration):
-        old_log_prob = self.logprob(self,A,X,Y,Z_old)
-        new_log_prob = self.logprob(self,A,X,Y,Z_new)
+        old_log_prob = self.logprob(A,X,Y,Z_old)
+        new_log_prob = self.logprob(A,X,Y,Z_new)
         if np.abs(old_log_prob - new_log_prob) < 0.1 or iteration >= self.n_iters:
             return True
         return False
