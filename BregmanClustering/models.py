@@ -1099,7 +1099,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         else:
             self.predicted_memberships = Z_init
         #init_labels = self.predicted_memberships
-        self.M_projection(self,A,X,Y,self.predicted_memberships)
+        self.M_projection(A,X,Y,self.predicted_memberships)
         convergence = False
         iteration = 0
         while not convergence:
