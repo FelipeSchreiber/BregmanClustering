@@ -151,7 +151,7 @@ class BregmanInitializer():
             self.predicted_memberships = ohe.transform(preds)
         
         elif self.initializer == "AIC":
-            self.AIC_initializer(self.X,self.Y)
+            self.AIC_initializer(self.sim_matrix,self.Y)
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
@@ -177,6 +177,7 @@ class BregmanInitializer():
             sim_matrix[self.edge_index[0],self.edge_index[1]] = np.squeeze(X)
             self.X = X
 
+        self.sim_matrix = sim_matrix
         self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
                              (self.edge_index[0],self.edge_index[1]))
                             )
