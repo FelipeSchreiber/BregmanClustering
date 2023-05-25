@@ -189,15 +189,19 @@ class BregmanInitializer():
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
 
-        # U = self.spectralEmbedding(sim_matrix)
-        # model = GaussianMixture(n_components=self.n_clusters)
-        # preds = model.fit(U).predict(U)
-        SC = SpectralClustering(n_clusters=self.n_clusters,
-            assign_labels='discretize',
-            random_state=0).fit(sim_matrix)
-        preds = SC.labels_.reshape(-1, 1)
+        U = self.spectralEmbedding(sim_matrix)
+        model = GaussianMixture(n_components=self.n_clusters)
+        preds = model.fit(U).predict(U)
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
-        self.graph_model_init = SC
+        self.graph_model_init = model
+        
+        # SC = SpectralClustering(n_clusters=self.n_clusters,
+        #     assign_labels='discretize',
+        #     random_state=0).fit(sim_matrix)
+        # preds = SC.labels_.reshape(-1, 1)
+        # ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
+        # self.memberships_from_graph = ohe.transform(preds)
+        # self.graph_model_init = SC
         
         self.assignInitialLabels()
