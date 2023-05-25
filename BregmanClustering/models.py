@@ -1061,11 +1061,11 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         log_prob_total = 0
         for node in range(self.N):
-            log_prob_i = 0 
+            prob_i = 0 
             for q in range(self.n_clusters):
                 total_div = self.computeTotalDiv(self,node,q,A,X,Z,H)
                 log_prob_i += self.communities_weights[q]*np.exp(-total_div)
-            log_prob_total += log_prob_i
+            log_prob_total += np.log(prob_i)
         return log_prob_total
     
     def stop_criterion(self,A,X,Y,Z_old,Z_new,iteration):
