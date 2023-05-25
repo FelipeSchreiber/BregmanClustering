@@ -1035,8 +1035,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         if len(v_indices_in)>0:
             edge_div += np.sum( paired_distances(X[v_indices_in,node,:],\
                                                  E[z_t[v_indices_in],q,:],metric=self.weight_divergence) )
-        
-        return att_div + graph_div + edge_div
+        total = att_div + graph_div + edge_div
+        print("Total div: ",total)
+        return total
 
     def E_projection(self,A, X, Y):
         Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
