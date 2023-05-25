@@ -1048,7 +1048,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         for node in range(self.N):
             for q in range(self.n_clusters):
                 total_div = self.computeTotalDiv(node,q,A,X,self.predicted_memberships,H)
-                Ztilde[node,q] = self.communities_weights[q]*self.q_exp(-total_div,1.5)
+                Ztilde[node,q] = self.communities_weights[q]*self.q_exp(-total_div,2)
         return normalize(Ztilde, axis=1, norm='l1')
             
     def M_projection(self,A,X,Y,Z):
