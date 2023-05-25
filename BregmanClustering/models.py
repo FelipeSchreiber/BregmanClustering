@@ -1039,13 +1039,16 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         print("Total div: ",total)
         return total
 
+    def q_exp(self,x,q):
+        return np.pow(1 + (1-q)*x, 1/(1-q))
+    
     def E_projection(self,A, X, Y):
         Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range(self.N):
             for q in range(self.n_clusters):
                 total_div = self.computeTotalDiv(node,q,A,X,self.predicted_memberships,H)
-                Ztilde[node,q] = self.communities_weights[q]*np.exp(-total_div)
+                Ztilde[node,q] = self.communities_weights[q]*self.q_exp(-total_div,1.5)
         return normalize(Ztilde, axis=1, norm='l1')
             
     def M_projection(self,A,X,Y,Z):
