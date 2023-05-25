@@ -1057,7 +1057,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         self.communities_weights = Z.mean(axis=0)
 
     def logprob(self,A,X,Y,Z):
-        self.M_projection(A,X,Y,Z)
+        # self.M_projection(A,X,Y,Z)
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         log_prob_total = 0
         for node in range(self.N):
