@@ -1040,7 +1040,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         return total
 
     def q_exp(self,x,q):
-        return np.pow(1 + (1-q)*x, 1/(1-q))
+        return np.power(1 + (1-q)*x, 1/(1-q))
     
     def E_projection(self,A, X, Y):
         Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
