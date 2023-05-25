@@ -1,8 +1,9 @@
 import numpy as np
 import networkx as nx
 from BregmanTests.distributions import *
-from BregmanClustering.models import *
+# from BregmanClustering.models import *
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as edgeBreg
+from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorchSparse as sparseBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
@@ -66,10 +67,9 @@ class BregmanBenchmark():
         self.torch_model = run_torch
         self.divergence_precomputed = divergence_precomputed
         if run_torch:
-            #self.model_ = torchBreg
             self.model_ = sparseBreg
         else:
-            self.model_ = edgeBreg
+            self.model_ = softBreg
             
     def generate_WSBM(self,complete_graph=False):
         N = np.sum(self.communities_sizes)
