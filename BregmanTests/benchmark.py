@@ -35,7 +35,7 @@ class BregmanBenchmark():
                     weight_distribution = "exponential",\
                     radius=None,return_G=False,reduce_by="sum",\
                     att_centers = None, weight_centers = None, run_torch=False,\
-                    divergence_precomputed=True):
+                    divergence_precomputed=True, initializer="AIC"):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle
@@ -46,6 +46,7 @@ class BregmanBenchmark():
         self.weight_centers=weight_centers
         self.probability_matrix=P
         self.reduce_by = reduce_by
+        self.initializer = initializer
         self.communities_sizes=communities_sizes
         ## min and max specifies the range of the weight distribution means in 1D
         self.min_ = min_
@@ -381,7 +382,8 @@ class BregmanBenchmark():
                                         weightDistribution=self.weight_distribution_name,\
                                         n_iters=n_iters,
                                         reduce_by=self.reduce_by,
-                                        divergence_precomputed=self.divergence_precomputed)
+                                        divergence_precomputed=self.divergence_precomputed,
+                                        initializer=self.initializer)
                 if self.torch_model:
                     graph_data = self.to_pyg_data(X,Y)
                     A = torch.tensor(A).to_sparse()
