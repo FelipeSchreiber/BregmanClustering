@@ -1105,7 +1105,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         while not convergence:
             Z_new = self.E_projection(A, X, Y)
             self.M_projection(A,X,Y,Z_new)
-            convergence = self.stop_criterion(self,A,X,Y,self.predicted_memberships,Z_new,iteration)
+            convergence = self.stop_criterion(A,X,Y,self.predicted_memberships,Z_new,iteration)
             self.predicted_memberships = Z_new
             iteration += 1 
         return self
