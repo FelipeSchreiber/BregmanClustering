@@ -96,6 +96,7 @@ class BregmanBenchmark():
             q =  G.nodes[i]["block"]
             l =  G.nodes[j]["block"]
             p = params[q][l]
+            print(">>>params: ",p)
             G[i][j]['weight'] = self.weight_distribution(*p)
         return nx.to_numpy_array(G), G
     
@@ -104,6 +105,7 @@ class BregmanBenchmark():
         for i in range(self.n_clusters):
             centers.append([self.radius*np.cos(2*np.pi*i/self.n_clusters),\
                           self.radius*np.sin(2*np.pi*i/self.n_clusters)])
+        print("\nDistribution Centers: ",centers)
         return np.array(centers)
     
     def generate_attributes(self):
@@ -402,9 +404,9 @@ class BregmanBenchmark():
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
                 X = Y = z_true = G = None
-                print("attribute_means: ",model.attribute_means,\
-                    "edge_means: ",model.edge_means,\
-                    "weight_means: ",model.weight_means
+                print("\nattribute_means: ",model.attribute_means,\
+                    "\nedge_means: ",model.edge_means,\
+                    "\nweight_means: ",model.weight_means
                 )
             stats["a"].append(a)
             stats["r"].append(r)
