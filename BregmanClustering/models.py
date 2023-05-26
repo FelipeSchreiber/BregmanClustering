@@ -872,7 +872,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         normalisation = np.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     
-    def computeWeightMeans( self, X, Z ):
+    def computeWeightMeans( self, A, X, Z):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -886,9 +886,10 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        edges_means = np.tensordot( weights,\
-                                    X[self.edge_index[0],self.edge_index[1],:],\
-                                    axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])        
+        # edges_means = np.tensordot( weights,\
+        #                             X[self.edge_index[0],self.edge_index[1],:],\
+        #                             axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])        
+        edges_means = np.linalg.pinv ( Z.T @ A @ Z ) @ Z.T @ X @ Z
         return edges_means 
     
     def likelihood( self, X, Y, Z ):
