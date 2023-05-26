@@ -892,7 +892,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         x_m = X.mean(axis=0)
         for q in range(self.n_clusters):
             for l in range(self.n_clusters):
-                if edges_means[q,l].isnan():
+                if np.isnan(edges_means[q,l]).any():
                     edges_means[q,l,:] = x_m       
         return edges_means 
     
