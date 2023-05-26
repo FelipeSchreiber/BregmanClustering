@@ -824,7 +824,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         #init_labels = self.predicted_memberships
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
-        self.weight_means = self.computeWeightMeans(X,self.predicted_memberships)
+        self.weight_means = self.computeWeightMeans(A, X, self.predicted_memberships)
         convergence = True
         iteration = 0
         while convergence:
@@ -832,7 +832,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
             self.edge_means = self.computeEdgeMeans( A, new_memberships )
-            self.weight_means = self.computeWeightMeans( X, new_memberships)
+            self.weight_means = self.computeWeightMeans(A, X, new_memberships)
             
             iteration += 1
             if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
