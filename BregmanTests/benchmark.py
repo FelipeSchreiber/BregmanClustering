@@ -36,7 +36,8 @@ class BregmanBenchmark():
                     weight_distribution = "exponential",\
                     radius=None,return_G=False,reduce_by="sum",\
                     att_centers = None, weight_centers = None, run_torch=False,\
-                    divergence_precomputed=True, initializer="AIC"):
+                    divergence_precomputed=True, initializer="AIC",\
+                    hard_clustering=True):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle
@@ -68,6 +69,8 @@ class BregmanBenchmark():
         self.divergence_precomputed = divergence_precomputed
         if run_torch:
             self.model_ = sparseBreg
+        elif hard_clustering:
+            self.model_ = edgeBreg
         else:
             self.model_ = softBreg
             
