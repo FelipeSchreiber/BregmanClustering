@@ -880,14 +880,16 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
         weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
-        X = X[self.edge_index[0],self.edge_index[1],:]
+        # /(np.sum(weights,axis=-1)[:,:,np.newaxis])
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
+        edges_means = np.tensordot( weights,\
+                                    X[self.edge_index[0],self.edge_index[1],:],\
+                                    axes=[(2),(0)] )        
         return edges_means 
     
     def likelihood( self, X, Y, Z ):
