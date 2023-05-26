@@ -886,10 +886,14 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        # edges_means = np.tensordot( weights,\
-        #                             X[self.edge_index[0],self.edge_index[1],:],\
-        #                             axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])        
-        edges_means = np.linalg.pinv ( Z.T @ A @ Z ) @ Z.T @ X @ Z
+        edges_means = np.tensordot( weights,\
+                                    X[self.edge_index[0],self.edge_index[1],:],\
+                                    axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
+        x_m = X.mean(axis=0)
+        for q in range(self.n_clusters):
+            for l in range(self.n_clusters):
+                if edges_means[q,l,0].isnan():
+                    edges_means[q,l,:] = x_m       
         return edges_means 
     
     def likelihood( self, X, Y, Z ):
