@@ -821,7 +821,7 @@ class BregmanBenchmark():
     
     def get_real_data(self):
         data_dir = "../../RealDataSets/"
-        data_sets = ["CiteSeer"]
+        data_sets = ["Cora","CiteSeer"]
         datas = []
         for data_set in data_sets:
             dataset = Planetoid(root=data_dir, name=data_set)
