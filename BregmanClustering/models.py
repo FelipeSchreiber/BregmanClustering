@@ -1166,7 +1166,7 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         convergence = False
         iteration = 0
         while not convergence:
-            tau_new = self.VE_projection(A, X, Y)
+            tau_new = self.VE_projection(A, X, Y, self.predicted_memberships)
             self.M_projection(A,X,Y,tau_new)
             convergence = self.stop_criterion(A,X,Y,self.predicted_memberships,tau_new,iteration)
             self.predicted_memberships = tau_new
