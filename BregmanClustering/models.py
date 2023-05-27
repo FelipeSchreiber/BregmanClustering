@@ -1033,107 +1033,6 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
     def q_exp(self,x,q):
         return np.power(1 + (1-q)*x, 1/(1-q))
 
-    def VE_projection(self,A, X, Y,tau):         
-      """
-        Inputs: 
-        X: adjacency matrix
-        Y: attributes matrix
-        tau: membership matrix
-      """
-      pi = self.communities_weights 
-      """
-        Compute divergences for every pair X[i,j], mu[k,l]
-      """
-      net_divergences_elementwise = pairwise_distances(A.reshape(-1,1),\
-                                             self.graph_means.reshape(-1,1),\
-                                             metric=self.edge_divergence)\
-                                            .reshape(
-                                                        (self.N,self.N,\
-                                                        self.n_clusters,self.n_clusters
-                                                        )
-                                                    )
-      """
-        net_divergences has shape N x N x K x K
-        tau has shape N x K
-        the result must be N x K
-        result[i,k] = sum_j sum_l tau[j,l] * net_div[i,j,k,l]
-        tensordot performs the multiplication and sum over specified axes.
-        "j" appears at axes 0 for tau and at axes 1 for net_divergence
-        "l" appears at axes 1 for tau and at axes 3 for net_divergence
-      """
-      net_divergence_total = np.tensordot(tau, net_divergences_elementwise, axes=[(0,1),(1,3)])
-      att_divergence_total = pairwise_distances(Y,self.attribute_means,\
-                                                metric=self.attribute_divergence)
-      tau = pi[np.newaxis,:]*self.q_exp(-net_divergence_total -att_divergence_total,self.q)
-      return normalize(tau, axis=1, norm='l1')
-
-    def threshold(self,tau):
-        idx = np.argmax(tau, axis=-1)
-        Z_threshold = np.zeros( tau.shape )
-        Z_threshold[ np.arange(tau.shape[0]), idx] = 1
-        return Z_threshold
-           
-    def M_projection(self,A,X,Y,tau):
-        self.attribute_means = self.computeAttributeMeans(Y, tau)
-        self.edge_means = self.computeEdgeMeans(tau)
-        # self.weight_means = self.computeWeightMeans( X, Z_threshold)
-        self.communities_weights = tau.mean(axis=0)
-
-    def logprob(self,A,X,Y,Z):
-        # self.M_projection(A,X,Y,Z)
-        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
-        log_prob_total = 0
-        for node in range(self.N):
-            prob_i = 0 
-            for q in range(self.n_clusters):
-                total_div = self.computeTotalDiv(node,q,A,X,Z,H)
-                prob_i += self.communities_weights[q]*np.exp(-total_div)
-            log_prob_total += np.log(prob_i)
-        return log_prob_total
-    
-    def stop_criterion(self,A,X,Y,Z_old,Z_new,iteration):
-        old_log_prob = self.logprob(A,X,Y,Z_old)
-        new_log_prob = self.logprob(A,X,Y,Z_new)
-        if np.abs(old_log_prob - new_log_prob) < 0.1 or iteration >= self.n_iters:
-            return True
-        return False
-    
-    def fit( self, A, X, Y, Z_init=None ):
-        """
-        Training step.
-        Parameters
-        ----------
-        Y : ARRAY
-            Input data matrix (n, m) of n samples and m features.
-        X : ARRAY
-            Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
-        A : ARRAY
-            Input (n,n) matrix encoding the adjacency matrix
-        Returns
-        -------
-        TYPE
-            Trained model.
-        """
-        self.N = X.shape[0]
-        self.edge_index = np.nonzero(A)
-        self.node_indices = np.arange(self.N)
-        if Z_init is None:
-            self.initialize( A, X, Y)
-            self.assignInitialLabels( X, Y )
-        else:
-            self.predicted_memberships = Z_init
-        #init_labels = self.predicted_memberships
-        self.M_projection(A,X,Y,self.predicted_memberships)
-        convergence = False
-        iteration = 0
-        while not convergence:
-            Z_new = self.E_projection(A, X, Y)
-            self.M_projection(A,X,Y,Z_new)
-            convergence = self.stop_criterion(A,X,Y,self.predicted_memberships,Z_new,iteration)
-            self.predicted_memberships = Z_new
-            iteration += 1 
-        return self
-    
     def computeAttributeMeans( self, Y, tau ):
         attribute_means = np.dot(tau.T, Y)/(tau.sum(axis=0) + 10 * np.finfo(tau.dtype).eps)[:, np.newaxis]
         return attribute_means
@@ -1172,6 +1071,107 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
     #     """
     #     edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
     #     return edges_means
+
+    def threshold(self,tau):
+        idx = np.argmax(tau, axis=-1)
+        Z_threshold = np.zeros( tau.shape )
+        Z_threshold[ np.arange(tau.shape[0]), idx] = 1
+        return Z_threshold
+    
+    def VE_projection(self,A, X, Y,tau):         
+      """
+        Inputs: 
+        A: adjacency matrix
+        X: weight matrix
+        Y: attributes matrix
+        tau: membership matrix
+      """
+      pi = self.communities_weights 
+      """
+        Compute divergences for every pair X[i,j], mu[k,l]
+      """
+      net_divergences_elementwise = pairwise_distances(A.reshape(-1,1),\
+                                             self.graph_means.reshape(-1,1),\
+                                             metric=self.edge_divergence)\
+                                            .reshape(
+                                                        (self.N,self.N,\
+                                                        self.n_clusters,self.n_clusters
+                                                        )
+                                                    )
+      """
+        net_divergences has shape N x N x K x K
+        tau has shape N x K
+        the result must be N x K
+        result[i,k] = sum_j sum_l tau[j,l] * net_div[i,j,k,l]
+        tensordot performs the multiplication and sum over specified axes.
+        "j" appears at axes 0 for tau and at axes 1 for net_divergence
+        "l" appears at axes 1 for tau and at axes 3 for net_divergence
+      """
+      net_divergence_total = np.tensordot(tau, net_divergences_elementwise, axes=[(0,1),(1,3)])
+      att_divergence_total = pairwise_distances(Y,self.attribute_means,\
+                                                metric=self.attribute_divergence)
+      tau = pi[np.newaxis,:]*self.q_exp(-net_divergence_total -att_divergence_total,self.q)
+      return normalize(tau, axis=1, norm='l1')
+           
+    def M_projection(self,A,X,Y,tau):
+        self.attribute_means = self.computeAttributeMeans(Y, tau)
+        self.edge_means = self.computeEdgeMeans(tau)
+        # self.weight_means = self.computeWeightMeans( X, Z_threshold)
+        self.communities_weights = tau.mean(axis=0)
+
+    def logprob(self,A,X,Y,Z):
+        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
+        log_prob_total = 0
+        for node in range(self.N):
+            prob_i = 0 
+            for q in range(self.n_clusters):
+                total_div = self.computeTotalDiv(node,q,A,X,Z,H)
+                prob_i += self.communities_weights[q]*np.exp(-total_div)
+            log_prob_total += np.log(prob_i)
+        return log_prob_total
+    
+    def stop_criterion(self,A,X,Y,Z_old,Z_new,iteration):
+        old_log_prob = self.logprob(A,X,Y,Z_old)
+        new_log_prob = self.logprob(A,X,Y,Z_new)
+        # np.abs(old_log_prob - new_log_prob) < 0.1
+        if False or iteration >= self.n_iters:
+            return True
+        return False
+    
+    def fit( self, A, X, Y, Z_init=None ):
+        """
+        Training step.
+        Parameters
+        ----------
+        Y : ARRAY
+            Input data matrix (n, m) of n samples and m features.
+        X : ARRAY
+            Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
+        A : ARRAY
+            Input (n,n) matrix encoding the adjacency matrix
+        Returns
+        -------
+        TYPE
+            Trained model.
+        """
+        self.N = X.shape[0]
+        self.edge_index = np.nonzero(A)
+        self.node_indices = np.arange(self.N)
+        if Z_init is None:
+            self.initialize( A, X, Y)
+            self.assignInitialLabels( X, Y )
+        else:
+            self.predicted_memberships = Z_init
+        self.M_projection(A,X,Y,self.predicted_memberships)
+        convergence = False
+        iteration = 0
+        while not convergence:
+            tau_new = self.VE_projection(A, X, Y)
+            self.M_projection(A,X,Y,tau_new)
+            convergence = self.stop_criterion(A,X,Y,self.predicted_memberships,tau_new,iteration)
+            self.predicted_memberships = tau_new
+            iteration += 1 
+        return self
     
     def predict(self, X, Y):
         """
