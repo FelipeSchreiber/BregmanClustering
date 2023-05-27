@@ -1131,8 +1131,8 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         return log_prob_total
     
     def stop_criterion(self,A,X,Y,Z_old,Z_new,iteration):
-        old_log_prob = self.logprob(A,X,Y,Z_old)
-        new_log_prob = self.logprob(A,X,Y,Z_new)
+        # old_log_prob = self.logprob(A,X,Y,Z_old)
+        # new_log_prob = self.logprob(A,X,Y,Z_new)
         # np.abs(old_log_prob - new_log_prob) < 0.1
         if False or iteration >= self.n_iters:
             return True
