@@ -1050,9 +1050,9 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         desired output: 
         out[q,l] = sum_e weights[q,l,e]
         """
-        graph_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
+        edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
             weights.sum(axis=(-1,-2))
-        return graph_means 
+        return edge_means 
     
     # def computeWeightMeans( self, X, Z ):
     #     weights = np.tensordot(Z, Z, axes=((), ()))
@@ -1090,14 +1090,17 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
       """
         Compute divergences for every pair X[i,j], mu[k,l]
       """
-      net_divergences_elementwise = pairwise_distances(A.reshape(-1,1),\
-                                             self.edge_means.reshape(-1,1),\
-                                             metric=self.edge_divergence)\
-                                            .reshape(
-                                                        (self.N,self.N,\
-                                                        self.n_clusters,self.n_clusters
-                                                        )
-                                                    )
+    #   net_divergences_elementwise = pairwise_distances(A.reshape(-1,1),\
+    #                                          self.edge_means.reshape(-1,1),\
+    #                                          metric=self.edge_divergence)\
+    #                                         .reshape(
+    #                                                     (self.N,self.N,\
+    #                                                     self.n_clusters,self.n_clusters
+    #                                                     )
+    #                                                 )
+      net_divergences_elementwise = np.where(A == 0,\
+                                              self.precomputed_edge_div[0],\
+                                              self.precomputed_edge_div[1])
       """
         net_divergences has shape N x N x K x K
         tau has shape N x K
@@ -1116,6 +1119,14 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
     def M_projection(self,A,X,Y,tau):
         self.attribute_means = self.computeAttributeMeans(Y, tau)
         self.edge_means = self.computeEdgeMeans(tau)
+        self.precomputed_edge_div = pairwise_distances(np.array([0,1]).reshape(-1,1),\
+                                             self.edge_means.reshape(-1,1),\
+                                             metric=self.edge_divergence)\
+                                            .reshape(
+                                                        (2,\
+                                                        self.n_clusters,self.n_clusters
+                                                        )
+                                                    )
         # self.weight_means = self.computeWeightMeans( X, Z_threshold)
         self.communities_weights = tau.mean(axis=0)
         self.weight_means = None
