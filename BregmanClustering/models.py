@@ -1118,6 +1118,7 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         self.edge_means = self.computeEdgeMeans(tau)
         # self.weight_means = self.computeWeightMeans( X, Z_threshold)
         self.communities_weights = tau.mean(axis=0)
+        self.weight_means = None
 
     def logprob(self,A,X,Y,Z):
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
