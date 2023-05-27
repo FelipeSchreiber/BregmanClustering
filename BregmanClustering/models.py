@@ -1051,7 +1051,7 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         out[q,l] = sum_e weights[q,l,e]
         """
         graph_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
-            weights.sum(axis=-1)
+            weights.sum(axis=(-1,-2))
         return graph_means 
     
     # def computeWeightMeans( self, X, Z ):
