@@ -1091,7 +1091,7 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         Compute divergences for every pair X[i,j], mu[k,l]
       """
       net_divergences_elementwise = pairwise_distances(A.reshape(-1,1),\
-                                             self.graph_means.reshape(-1,1),\
+                                             self.edge_means.reshape(-1,1),\
                                              metric=self.edge_divergence)\
                                             .reshape(
                                                         (self.N,self.N,\
