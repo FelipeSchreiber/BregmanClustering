@@ -554,7 +554,7 @@ class BregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         return frommembershipMatriceToVector( self.predicted_memberships )
 
-class SoftBregmanNodeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
+class SoftBregmanNodeAttributeGraphClustering_MAX( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
                  edge_divergence = logistic_loss, attribute_divergence = euclidean_distance, 
                  initializer = 'chernoff', 
@@ -888,13 +888,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         edges_means = np.tensordot( weights,\
                                     X[self.edge_index[0],self.edge_index[1],:],\
-                                    axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
-        # x_m = X.mean(axis=0)
-        # for q in range(self.n_clusters):
-        #     for l in range(self.n_clusters):
-        #         if np.isnan(edges_means[q,l]).any():
-        #             edges_means[q,l,:] = x_m       
-        return np.nan_to_num(edges_means) 
+                                    axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
+        return edges_means
     
     def likelihood( self, X, Y, Z ):
         graphLikelihood = self.likelihoodGraph(X,Z)
@@ -966,7 +961,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         """
         return frommembershipMatriceToVector( self.predicted_memberships )
     
-class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin ):
+class BregmanNodeEdgeAttributeGraphClusteringSoft_Heud( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
                  edgeDistribution = "bernoulli",
                  attributeDistribution = "gaussian",
