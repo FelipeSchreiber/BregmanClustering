@@ -1035,12 +1035,15 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft_Heud( BaseEstimator, ClusterMi
         att_div = H[node,q]
         graph_div = self.edge_divergence( A[node,:], M )
         edge_div = 0
-        if len(v_indices_out)>0:
-            edge_div += np.sum( paired_distances(X[node,v_indices_out,:],\
-                                                 E[q,z_t[v_indices_out],:],metric=self.weight_divergence) )
-        if len(v_indices_in)>0:
-            edge_div += np.sum( paired_distances(X[v_indices_in,node,:],\
-                                                 E[z_t[v_indices_in],q,:],metric=self.weight_divergence) )
+        try:
+            if len(v_indices_out)>0:
+                edge_div += np.sum( paired_distances(X[node,v_indices_out,:],\
+                                                    E[q,z_t[v_indices_out],:],metric=self.weight_divergence) )
+            if len(v_indices_in)>0:
+                edge_div += np.sum( paired_distances(X[v_indices_in,node,:],\
+                                                    E[z_t[v_indices_in],q,:],metric=self.weight_divergence) )
+        except:
+            print(">>>> SBM Matrix: ",self.edge_means)
         total = att_div + graph_div + edge_div
         print("Total div: ",total)
         return total
