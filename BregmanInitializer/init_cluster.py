@@ -56,9 +56,9 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         Parameters
         ----------
         X : ARRAY
-            Input |E| x d matrix with edges.  
+            Input |E| x d matrix with edges attributes.  
         A : ARRAY
-            Input (n,n) matrix encoding the adjacency matrix
+            Input (n,n) the adjacency matrix
         Returns
         -------
         TYPE
@@ -72,7 +72,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
                                                                         self.n_clusters)
         else:
             self.predicted_memberships = Z_init
-        print(A.shape,self.predicted_memberships.shape)
+        print(A.shape,self.predicted_memberships.shape,X.shape)
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
         self.weight_means = self.computeWeightMeans(A, X, self.predicted_memberships)
         convergence = True
@@ -146,7 +146,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
             M_in = self.edge_means[z_t,np.repeat(q, self.N)]
             E = self.weight_means
             """
-            X has shape n x n x d
+            X has shape |E| x d
             E has shape k x k x d
             
             the edge divergence computes the difference between node i (from community q) edges and the means
@@ -159,11 +159,11 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
                         - 2*self.edge_divergence(A[node,node],M_in[q])
             weight_div = 0
             if len(v_indices_out) > 0:
-                weight_div += np.sum( paired_distances(X[node,v_indices_out,:],\
+                weight_div += np.sum( paired_distances(X[edge_indices_out,:],\
                                                         E[q,z_t[v_indices_out],:],\
                                                         metric=self.weight_divergence))
             if len(v_indices_in) > 0:
-                weight_div += np.sum( paired_distances(X[v_indices_in,node,:],\
+                weight_div += np.sum( paired_distances(X[edge_indices_in,:],\
                                                         E[z_t[v_indices_in],q,:],\
                                                         metric=self.weight_divergence))
             L[ q ] = weight_div + edge_div
