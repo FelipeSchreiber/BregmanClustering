@@ -81,9 +81,11 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
         if Z_init is None:
-            self.predicted_memberships = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,\
-                                                                                         size=self.N),
-                                                                        self.n_clusters)
+            SC = SpectralClustering(n_clusters=self.n_clusters,
+            assign_labels='discretize',random_state=0).fit(A)
+            preds = SC.labels_.reshape(-1, 1)
+            ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
+            self.predicted_memberships= ohe.transform(preds)
         else:
             self.predicted_memberships = Z_init
         print(A.shape,self.predicted_memberships.shape,X.shape)
@@ -407,17 +409,12 @@ class BregmanInitializer():
                                         edgeDistribution=self.edgeDistribution,\
                                         weightDistribution=self.weightDistribution
                                         )
+            Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
+                                                                        self.n_clusters)
             preds = model.fit(self.A,self.X).predict(None, None).reshape(-1, 1)
             self.graph_model_init = model
 
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
-        # SC = SpectralClustering(n_clusters=self.n_clusters,
-        #     assign_labels='discretize',
-        #     random_state=0).fit(sim_matrix)
-        # preds = SC.labels_.reshape(-1, 1)
-        # ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
-        # self.memberships_from_graph = ohe.transform(preds)
-        # self.graph_model_init = SC
         
         self.assignInitialLabels()
