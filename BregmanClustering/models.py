@@ -615,7 +615,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         TYPE
             Trained model.
         """
-        self.N = X.shape[0]
+        self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
         if Z_init is None:
             self.initialize( A, X, Y)
@@ -1197,7 +1197,7 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         TYPE
             Trained model.
         """
-        self.N = X.shape[0]
+        self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
         self.node_indices = np.arange(self.N)
         if Z_init is None:

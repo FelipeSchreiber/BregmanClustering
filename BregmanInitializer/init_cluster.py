@@ -35,10 +35,6 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
             Pairwise divergence function. The default is euclidean_distance.
         n_iters : INT, optional
             Number of clustering iterations. The default is 25.
-        graph_initialize, attribute_initializer : STR, optional
-            Specifies if the centroids are initialized at random "rand", K-Means++ "kmeans++", or a pretrained K-Means model "pretrained". The default is "rand".
-        init_iters : INT, optional
-            Number of iterations for K-Means++. The default is 100.
         Returns
         -------
         None.
@@ -60,7 +56,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         Parameters
         ----------
         X : ARRAY
-            Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
+            Input |E| x d matrix with edges.  
         A : ARRAY
             Input (n,n) matrix encoding the adjacency matrix
         Returns
@@ -68,7 +64,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         TYPE
             Trained model.
         """
-        self.N = X.shape[0]
+        self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
         if Z_init is None:
             self.predicted_memberships = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,\
@@ -386,7 +382,6 @@ class BregmanInitializer():
                                         edgeDistribution=self.edgeDistribution,\
                                         weightDistribution=self.weightDistribution
                                         )
-            print(self.A.shape,self.X.shape)
             self.memberships_from_graph = model.fit(self.A,self.X).predict(None, None)
 
         # SC = SpectralClustering(n_clusters=self.n_clusters,
