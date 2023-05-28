@@ -694,7 +694,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         
         undefined_idx = np.where(self.edge_means==0)
         print("SHAPES: ",weight_means[undefined_idx[0],undefined_idx[1],:].shape,
-              "\n", null_model.shape)
+              "\n", null_model.shape,X.shape)
         weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
         return weight_means
     
