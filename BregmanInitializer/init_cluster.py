@@ -396,20 +396,22 @@ class BregmanInitializer():
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
 
+
         if self.initializer == "AIC":
             U = self.spectralEmbedding(sim_matrix)
             model = GaussianMixture(n_components=self.n_clusters)
             preds = model.fit(U).predict(U).reshape(-1, 1)
-            ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
-            self.memberships_from_graph = ohe.transform(preds)
             self.graph_model_init = model
         else:
             model = BregmanGraphClustering(n_clusters=self.n_clusters,\
                                         edgeDistribution=self.edgeDistribution,\
                                         weightDistribution=self.weightDistribution
                                         )
-            self.memberships_from_graph = model.fit(self.A,self.X).predict(None, None)
+            preds = model.fit(self.A,self.X).predict(None, None)
+            self.graph_model_init = model
 
+        ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
+        self.memberships_from_graph = ohe.transform(preds)
         # SC = SpectralClustering(n_clusters=self.n_clusters,
         #     assign_labels='discretize',
         #     random_state=0).fit(sim_matrix)
