@@ -149,19 +149,22 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
     
     def singleNodeAssignment( self, A, X, node ):
         L = np.zeros( self.n_clusters )
+        
         edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
         v_idx_in = self.edge_index[0][edge_indices_in]
+        
         edge_indices_out = np.argwhere(self.edge_index[0] == node).flatten()
         v_idx_out = self.edge_index[1][edge_indices_out]
+        
         mask_in = self.index_to_mask(v_idx_in)
         mask_out = self.index_to_mask(v_idx_out)
+        
         v_idx_in_comp = np.where(~mask_in)
         v_idx_out_comp = np.where(~mask_out)
+        
         for q in range( self.n_clusters ):
-            Ztilde = self.predicted_memberships.copy()
-            Ztilde[ node, : ] = 0
-            Ztilde[ node, q ] = 1
-            z_t = np.argmax(Ztilde,axis=1)
+            z_t = self.predicted_memberships.argmax(axis=1)
+            z_t[node] = q
             # M_out = self.edge_means[np.repeat(q, self.N),z_t]
             # M_in = self.edge_means[z_t,np.repeat(q, self.N)]
             E = self.weight_means
