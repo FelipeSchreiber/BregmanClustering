@@ -687,7 +687,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        null_model = X.mean(axis=0)
+        null_model = X.mean(axis=0).reshape(X.shape[1])
         weight_means = np.tensordot( weights,\
                                     X[self.edge_index[0],self.edge_index[1],:],\
                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
