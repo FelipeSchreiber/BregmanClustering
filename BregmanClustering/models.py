@@ -1099,7 +1099,7 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
     #                                                     )
     #                                                 )
       shape = (self.N,self.N,self.n_clusters,self.n_clusters)
-      net_divergences_elementwise = np.where(np.broadcast_to(A,shape) == 0,\
+      net_divergences_elementwise = np.where(A[:,:,None,None] == 0,\
                                               np.broadcast_to(self.precomputed_edge_div[0],\
                                                               shape),\
                                               np.broadcast_to(self.precomputed_edge_div[1],\
