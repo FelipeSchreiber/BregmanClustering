@@ -407,7 +407,7 @@ class BregmanInitializer():
                                         edgeDistribution=self.edgeDistribution,\
                                         weightDistribution=self.weightDistribution
                                         )
-            preds = model.fit(self.A,self.X).predict(None, None)
+            preds = model.fit(self.A,self.X).predict(None, None).reshape(-1, 1)
             self.graph_model_init = model
 
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
