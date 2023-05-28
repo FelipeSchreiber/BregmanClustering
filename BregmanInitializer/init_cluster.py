@@ -76,6 +76,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
                                                                         self.n_clusters)
         else:
             self.predicted_memberships = Z_init
+        print(A.shape,self.predicted_memberships.shape)
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
         self.weight_means = self.computeWeightMeans(A, X, self.predicted_memberships)
         convergence = True
