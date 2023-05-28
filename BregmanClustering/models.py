@@ -695,8 +695,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         if (self.edge_means==0).any():
             null_model = X_.mean(axis=0)
             undefined_idx = np.where(self.edge_means==0)
-            print("SHAPES: ",weight_means[undefined_idx[0],undefined_idx[1],:].shape,
-              "\n", null_model.shape,X_.shape)
             weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
         return weight_means
     
@@ -742,16 +740,13 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            graph_div = self.edge_divergence( A[node,:], M )
-            edge_div = 0
-            try:
-                edge_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
+            edge_div = self.edge_divergence( A[node,:], M ) \
+                        - self.edge_divergence(A[node,node],M[q,q])
+            weight_div = 0
+            weight_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
                                                     E[q,z_t[v_indices_out],:],\
                                                     metric=self.weight_divergence))
-            except:
-                print(np.isnan(X[node,self.edge_index[1][node_indices],:]).any(),\
-                      np.isnan(E[q,z_t[v_indices_out],:]).any())
-            L[ q ] = att_div + 0.5*(graph_div + edge_div)
+            L[ q ] = att_div + 0.5*(weight_div + edge_div)
         return np.argmin( L )
     
     def predict(self, X, Y):
