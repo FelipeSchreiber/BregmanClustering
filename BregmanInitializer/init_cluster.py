@@ -142,7 +142,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         return weight_means    
 
     def assignments( self, A, X):
-        z = np.zeros( X.shape[ 0 ], dtype = int )
+        z = np.zeros( self.N, dtype = int )
         for node in range( len( z ) ):
             z[ node ] = self.singleNodeAssignment( A, X, node )
         return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )        
