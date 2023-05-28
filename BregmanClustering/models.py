@@ -1078,6 +1078,24 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         Z_threshold[ np.arange(tau.shape[0]), idx] = 1
         return Z_threshold
     
+    def get_net_div(self,A):
+        shape = (self.N,self.N,self.n_clusters,self.n_clusters)
+        net_divergences_elementwise = np.where(A[:,:,None,None] == 0,\
+                                              np.broadcast_to(self.precomputed_edge_div[0],\
+                                                              shape),\
+                                              np.broadcast_to(self.precomputed_edge_div[1],\
+                                                              shape)
+                                            )
+        
+        return net_divergences_elementwise
+    
+    def get_att_div(self,Y):
+        att_divergence_total = pairwise_distances(Y,self.attribute_means,\
+                                                metric=self.attribute_divergence)
+        return att_divergence_total
+
+
+    
     def VE_projection(self,A, X, Y,tau):         
       """
         Inputs: 
@@ -1090,21 +1108,8 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
       """
         Compute divergences for every pair X[i,j], mu[k,l]
       """
-    #   net_divergences_elementwise = pairwise_distances(A.reshape(-1,1),\
-    #                                          self.edge_means.reshape(-1,1),\
-    #                                          metric=self.edge_divergence)\
-    #                                         .reshape(
-    #                                                     (self.N,self.N,\
-    #                                                     self.n_clusters,self.n_clusters
-    #                                                     )
-    #                                                 )
-      shape = (self.N,self.N,self.n_clusters,self.n_clusters)
-      net_divergences_elementwise = np.where(A[:,:,None,None] == 0,\
-                                              np.broadcast_to(self.precomputed_edge_div[0],\
-                                                              shape),\
-                                              np.broadcast_to(self.precomputed_edge_div[1],\
-                                                              shape)
-                                            )
+      net_divergences_elementwise = self.get_net_div(A)
+      att_divergence_total = self.get_att_div(Y)
       """
         net_divergences has shape N x N x K x K
         tau has shape N x K
@@ -1114,11 +1119,18 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
         "j" appears at axes 0 for tau and at axes 1 for net_divergence
         "l" appears at axes 1 for tau and at axes 3 for net_divergence
       """
-      net_divergence_total = np.tensordot(tau, net_divergences_elementwise, axes=[(0,1),(1,3)])
-      att_divergence_total = pairwise_distances(Y,self.attribute_means,\
-                                                metric=self.attribute_divergence)
-      tau = pi[np.newaxis,:]*self.q_exp(-net_divergence_total -att_divergence_total,self.q)
-      return normalize(tau, axis=1, norm='l1')
+      tau_old = tau
+      while True:
+        net_divergence_total = np.tensordot(tau_old,\
+                                            net_divergences_elementwise,\
+                                            axes=[(0,1),(1,3)])
+
+        tau_new = pi[np.newaxis,:]*self.q_exp(-net_divergence_total -att_divergence_total,\
+                                              self.q)
+        tau_new = normalize(tau_new, axis=1, norm='l1')
+        if np.allclose(tau_old,tau_new):
+            return tau_new
+        tau_old = tau_new
            
     def M_projection(self,A,X,Y,tau):
         self.attribute_means = self.computeAttributeMeans(Y, tau)
