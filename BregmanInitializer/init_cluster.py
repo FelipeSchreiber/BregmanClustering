@@ -145,7 +145,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         z = np.zeros( self.N, dtype = int )
         for node in range( len( z ) ):
             z[ node ] = self.singleNodeAssignment( A, X, node )
-        return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )        
+        return fromVectorToMembershipMatrice( z, self.n_clusters )        
     
     def singleNodeAssignment( self, A, X, node ):
         L = np.zeros( self.n_clusters )
