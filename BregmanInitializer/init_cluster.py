@@ -7,6 +7,218 @@ from sklearn.manifold import SpectralEmbedding
 from sklearn.preprocessing import OneHotEncoder
 from scipy.sparse import csr_matrix, csc_matrix 
 from sklearn.cluster import SpectralClustering
+from sklearn.base import BaseEstimator, ClusterMixin
+
+# class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
+#     def __init__( self, n_clusters, 
+#                  edgeDistribution = "bernoulli",
+#                  weightDistribution = "gaussian",
+#                  n_iters = 25, init_iters=100,
+#                  reduce_by=None,
+#                  divergence_precomputed=True):
+#         """
+#         Bregman Hard Clustering Algorithm for partitioning graph 
+#         Parameters
+#         ----------
+#         n_clusters : INT
+#             Number of clustes.
+#         edge_divergence, attribute_divergence : function
+#             Pairwise divergence function. The default is euclidean_distance.
+#         n_iters : INT, optional
+#             Number of clustering iterations. The default is 25.
+#         graph_initialize, attribute_initializer : STR, optional
+#             Specifies if the centroids are initialized at random "rand", K-Means++ "kmeans++", or a pretrained K-Means model "pretrained". The default is "rand".
+#         init_iters : INT, optional
+#             Number of iterations for K-Means++. The default is 100.
+#         Returns
+#         -------
+#         None.
+#         """
+#         self.n_clusters = n_clusters
+#         self.n_iters = n_iters
+#         self.init_iters = init_iters
+#         ## Variable that stores which initialization was chosen
+#         self.graph_init = False
+#         self.edgeDistribution = edgeDistribution
+#         self.weightDistribution = weightDistribution
+#         self.edge_divergence = dist_to_divergence_dict_init[self.edgeDistribution]
+#         self.weight_divergence = dist_to_divergence_dict_init[self.weightDistribution]
+#         self.edge_index = None 
+
+#     def fit( self, A, X, Y, Z_init=None ):
+#         """
+#         Training step.
+#         Parameters
+#         ----------
+#         Y : ARRAY
+#             Input data matrix (n, m) of n samples and m features.
+#         X : ARRAY
+#             Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
+#         A : ARRAY
+#             Input (n,n) matrix encoding the adjacency matrix
+#         Returns
+#         -------
+#         TYPE
+#             Trained model.
+#         """
+#         self.N = X.shape[0]
+#         self.edge_index = np.nonzero(A)
+#         if Z_init is None:
+#             self.initialize( A, X, Y)
+#             self.assignInitialLabels( X, Y )
+#         else:
+#             self.predicted_memberships = Z_init
+#         #init_labels = self.predicted_memberships
+#         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
+#         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
+#         self.weight_means = self.computeWeightMeans(A, X, self.predicted_memberships)
+#         convergence = True
+#         iteration = 0
+#         while convergence:
+#             new_memberships = self.assignments( A, X, Y )
+
+#             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
+#             self.edge_means = self.computeEdgeMeans( A, new_memberships )
+#             self.weight_means = self.computeWeightMeans(A, X, new_memberships)
+            
+#             iteration += 1
+#             if accuracy_score( (new_memberships), (self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
+#                 convergence = False
+#             self.predicted_memberships = new_memberships
+#         return self
+    
+#     def initialize( self, A, X, Y ):
+#         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
+#                                     edgeDistribution = self.edgeDistribution,
+#                                     attributeDistribution = self.attributeDistribution,
+#                                     weightDistribution = self.weightDistribution)
+#         if self.edge_index is None:
+#             self.edge_index = np.nonzero(A)
+#         model.initialize( X, Y , self.edge_index)
+#         self.predicted_memberships = model.predicted_memberships
+#         self.memberships_from_graph = model.memberships_from_graph
+#         self.memberships_from_attributes = model.memberships_from_attributes
+#         self.graph_init = model.graph_init
+
+#     def assignInitialLabels( self, X, Y ):
+#         return self
+        
+#     def spectralEmbedding(self, X ):
+#         if (X<0).any():
+#             X = pairwise_kernels(X,metric='rbf')
+#         U = SpectralEmbedding(n_components=self.n_clusters,\
+# 								affinity="precomputed")\
+# 								.fit_transform(X)
+#         return U
+    
+#     def computeAttributeMeans( self, Y, Z ):
+#         attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
+#         return attribute_means
+    
+#     def computeEdgeMeans( self, A, Z ):
+#         normalisation = np.linalg.pinv ( Z.T @ Z )
+#         return normalisation @ Z.T @ A @ Z @ normalisation
+    
+#     def computeWeightMeans( self, A, X, Z):
+#         weights = np.tensordot(Z, Z, axes=((), ()))
+#         """
+#         weights[i,q,j,l] = tau[i,q]*tau[j,l]
+#         desired output:
+#         weights[q,l,i,j] = tau[i,q]*tau[j,l]
+#         """
+#         weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
+#         X_ = X[self.edge_index[0],self.edge_index[1],:]
+#         """
+#         X is a |E| x d tensor
+#         weights is a k x k x |E|
+#         desired output: 
+#         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
+#         """
+#         weight_means = np.tensordot( weights,\
+#                                     X_,\
+#                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
+        
+#         if (self.edge_means==0).any():
+#             null_model = X_.mean(axis=0)
+#             undefined_idx = np.where(self.edge_means==0)
+#             weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
+#         return weight_means
+    
+#     def likelihood( self, X, Y, Z ):
+#         graphLikelihood = self.likelihoodGraph(X,Z)
+#         attributeLikelihood = self.likelihoodAttributes(Y,Z)
+#         return graphLikelihood + attributeLikelihood
+    
+#     def likelihoodGraph(self, X, Z):
+#         graph_mean = self.computeEdgeMeans(X,Z)
+#         return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
+    
+#     def likelihoodAttributes( self, Y, Z):
+#         M = self.computeAttributeMeans(Y,Z)
+#         total = np.sum( paired_distances(Y,Z@M) )
+#         return total 
+    
+#     def assignments( self, A, X, Y ):
+#         z = np.zeros( X.shape[ 0 ], dtype = int )
+#         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
+#         for node in range( len( z ) ):
+#             z[ node ] = self.singleNodeAssignment( A, X, H, node )
+#         return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )        
+    
+#     def singleNodeAssignment( self, A, X, H, node ):
+#         L = np.zeros( self.n_clusters )
+#         edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
+#         v_indices_in = self.edge_index[0][edge_indices_in]
+#         edge_indices_out = np.argwhere(self.edge_index[0] == node).flatten()
+#         v_indices_out = self.edge_index[1][edge_indices_out]
+#         for q in range( self.n_clusters ):
+#             Ztilde = self.predicted_memberships.copy()
+#             Ztilde[ node, : ] = 0
+#             Ztilde[ node, q ] = 1
+#             z_t = np.argmax(Ztilde,axis=1)
+#             M_out = self.edge_means[np.repeat(q, self.N),z_t]
+#             M_in = self.edge_means[z_t,np.repeat(q, self.N)]
+#             E = self.weight_means
+#             """
+#             X has shape n x n x d
+#             E has shape k x k x d
+            
+#             the edge divergence computes the difference between node i (from community q) edges and the means
+#             given node j belongs to community l:
+            
+#             sum_j phi_edge(e_ij, E[q,l,:])  
+#             """
+#             att_div = H[node,q]
+#             edge_div = self.edge_divergence( A[node,:], M_out ) \
+#                         + self.edge_divergence( A[:,node], M_in ) \
+#                         - 2*self.edge_divergence(A[node,node],M_in[q])
+#             weight_div = 0
+#             if len(v_indices_out) > 0:
+#                 weight_div += np.sum( paired_distances(X[node,v_indices_out,:],\
+#                                                         E[q,z_t[v_indices_out],:],\
+#                                                         metric=self.weight_divergence))
+#             if len(v_indices_in) > 0:
+#                 weight_div += np.sum( paired_distances(X[v_indices_in,node,:],\
+#                                                         E[z_t[v_indices_in],q,:],\
+#                                                         metric=self.weight_divergence))
+#             L[ q ] = att_div + (weight_div + edge_div)
+#         return np.argmin( L )
+    
+#     def predict(self, X, Y):
+#         """
+#         Prediction step.
+#         Parameters
+#         ----------
+#         X : ARRAY
+#             Input data matrix (n, n) of the node interactions
+#         Y : ARRAY
+#             Input data matrix (n, m) of the attributes of the n nodes (each attribute has m features).
+#         Returns
+#         -------
+#         z: Array
+#             Assigned cluster for each data point (n, )
+#         """
+#         return frommembershipMatriceToVector( self.predicted_memberships )
 
 class BregmanInitializer():
     def __init__( self, n_clusters,initializer="AIC",\
