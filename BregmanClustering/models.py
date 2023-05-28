@@ -1127,7 +1127,7 @@ class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
 
         t = self.q_exp(-net_divergence_total -att_divergence_total,\
                                               self.q)
-        print("\nT:",t)
+        # print("\nT:",t)
         tau_new = pi[np.newaxis,:]*self.q_exp(-net_divergence_total -att_divergence_total,\
                                               self.q)
         tau_new = normalize(tau_new, axis=1, norm='l1')
