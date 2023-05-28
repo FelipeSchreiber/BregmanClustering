@@ -152,10 +152,10 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
             the edge divergence computes the difference between node i (from community q) edges and the means
             given node j belongs to community l:
             
-            sum_j phi_edge(e_ij, E[q,l,:])  
+            sum_j div_edge(e_ij, E[q,l,:])  
             """
-            edge_div = self.edge_divergence( A[node,:], M_out ) \
-                        + self.edge_divergence( A[:,node], M_in ) \
+            edge_div = self.edge_divergence( A[node,:], M_out ).sum() \
+                        + self.edge_divergence( A[:,node], M_in ).sum() \
                         - 2*self.edge_divergence(A[node,node],M_in[q])
             weight_div = 0
             if len(v_indices_out) > 0:
