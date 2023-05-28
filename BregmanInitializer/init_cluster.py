@@ -154,6 +154,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
             
             sum_j div_edge(e_ij, E[q,l,:])  
             """
+            print(A[node,:].shape,M_out.shape)
             edge_div = self.edge_divergence( A[node,:], M_out ).sum() \
                         + self.edge_divergence( A[:,node], M_in ).sum()
                         # - 2*self.edge_divergence(A[node,node],M_in[q])
