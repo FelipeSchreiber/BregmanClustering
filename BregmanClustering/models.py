@@ -740,6 +740,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
+            print("A.shp: ",A.shape)
             edge_div = self.edge_divergence( A[node,:], M ) \
                         - self.edge_divergence(A[node,node],M[q])
             weight_div = 0
