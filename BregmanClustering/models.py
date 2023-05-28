@@ -721,14 +721,17 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
     
     def singleNodeAssignment( self, A, X, H, node ):
         L = np.zeros( self.n_clusters )
-        node_indices = np.argwhere(self.edge_index[0] == node).flatten()
-        v_indices_out = self.edge_index[1][node_indices]
+        edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
+        v_indices_in = self.edge_index[0][edge_indices_in]
+        edge_indices_out = np.argwhere(self.edge_index[0] == node).flatten()
+        v_indices_out = self.edge_index[1][edge_indices_out]
         for q in range( self.n_clusters ):
             Ztilde = self.predicted_memberships.copy()
             Ztilde[ node, : ] = 0
             Ztilde[ node, q ] = 1
             z_t = np.argmax(Ztilde,axis=1)
-            M = self.edge_means[np.repeat(q, self.N),z_t]
+            M_out = self.edge_means[np.repeat(q, self.N),z_t]
+            M_in = self.edge_means[z_t,np.repeat(q, self.N)]
             E = self.weight_means
             """
             X has shape n x n x d
@@ -740,16 +743,19 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
             att_div = H[node,q]
-            try:
-                edge_div = self.edge_divergence( A[node,:], M ) \
-                        - self.edge_divergence(A[node,node],M[q])
-            except:
-                print("A.shp: ",A.shape)
+            edge_div = self.edge_divergence( A[node,:], M_out ) \
+                        + self.edge_divergence( A[:,node], M_in ) \
+                        - 2*self.edge_divergence(A[node,node],M_in[q])
             weight_div = 0
-            weight_div = np.sum( paired_distances(X[node,self.edge_index[1][node_indices],:],\
-                                                    E[q,z_t[v_indices_out],:],\
-                                                    metric=self.weight_divergence))
-            L[ q ] = att_div + 0.5*(weight_div + edge_div)
+            if v_indices_out > 0:
+                weight_div += np.sum( paired_distances(X[node,v_indices_out,:],\
+                                                        E[q,z_t[v_indices_out],:],\
+                                                        metric=self.weight_divergence))
+            if v_indices_in > 0:
+                weight_div += np.sum( paired_distances(X[v_indices_in,node,:],\
+                                                        E[z_t[v_indices_in],q,:],\
+                                                        metric=self.weight_divergence))
+            L[ q ] = att_div + (weight_div + edge_div)
         return np.argmin( L )
     
     def predict(self, X, Y):
