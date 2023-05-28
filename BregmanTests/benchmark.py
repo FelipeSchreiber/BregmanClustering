@@ -842,6 +842,7 @@ class BregmanBenchmark():
         scores["dataset"] = []
         scores["ARI"] = []
         for data,data_name in zip(datas,data_names):
+            print("\nCURRENT DATASET: ",data_name)
             attributes = data.x
             z_true = data.y.numpy()
             z_pred_both = None
