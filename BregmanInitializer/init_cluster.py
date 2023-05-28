@@ -385,8 +385,8 @@ class BregmanInitializer():
                                         edgeDistribution=self.edgeDistribution,\
                                         weightDistribution=self.weightDistribution
                                         )
-            print(A.shape,self.X.shape)
-            self.memberships_from_graph = model.fit(A,self.X).predict(None, None)
+            print(self.A.shape,self.X.shape)
+            self.memberships_from_graph = model.fit(self.A,self.X).predict(None, None)
 
         # SC = SpectralClustering(n_clusters=self.n_clusters,
         #     assign_labels='discretize',
