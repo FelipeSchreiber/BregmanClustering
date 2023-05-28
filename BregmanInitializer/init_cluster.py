@@ -54,13 +54,11 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         self.weight_divergence = dist_to_divergence_dict_init[self.weightDistribution]
         self.edge_index = None 
 
-    def fit( self, A, X, Y, Z_init=None ):
+    def fit( self, A, X, Z_init=None ):
         """
         Training step.
         Parameters
         ----------
-        Y : ARRAY
-            Input data matrix (n, m) of n samples and m features.
         X : ARRAY
             Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
         A : ARRAY
@@ -81,7 +79,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         convergence = True
         iteration = 0
         while convergence:
-            new_memberships = self.assignments( A, X, Y )
+            new_memberships = self.assignments( A, X)
             self.edge_means = self.computeEdgeMeans( A, new_memberships )
             self.weight_means = self.computeWeightMeans(A, X, new_memberships)
             
@@ -252,7 +250,10 @@ class BregmanInitializer():
     
     def computeEdgeMeans( self, A, Z ):
         normalisation = np.linalg.pinv(Z.T@Z)
-        M = Z.T@A@Z
+        try:
+            M = Z.T@A@Z
+        except:
+            print(Z.shape,A.shape)
         return normalisation @ M @ normalisation
     
     def computeWeightMeans( self, X, Z ):
