@@ -71,7 +71,9 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         self.N = X.shape[0]
         self.edge_index = np.nonzero(A)
         if Z_init is None:
-            self.predicted_memberships = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N))
+            self.predicted_memberships = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,\
+                                                                                         size=self.N),
+                                                                        self.n_clusters)
         else:
             self.predicted_memberships = Z_init
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
