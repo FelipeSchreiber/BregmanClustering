@@ -80,7 +80,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         """
         self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
-        print(A.shape,X.shape)
+        print("BGC>>>",A.shape,X.shape)
         if Z_init is None:
             SC = SpectralClustering(n_clusters=self.n_clusters,
             assign_labels='discretize',random_state=0).fit(A)
@@ -89,7 +89,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
             self.predicted_memberships= ohe.transform(preds)
         else:
             self.predicted_memberships = Z_init
-        print(A.shape,self.predicted_memberships.shape,X.shape)
+        print("Z.shape: ",self.predicted_memberships.shape)
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
         self.weight_means = self.computeWeightMeans(A, X, self.predicted_memberships)
         self.precompute_edge_divergences()
@@ -117,7 +117,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         return U
     
     def computeEdgeMeans( self, A, Z ):
-        print(A.shape,Z.shape)
+        print("EdgeMeans>>>",A.shape,Z.shape)
         normalisation = np.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     
@@ -392,6 +392,7 @@ class BregmanInitializer():
         self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
                              (self.edge_index[0],self.edge_index[1]))
                             )
+        print("init>>>",self.A.shape)
         self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
