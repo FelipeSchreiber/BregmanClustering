@@ -80,6 +80,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         """
         self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
+        print(A.shape,self.predicted_memberships.shape,X.shape)
         if Z_init is None:
             SC = SpectralClustering(n_clusters=self.n_clusters,
             assign_labels='discretize',random_state=0).fit(A)
