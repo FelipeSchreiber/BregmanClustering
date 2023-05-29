@@ -40,6 +40,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         None.
         """
         self.n_clusters = n_clusters
+        print("BCG K: ",self.n_clusters)
         self.n_iters = n_iters
         self.init_iters = init_iters
         ## Variable that stores which initialization was chosen
