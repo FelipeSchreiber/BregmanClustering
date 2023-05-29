@@ -390,7 +390,8 @@ class BregmanInitializer():
 
         self.sim_matrix = sim_matrix
         self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
-                             (self.edge_index[0],self.edge_index[1]))
+                             (self.edge_index[0],self.edge_index[1])),\
+                             shape=(self.N, self.N)
                             )
         print("init>>>",self.A.shape)
         self.Y = Y
