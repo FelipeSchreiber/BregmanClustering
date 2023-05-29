@@ -116,6 +116,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         return U
     
     def computeEdgeMeans( self, A, Z ):
+        print(A.shape,Z.shape)
         normalisation = np.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     

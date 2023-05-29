@@ -824,13 +824,13 @@ class BregmanBenchmark():
         data_dir = "../../RealDataSets/"
         data_sets = ["Cora","CiteSeer"]
         datas = []
-        for data_set in data_sets:
-            dataset = Planetoid(root=data_dir, name=data_set)
-            data = dataset[0]
-            datas.append(data)
         data_sets2 = ["Cornell", "Texas", "Wisconsin"]
         for data_set in data_sets2:
             dataset = WebKB(root=data_dir, name=data_set)
+            data = dataset[0]
+            datas.append(data)
+        for data_set in data_sets:
+            dataset = Planetoid(root=data_dir, name=data_set)
             data = dataset[0]
             datas.append(data)
         data_sets.extend(data_sets2)
