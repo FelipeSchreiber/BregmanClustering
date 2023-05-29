@@ -823,18 +823,20 @@ class BregmanBenchmark():
     def get_real_data(self):
         data_dir = "../../RealDataSets/"
         data_sets = ["Cora","CiteSeer"]
-        datas = []
         data_sets2 = ["Cornell", "Texas", "Wisconsin"]
+        data_names = []
+        datas = []
         for data_set in data_sets2:
             dataset = WebKB(root=data_dir, name=data_set)
             data = dataset[0]
             datas.append(data)
+            data_names.append(data_set)
         for data_set in data_sets:
             dataset = Planetoid(root=data_dir, name=data_set)
             data = dataset[0]
             datas.append(data)
-        data_sets.extend(data_sets2)
-        return datas,data_sets
+            data_names.append(data_set)
+        return datas,data_names
     
     def run_real_data(self):
         datas,data_names = self.get_real_data()
@@ -859,6 +861,7 @@ class BregmanBenchmark():
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name
                                         )
+            print("INPUTS: ",A.shape,E.shape,attributes.shape)
             if self.torch_model:
                 z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
             else:
