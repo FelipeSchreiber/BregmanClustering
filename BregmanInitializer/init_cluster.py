@@ -370,7 +370,7 @@ class BregmanInitializer():
     Y is N x d np.array
     edge_index is a tuple (indices_i, indices_j)
     """
-    def initialize(self, X, Y , edge_index):
+    def initialize(self, X, Y , edge_index,Z_init=None):
         self.N = Y.shape[0]
         A = None
         ## CASE X is |E| x d: do nothing
@@ -410,9 +410,7 @@ class BregmanInitializer():
                                         edgeDistribution=self.edgeDistribution,\
                                         weightDistribution=self.weightDistribution
                                         )
-            Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
-                                                                        self.n_clusters)
-            preds = model.fit(self.A,self.X).predict(None, None).reshape(-1, 1)
+            preds = model.fit(self.A,self.X,Z_init=Z_init).predict(None, None).reshape(-1, 1)
             self.graph_model_init = model
 
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)

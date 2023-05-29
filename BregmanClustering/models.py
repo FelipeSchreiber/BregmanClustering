@@ -564,7 +564,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
                  n_iters = 25, init_iters=100,
                  reduce_by=None,
-                 divergence_precomputed=True):
+                 divergence_precomputed=True,
+                 use_random_init=False):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
@@ -598,8 +599,9 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
         self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.edge_index = None 
-
-    def fit( self, A, X, Y, Z_init=None ):
+        self.use_random_init = use_random_init
+        
+    def fit( self, A, X, Y, Z_init=None):
         """
         Training step.
         Parameters
@@ -648,7 +650,11 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                                     weightDistribution = self.weightDistribution)
         if self.edge_index is None:
             self.edge_index = np.nonzero(A)
-        model.initialize( X, Y , self.edge_index)
+        Z_init = None
+        if self.use_random_init == True:
+            Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
+                                                                        self.n_clusters)
+        model.initialize( X, Y , self.edge_index, Z_init=Z_init)
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = model.memberships_from_graph
         self.memberships_from_attributes = model.memberships_from_attributes
