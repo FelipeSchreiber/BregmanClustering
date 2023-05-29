@@ -117,7 +117,6 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         return U
     
     def computeEdgeMeans( self, A, Z ):
-        print("EdgeMeans>>>",A.shape,Z.shape)
         normalisation = np.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     
@@ -279,10 +278,7 @@ class BregmanInitializer():
     
     def computeEdgeMeans( self, A, Z ):
         normalisation = np.linalg.pinv(Z.T@Z)
-        try:
-            M = Z.T@A@Z
-        except:
-            print(Z.shape,A.shape)
+        M = Z.T@A@Z
         return normalisation @ M @ normalisation
     
     def computeWeightMeans( self, X, Z ):
@@ -393,7 +389,6 @@ class BregmanInitializer():
                              (self.edge_index[0],self.edge_index[1])),\
                              shape=(self.N, self.N)
                             )
-        print("init>>>",self.A.shape)
         self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
@@ -409,6 +404,7 @@ class BregmanInitializer():
             preds = model.fit(U).predict(U).reshape(-1, 1)
             self.graph_model_init = model
         else:
+            print("K",self.n_clusters)
             model = BregmanGraphClustering(n_clusters=self.n_clusters,\
                                         edgeDistribution=self.edgeDistribution,\
                                         weightDistribution=self.weightDistribution
