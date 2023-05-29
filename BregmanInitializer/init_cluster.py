@@ -83,8 +83,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         self.edge_index = np.nonzero(A)
         print("BGC>>>",A.shape,X.shape)
         if Z_init is None:
-            H = np.hstack((A,A.T))
-            print(H.shape)
+            H = sp.sparse.hstack((A,A.T))
             SC = SpectralClustering(n_clusters=self.n_clusters,
             assign_labels='discretize',random_state=0).fit(H)
             preds = SC.labels_.reshape(-1, 1)
