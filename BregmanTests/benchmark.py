@@ -838,7 +838,7 @@ class BregmanBenchmark():
             data_names.append(data_set)
         return datas,data_names
     
-    def run_real_data(self,use_random_init=False):
+    def run_real_data(self,use_random_init=False,initializer="AIC"):
         datas,data_names = self.get_real_data()
         scores = {}
         scores["dataset"] = []
@@ -860,14 +860,14 @@ class BregmanBenchmark():
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name,\
-                                        use_random_init=use_random_init
+                                        use_random_init=use_random_init,
+                                        initializer=initializer
                                 )
             print("INPUTS: ",A.shape,E.shape,attributes.shape)
             if self.torch_model:
                 z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
             else:
                 z_pred_both = model.fit(A,E,attributes.numpy()).predict( None, None )
-
 
             A = None
             E = None
