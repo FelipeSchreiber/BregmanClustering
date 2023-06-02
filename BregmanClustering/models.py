@@ -761,7 +761,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                 weight_div += np.sum( paired_distances(X[v_indices_in,node,:],\
                                                         E[z_t[v_indices_in],q,:],\
                                                         metric=self.weight_divergence))
-            L[ q ] = att_div + (weight_div + edge_div)
+            L[ q ] = att_div + (weight_div + edge_div)/(2*self.N)
         return np.argmin( L )
     
     def predict(self, X, Y):
