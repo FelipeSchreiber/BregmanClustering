@@ -2,7 +2,7 @@ import numpy as np
 import networkx as nx
 from BregmanTests.distributions import *
 # from BregmanClustering.models import *
-from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as edgeBreg
+from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as edgeBreg
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClustering.models import BregmanClusteringVariational as variationalBreg
 from BregmanClusteringTorch.torch_models import BregmanEdgeClusteringTorchSparse as sparseBreg
