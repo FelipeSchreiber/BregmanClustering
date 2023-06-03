@@ -40,7 +40,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         None.
         """
         self.n_clusters = n_clusters
-        print("BCG K: ",self.n_clusters)
+        # print("BCG K: ",self.n_clusters)
         self.n_iters = n_iters
         self.init_iters = init_iters
         ## Variable that stores which initialization was chosen
@@ -81,7 +81,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         """
         self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
-        print("BGC>>>",A.shape,X.shape)
+        # print("BGC>>>",A.shape,X.shape)
         if Z_init is None:
             H = sp.sparse.hstack((A,A.T))
             SC = SpectralClustering(n_clusters=self.n_clusters,
@@ -91,7 +91,7 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
             self.predicted_memberships= ohe.transform(preds)
         else:
             self.predicted_memberships = Z_init
-        print("Z.shape: ",self.predicted_memberships.shape)
+        # print("Z.shape: ",self.predicted_memberships.shape)
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
         self.weight_means = self.computeWeightMeans(A, X, self.predicted_memberships)
         self.precompute_edge_divergences()
@@ -406,7 +406,7 @@ class BregmanInitializer():
             preds = model.fit(U).predict(U).reshape(-1, 1)
             self.graph_model_init = model
         else:
-            print("K",self.n_clusters)
+            # print("K",self.n_clusters)
             model = BregmanGraphClustering(n_clusters=self.n_clusters,\
                                         edgeDistribution=self.edgeDistribution,\
                                         weightDistribution=self.weightDistribution
