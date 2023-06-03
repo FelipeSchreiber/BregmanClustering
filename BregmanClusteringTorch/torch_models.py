@@ -128,7 +128,7 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
         # Input 2x1, K^2 x 1 -> 2xK^2 
         self.edge_div_pairwise = make_pairwise_breg(dist_to_divergence_dict[self.edgeDistribution])  
         self.use_random_init = use_random_init
-        self.zero_and_one = torch.array([0,1]).reshape(-1,1).to(device)
+        self.zero_and_one = torch.Tensor([0,1]).reshape(-1,1).to(device)
 
     ## return true when fit proccess is finished
     def stop_criterion(self,old,new,iteration):
@@ -196,9 +196,9 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
         convergence = True
         iteration = 0
         while convergence:
-            self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships).to(device)
-            self.weight_means = self.computeWeightMeans(X,self.predicted_memberships).to(device)
-            new_memberships = self.assignments( A, X, Y ).to(device)
+            self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
+            self.weight_means = self.computeWeightMeans(X,self.predicted_memberships)
+            new_memberships = self.assignments( A, X, Y )
             self.precompute_edge_divergences()
             
             iteration += 1
