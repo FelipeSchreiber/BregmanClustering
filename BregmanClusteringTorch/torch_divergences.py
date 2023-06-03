@@ -133,7 +133,8 @@ def make_breg_div(phi):
     return bregman_divergence
 
 ## given X in R^{N x M} and Θ in R^{N x M}, computes the bregman divergence for each
-# pair X_{i:}, Θ_{i:}, returns a vector R^N, and finally reduce the vector, returning a scalar 
+# pair X_{i:}, Θ_{i:}, returns a vector R^N, and finally reduce the vector,
+# returning a scalar 
 def make_pair_breg(reduce_func,breg_div):
     vectorized_breg = vmap(breg_div)
     def pair_breg(X,Y):
