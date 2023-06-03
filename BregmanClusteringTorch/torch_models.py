@@ -210,6 +210,65 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
         Y = None
         return self
     
+    """
+    TO DO: Implement partial fit
+    """
+    def partial_fit( self, A, X, Y):
+        """
+        Training step.
+        Parameters
+        ----------
+        Y : ARRAY
+            Input data matrix (n, m) of n samples and m features.
+        X : ARRAY
+            Input (E,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
+        A : ARRAY
+            Input (n,n) matrix encoding the adjacency matrix
+        Returns
+        -------
+        TYPE
+            Trained model.
+        """
+        self.N = Y.shape[0]
+        self.row_indices = torch.arange(self.N).to(device)
+        self.edge_index = A.indices().long()
+        self.constant_mul = 1 if is_undirected(self.edge_index) else 0.5
+        # if Z_init is None:
+        #     e_ind = self.edge_index.detach().numpy()
+        #     self.initialize(X.detach().numpy().reshape(len(e_ind[0]),1),Y.detach().numpy(), (e_ind[0,:],e_ind[1,:]))
+        # else:
+        #     self.predicted_memberships = Z_init.type(dtype)
+        
+        ## send data to device
+        A = A.type(dtype)
+        X = X.type(dtype)
+        Y = Y.type(dtype)
+        X.requires_grad = True
+        Y.requires_grad = True
+        ## compute initial params
+        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
+        
+        self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships).to(device)
+        self.weight_means = self.computeWeightMeans(X,self.predicted_memberships).to(device)
+        new_memberships = self.assignments( A, X, Y ).to(device)
+        self.precompute_edge_divergences()
+        convergence = True
+        iteration = 0
+        while convergence:
+            self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
+            self.weight_means = self.computeWeightMeans(X,self.predicted_memberships)
+            new_memberships = self.assignments( A, X, Y )
+            self.precompute_edge_divergences()
+            
+            iteration += 1
+            if self.stop_criterion(self.predicted_memberships,new_memberships,iteration):
+                convergence = False
+            self.predicted_memberships = new_memberships
+        A = None
+        X = None
+        Y = None
+        return self
+    
     def initialize( self, X, Y ,edge_index):
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
                                     edgeDistribution = self.edgeDistribution,
