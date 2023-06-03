@@ -998,9 +998,6 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
                     + self.precomputed_edge_div[0,z_t[v_idx_in_comp],q].sum()\
                     + self.precomputed_edge_div[0,q,z_t[v_idx_out_comp]].sum()\
                     - 2*self.precomputed_edge_div[0,q,q]
-            # edge_div = self.edge_divergence( A[node,:], M_out ) \
-            #             + self.edge_divergence( A[:,node], M_in ) \
-            #             - 2*self.edge_divergence(A[node,node],M_in[q])
             weight_div = 0
             if len(v_idx_out) > 0:
                 weight_div += np.sum( paired_distances(X[node,v_idx_out,:],\
