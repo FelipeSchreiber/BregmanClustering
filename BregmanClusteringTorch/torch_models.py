@@ -269,7 +269,7 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        weight_means = torch.tensordot( weight, X, dims=[(2,),(0,)] )/(torch.sum(weights,dim=-1)[:,:,None])
+        weight_means = torch.tensordot( weight, X, dims=[(2,),(0,)] )/(torch.sum(weight,dim=-1)[:,:,None])
         # if (self.edge_means==0).any():
         #     null_model = X.mean(axis=0)
         #     undefined_idx = np.where(self.edge_means==0)
