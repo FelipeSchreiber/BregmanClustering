@@ -1121,7 +1121,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range(self.N):
             for q in range(self.n_clusters):
-                total_div = self.computeTotalDiv(node,q,A,X,self.predicted_memberships,H)
+                total_div = self.computeTotalDiv(node,q,A,X,self.predicted_memberships,H)\
+                    + legendre_gaussian(self.attribute_means[q,:])\
+                    + legendre_bernoulli(self.edge_means[q,:])
                 Ztilde[node,q] = self.communities_weights[q]*self.q_exp(-total_div,2)
         return normalize(Ztilde, axis=1, norm='l1')
             
@@ -1141,7 +1143,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         for node in range(self.N):
             prob_i = 0 
             for q in range(self.n_clusters):
-                total_div = self.computeTotalDiv(node,q,A,X,Z,H)
+                total_div = self.computeTotalDiv(node,q,A,X,Z,H) \
+                    + legendre_gaussian(self.attribute_means[q,:])\
+                    + legendre_bernoulli(self.edge_means[q,:])
                 prob_i += self.communities_weights[q]*np.exp(-total_div)
             log_prob_total += np.log(prob_i)
         return log_prob_total

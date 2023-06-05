@@ -142,3 +142,13 @@ dist_to_psi_dict = {
 def rbf_kernel(X,M):
     return np.exp(-np.norm(X-M,dim=-1))
 
+
+"""
+psi*
+"""
+
+def legendre_gaussian(μ):
+    return (μ**2/2).sum()
+
+def legendre_bernoulli(μ):
+    return (µ*np.log(µ) + (1 - μ)*np.log(1 - µ)).sum()
