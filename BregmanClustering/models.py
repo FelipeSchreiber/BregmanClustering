@@ -771,7 +771,9 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             weight_div = 0
             if len(v_indices_out) > 0:
                 E_ = E[q,z_t[v_indices_out],:]
+                print(E_.shape)
                 not_nan_idx = ~np.isnan(E_).any(axis=1)
+                print(not_nan_idx.shape)
                 E_without_nan = E[not_nan_idx,:]
                 weight_div += np.sum( paired_distances(X[node,v_indices_out,:][not_nan_idx,:],\
                                                         E_without_nan,\
