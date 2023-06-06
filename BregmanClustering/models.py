@@ -565,7 +565,8 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                  n_iters = 25, init_iters=100,
                  reduce_by=None,
                  divergence_precomputed=True,
-                 use_random_init=False):
+                 use_random_init=False,\
+                    strategy=0):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
@@ -600,7 +601,14 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.edge_index = None 
         self.use_random_init = use_random_init
-        
+        ## strategy denotes how the algorithm will handle the weight means when
+        ## p_{a,b} = 0
+
+        ## strategy = 0 is simply ignore the communities with p_{a,b} = 0
+        ## strategy = 1 is to consider the means equal to zero
+        ## strategy = 2 is to consider the means equal to the global mean
+        ## strategy = 3 ignore only the weight divergence
+        self.strategy = strategy
     def fit( self, A, X, Y, Z_init=None):
         """
         Training step.
@@ -699,9 +707,13 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
         
         if (self.edge_means==0).any():
-            null_model = X_.mean(axis=0)
-            undefined_idx = np.where(self.edge_means==0)
-            weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
+            if self.strategy == 2:
+                null_model = X_.mean(axis=0)
+                undefined_idx = np.where(self.edge_means==0)
+                weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
+            if self.strategy == 1:
+                weight_means[undefined_idx[0],undefined_idx[1],:] = 0
+
         return weight_means
     
     def likelihood( self, X, Y, Z ):
@@ -752,14 +764,23 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             edge_div = self.edge_divergence( A[node,:], M_out ) \
                         + self.edge_divergence( A[:,node], M_in ) \
                         - 2*self.edge_divergence(A[node,node],M_in[q])
+            if (self.edge_means[q,:]==0 or self.edge_means[:,q]==0 ).any() and self.strategy == 0:
+                L[q] = np.inf
+                continue
             weight_div = 0
             if len(v_indices_out) > 0:
-                weight_div += np.sum( paired_distances(X[node,v_indices_out,:],\
-                                                        E[q,z_t[v_indices_out],:],\
+                E_ = E[q,z_t[v_indices_out],:]
+                not_nan_idx = ~np.isnan(E_).any(axis=1)
+                E_without_nan = E[not_nan_idx,:]
+                weight_div += np.sum( paired_distances(X[node,v_indices_out,:][not_nan_idx,:],\
+                                                        E_without_nan,\
                                                         metric=self.weight_divergence))
             if len(v_indices_in) > 0:
-                weight_div += np.sum( paired_distances(X[v_indices_in,node,:],\
-                                                        E[z_t[v_indices_in],q,:],\
+                E_ = E[z_t[v_indices_in],q,:]
+                not_nan_idx = ~np.isnan(E_).any(axis=1)
+                E_without_nan = E[not_nan_idx,:]
+                weight_div += np.sum( paired_distances(X[v_indices_in,node,:][not_nan_idx,:],\
+                                                        E_without_nan,\
                                                         metric=self.weight_divergence))
             L[ q ] = att_div + (weight_div + edge_div)
         return np.argmin( L )
