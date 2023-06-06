@@ -764,6 +764,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             edge_div = self.edge_divergence( A[node,:], M_out ) \
                         + self.edge_divergence( A[:,node], M_in ) \
                         - 2*self.edge_divergence(A[node,node],M_in[q])
+            ## check if weight divergence should be ignore or dont
             if (self.edge_means[q,:]==0 or self.edge_means[:,q]==0 ).any() and self.strategy == 0:
                 L[q] = np.inf
                 continue

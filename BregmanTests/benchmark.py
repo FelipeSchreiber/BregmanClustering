@@ -353,7 +353,7 @@ class BregmanBenchmark():
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
                  binary=True,\
-                 n_iters=25):
+                 n_iters=25,strategy=0):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
@@ -389,7 +389,8 @@ class BregmanBenchmark():
                                         n_iters=n_iters,
                                         reduce_by=self.reduce_by,
                                         divergence_precomputed=self.divergence_precomputed,
-                                        initializer=self.initializer)
+                                        initializer=self.initializer,
+                                        strategy=strategy)
                 if self.torch_model:
                     graph_data = self.to_pyg_data(X,Y)
                     A = torch.tensor(A).to_sparse()
