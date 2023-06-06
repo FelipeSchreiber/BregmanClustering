@@ -707,9 +707,9 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
         
         if (self.edge_means==0).any():
+            undefined_idx = np.where(self.edge_means==0)
             if self.strategy == 2:
                 null_model = X_.mean(axis=0)
-                undefined_idx = np.where(self.edge_means==0)
                 weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
             if self.strategy == 1:
                 weight_means[undefined_idx[0],undefined_idx[1],:] = 0
