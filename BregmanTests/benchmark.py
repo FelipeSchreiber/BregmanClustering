@@ -81,9 +81,11 @@ class BregmanBenchmark():
         G = None
         if complete_graph:
             G = nx.stochastic_block_model(self.communities_sizes,\
-                                          np.ones(shape=(self.n_clusters,self.n_clusters)),seed=42)
+                                          np.ones(shape=(self.n_clusters,self.n_clusters)),\
+                                          directed=True,seed=42)
         else:
-            G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,seed=42)
+            G = nx.stochastic_block_model(self.communities_sizes,self.probability_matrix,\
+                                          directed=True,seed=42)
         ## Draw the means of the weight distributions for each pair of community interaction
         if self.weight_centers is None:
             self.weight_centers = np.zeros((self.n_clusters,self.n_clusters))
