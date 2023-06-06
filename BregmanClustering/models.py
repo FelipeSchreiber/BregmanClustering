@@ -760,31 +760,31 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
-            att_div = H[node,q]
-            edge_div = self.edge_divergence( A[node,:], M_out ) \
-                        + self.edge_divergence( A[:,node], M_in ) \
-                        - 2*self.edge_divergence(A[node,node],M_in[q])
-            ## check if weight divergence should be ignore or dont
             if ( (self.edge_means[q,:]==0).any() or \
                 (self.edge_means[:,q]==0).any() ) and self.strategy == 0:
                 L[q] = np.inf
-                continue
-            weight_div = 0
-            if len(v_indices_out) > 0:
-                E_ = E[q,z_t[v_indices_out],:]
-                not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
-                E_without_nan = E_[not_nan_idx,:]
-                weight_div += np.sum( paired_distances(X[node,v_indices_out,:][not_nan_idx,:],\
-                                                        E_without_nan,\
-                                                        metric=self.weight_divergence))
-            if len(v_indices_in) > 0:
-                E_ = E[z_t[v_indices_in],q,:]
-                not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
-                E_without_nan = E_[not_nan_idx,:]
-                weight_div += np.sum( paired_distances(X[v_indices_in,node,:][not_nan_idx,:],\
-                                                        E_without_nan,\
-                                                        metric=self.weight_divergence))
-            L[ q ] = att_div + (weight_div + edge_div)
+            else:
+                att_div = H[node,q]
+                edge_div = self.edge_divergence( A[node,:], M_out ) \
+                            + self.edge_divergence( A[:,node], M_in ) \
+                            - 2*self.edge_divergence(A[node,node],M_in[q])
+                ## check if weight divergence should be ignore or dont
+                weight_div = 0
+                if len(v_indices_out) > 0:
+                    E_ = E[q,z_t[v_indices_out],:]
+                    not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
+                    E_without_nan = E_[not_nan_idx,:]
+                    weight_div += np.sum( paired_distances(X[node,v_indices_out,:][not_nan_idx,:],\
+                                                            E_without_nan,\
+                                                            metric=self.weight_divergence))
+                if len(v_indices_in) > 0:
+                    E_ = E[z_t[v_indices_in],q,:]
+                    not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
+                    E_without_nan = E_[not_nan_idx,:]
+                    weight_div += np.sum( paired_distances(X[v_indices_in,node,:][not_nan_idx,:],\
+                                                            E_without_nan,\
+                                                            metric=self.weight_divergence))
+                L[ q ] = att_div + (weight_div + edge_div)
         return np.argmin( L )
     
     def predict(self, X, Y):
