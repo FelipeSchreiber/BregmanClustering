@@ -1198,7 +1198,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             weights.sum(axis=(-1,-2))
         return edge_means 
     
-    def computeWeightMeans( self, A, X, Z):
+    def computeWeightMeans( self, X, Z):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
