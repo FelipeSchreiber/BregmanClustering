@@ -1281,7 +1281,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         # Z_threshold = np.zeros( Z.shape )
         # Z_threshold[ np.arange(Z.shape[0]), idx] = 1
         self.attribute_means = self.computeAttributeMeans(Y, Z_threshold)
-        self.edge_means = self.computeEdgeMeans( A, Z_threshold)
+        self.edge_means = self.computeEdgeMeans(Z_threshold)
         self.weight_means = self.computeWeightMeans( X, Z_threshold)
         self.precompute_edge_divergences()
         self.communities_weights = Z.mean(axis=0)
