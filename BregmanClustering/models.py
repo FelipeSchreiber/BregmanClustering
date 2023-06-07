@@ -1219,7 +1219,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         
         return weight_means
     
-    def computeTotalDiv(self,node,q,X,Z,H):
+    def computeTotalDiv(self,node,X,Z,H):
         L = np.zeros( self.n_clusters )
         edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
         v_idx_in = self.edge_index[0][edge_indices_in]
