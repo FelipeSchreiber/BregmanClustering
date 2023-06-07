@@ -1285,6 +1285,10 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         self.weight_means = self.computeWeightMeans( X, Z_threshold)
         self.precompute_edge_divergences()
         self.communities_weights = Z.mean(axis=0)
+        print("\n-----------------------------------------------------------\n",\
+              "\nEDGE_MEANS: ",self.edge_means,
+              "\nWeight_MEANS: ",self.weight_means,
+              "\nAtt_MEANS: ",self.attribute_means)
 
     def logprob(self,A,X,Y,Z):
         # self.M_projection(A,X,Y,Z)
