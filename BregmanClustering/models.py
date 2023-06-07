@@ -1308,9 +1308,10 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
     def stop_criterion(self,A,X,Y,Z_old,Z_new,iteration):
         # old_log_prob = self.logprob(A,X,Y,Z_old)
         # new_log_prob = self.logprob(A,X,Y,Z_new)
-        old_log_prob = 1
-        new_log_prob = 0
-        if np.abs(old_log_prob - new_log_prob) < 0.1 or iteration >= self.n_iters:
+        # old_log_prob = 1
+        # new_log_prob = 0
+        # np.abs(old_log_prob - new_log_prob) < 0.1
+        if np.allclose(Z_new,Z_old) or iteration >= self.n_iters:
             return True
         return False    
     
