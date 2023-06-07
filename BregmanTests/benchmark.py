@@ -73,7 +73,7 @@ class BregmanBenchmark():
         elif hard_clustering:
             self.model_ = edgeBreg
         else:
-            self.model_ = variationalBreg
+            self.model_ = softBreg
             
     def generate_WSBM(self,complete_graph=False):
         N = np.sum(self.communities_sizes)
