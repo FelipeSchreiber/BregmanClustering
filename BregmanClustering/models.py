@@ -33,11 +33,7 @@ def fromVectorToMembershipMatrice( z, n_clusters = 2 ):
     return Z
 
 def frommembershipMatriceToVector( Z ):
-    n = Z.shape[0]
-    z = np.zeros( n, dtype = int )
-    for i in range( n ):
-        z[ i ] = np.argwhere( Z[i,:] != 0 )[0][0]
-    
+    z = np.argmax(Z,axis=1)
     return z
 
 class BregmanGraphPartitioning( BaseEstimator, ClusterMixin ):
