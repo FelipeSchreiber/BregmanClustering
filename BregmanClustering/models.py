@@ -1138,10 +1138,15 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         convergence = False
         iteration = 0
         while not convergence:
-            Z_new = self.E_projection(A, X, Y)
-            self.M_projection(A,X,Y,Z_new)
-            convergence = self.stop_criterion(A,X,Y,self.predicted_memberships,Z_new,iteration)
+            Z_new = self.E_projection(X, Y)
+            new_log_prob = self.logprob(X,Y)
+            self.M_projection( X,Y,Z_new)
+            convergence = self.stop_criterion(X,Y,\
+                                              self.predicted_memberships,Z_new,\
+                                                old_log_prob,new_log_prob,\
+                                                iteration)
             self.predicted_memberships = Z_new
+            old_log_prob = new_log_prob
             iteration += 1 
         return self
     
@@ -1263,19 +1268,17 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
     def q_exp(self,x,q):
         return np.power(1 + (1-q)*x, 1/(1-q))
     
-    def E_projection(self,A, X, Y):
+    def E_projection(self, X, Y):
         Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range(self.N):
             Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
         c = Ztilde.max(axis=1)
         Ztilde -= c[:,None]
-        print("\nZTILDE: ",Ztilde)
-        #self.q_exp(-Ztilde,2)
         Ztilde = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
         return normalize(Ztilde, axis=1, norm='l1')
             
-    def M_projection(self,A,X,Y,Z):
+    def M_projection(self,X,Y,Z):
         Z_threshold = Z
         # idx = np.argmax(Z, axis=-1)
         # Z_threshold = np.zeros( Z.shape )
@@ -1285,32 +1288,28 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         self.weight_means = self.computeWeightMeans( X, Z_threshold)
         self.precompute_edge_divergences()
         self.communities_weights = Z.mean(axis=0)
-        print("\n-----------------------------------------------------------\n",\
-              "\nEDGE_MEANS: ",self.edge_means,
-              "\nWeight_MEANS: ",self.weight_means,
-              "\nAtt_MEANS: ",self.attribute_means)
+        # print("\n-----------------------------------------------------------\n",\
+        #       "\nEDGE_MEANS: ",self.edge_means,
+        #       "\nWeight_MEANS: ",self.weight_means,
+        #       "\nAtt_MEANS: ",self.attribute_means)
 
-    def logprob(self,A,X,Y,Z):
-        # self.M_projection(A,X,Y,Z)
-        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
+    def logprob(self,X,Y):
+        H = pairwise_distances(Y,\
+                               self.attribute_means,\
+                                metric=self.attribute_divergence)
         log_prob_total = 0
         for node in range(self.N):
-            prob_i = 0 
-            for q in range(self.n_clusters):
-                total_div = self.computeTotalDiv(node,q,A,X,Z,H) \
-                    + legendre_gaussian(self.attribute_means[q,:])\
-                    + legendre_bernoulli(self.edge_means[q,:])
-                prob_i += self.communities_weights[q]*np.exp(-total_div)
+            divs = self.computeTotalDiv(node,X,self.predicted_memberships,H)
+            c = divs.max()
+            divs -= c[:,None]
+            prob_i = self.communities_weights.dot(np.exp(-divs))
             log_prob_total += np.log(prob_i)
         return log_prob_total
     
-    def stop_criterion(self,A,X,Y,Z_old,Z_new,iteration):
-        # old_log_prob = self.logprob(A,X,Y,Z_old)
-        # new_log_prob = self.logprob(A,X,Y,Z_new)
-        # old_log_prob = 1
-        # new_log_prob = 0
-        # np.abs(old_log_prob - new_log_prob) < 0.1
-        if np.allclose(Z_new,Z_old) or iteration >= self.n_iters:
+    def stop_criterion(self,X,Y,Z_old,Z_new,old_log_prob,new_log_prob,iteration):
+        # new_log_prob = self.logprob(X,Y)
+        # np.allclose(Z_new,Z_old)
+        if np.abs(old_log_prob - new_log_prob) < 0.1 or iteration >= self.n_iters:
             return True
         return False    
     
