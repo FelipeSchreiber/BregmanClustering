@@ -843,7 +843,7 @@ class BregmanBenchmark():
             data_names.append(data_set)
         return datas,data_names
     
-    def run_real_data(self,use_random_init=False,initializer="AIC",strategy=3):
+    def run_real_data(self,use_random_init=False,initializer="AIC",strategy=3,n_iters=25):
         datas,data_names = self.get_real_data()
         scores = {}
         scores["dataset"] = []
@@ -867,6 +867,7 @@ class BregmanBenchmark():
                                         weightDistribution=self.weight_distribution_name,\
                                         use_random_init=use_random_init,
                                         initializer=initializer,
+                                        n_iters=n_iters,
                                         strategy=strategy
                                 )
             print("INPUTS: ",A.shape,E.shape,attributes.shape)
