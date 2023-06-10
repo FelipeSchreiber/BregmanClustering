@@ -887,13 +887,13 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         """
         self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
+        X_ = X[self.edge_index[0],self.edge_index[1],:]
         if Z_init is None:
-            self.initialize( A, X, Y)
-            self.assignInitialLabels( X, Y )
+            self.initialize( A, X_, Y)
+            self.assignInitialLabels( X_, Y )
         else:
             self.predicted_memberships = Z_init
         #init_labels = self.predicted_memberships
-        X_ = X[self.edge_index[0],self.edge_index[1],:]
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
         self.weight_means = self.computeWeightMeans(A, X_, self.predicted_memberships)
