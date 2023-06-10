@@ -1137,6 +1137,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         self.M_projection(X,Y,self.predicted_memberships)
         convergence = False
         iteration = 0
+        old_log_prob = np.inf
         while not convergence:
             Z_new = self.E_projection(X, Y)
             new_log_prob = self.logprob(X,Y)
