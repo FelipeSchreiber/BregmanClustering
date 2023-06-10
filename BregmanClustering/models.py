@@ -1055,7 +1055,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                  weightDistribution = "gaussian",
                  initializer = 'chernoff', 
                  graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
-                 n_iters = 25, init_iters=100,
+                 n_iters = 100, init_iters=100,
                  reduce_by=None,
                  divergence_precomputed=True,
                  use_random_init=False,
