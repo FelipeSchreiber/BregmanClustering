@@ -414,7 +414,8 @@ class BregmanBenchmark():
                 )
             stats["a"].append(a)
             stats["r"].append(r)
-            stats["ARI"].append(aris_both_mean[-1])        
+            stats["ARI"].append(aris_both_mean[-1])
+            print("PREDS: ",model.predicted_memberships)        
         return stats
 
     def run_2_2(self,n_average=10,cluster_sizes=100,\
