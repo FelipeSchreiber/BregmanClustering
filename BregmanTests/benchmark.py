@@ -355,7 +355,7 @@ class BregmanBenchmark():
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
                  binary=True,\
-                 n_iters=25,strategy=0):
+                 n_iters=100,strategy=0):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
@@ -373,6 +373,7 @@ class BregmanBenchmark():
         for a,r in tqdm(product(a_range,r_range)):
             pin = a * np.log( n ) / n
             p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
+            p[0,1] = 0
             self.probability_matrix = p
             self.radius = r
             aris_both = [ ]
