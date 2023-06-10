@@ -1272,7 +1272,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range(self.N):
             Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
-        c = Ztilde.mean(axis=1)
+        c = Ztilde.max(axis=1)
         Ztilde -= c[:,None]
         print("\nZTILDE: ",Ztilde)
         #self.q_exp(-Ztilde,2)
