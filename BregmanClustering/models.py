@@ -893,18 +893,19 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         else:
             self.predicted_memberships = Z_init
         #init_labels = self.predicted_memberships
+        X_ = X[self.edge_index[0],self.edge_index[1],:]
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
-        self.weight_means = self.computeWeightMeans(A, X, self.predicted_memberships)
+        self.weight_means = self.computeWeightMeans(A, X_, self.predicted_memberships)
         self.precompute_edge_divergences()
         convergence = True
         iteration = 0
         while convergence:
-            new_memberships = self.assignments( A, X, Y )
+            new_memberships = self.assignments( A, X_, Y )
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
             self.edge_means = self.computeEdgeMeans( A, new_memberships )
-            self.weight_means = self.computeWeightMeans(A, X, new_memberships)
+            self.weight_means = self.computeWeightMeans(A, X_, new_memberships)
             self.precompute_edge_divergences()    
             iteration += 1
             if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
@@ -948,7 +949,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         normalisation = np.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     
-    def computeWeightMeans( self, A, X, Z):
+    def computeWeightMeans( self, A, X_, Z):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -956,7 +957,6 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
         weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
-        X_ = X[self.edge_index[0],self.edge_index[1],:]
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
@@ -987,14 +987,14 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         total = np.sum( paired_distances(Y,Z@M) )
         return total 
     
-    def assignments( self, A, X, Y ):
-        z = np.zeros( X.shape[ 0 ], dtype = int )
+    def assignments( self, A, X_, Y ):
+        z = np.zeros( Y.shape[ 0 ], dtype = int )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range( len( z ) ):
-            z[ node ] = self.singleNodeAssignment( A, X, H, node )
+            z[ node ] = self.singleNodeAssignment( A, X_, H, node )
         return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )        
     
-    def singleNodeAssignment( self, A, X, H, node ):
+    def singleNodeAssignment( self, A, X_, H, node ):
         L = np.zeros( self.n_clusters )
         edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
         v_idx_in = self.edge_index[0][edge_indices_in]
@@ -1013,7 +1013,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
             z_t[node] = q
             E = self.weight_means
             """
-            X has shape n x n x d
+            X has shape |E| x d
             E has shape k x k x d
             
             the edge divergence computes the difference between node i (from community q) edges and the means
@@ -1029,11 +1029,11 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
                     - 2*self.precomputed_edge_div[0,q,q]
             weight_div = 0
             if len(v_idx_out) > 0:
-                weight_div += np.sum( paired_distances(X[node,v_idx_out,:],\
+                weight_div += np.sum( paired_distances(X_[edge_indices_out,:],\
                                                         E[q,z_t[v_idx_out],:],\
                                                         metric=self.weight_divergence))
             if len(v_idx_in) > 0:
-                weight_div += np.sum( paired_distances(X[v_idx_in,node,:],\
+                weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
                                                         E[z_t[v_idx_in],q,:],\
                                                         metric=self.weight_divergence))
             L[ q ] = att_div + (weight_div + edge_div)
