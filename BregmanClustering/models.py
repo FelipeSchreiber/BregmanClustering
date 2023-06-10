@@ -791,7 +791,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                                                             E_without_nan,\
                                                             metric=self.weight_divergence))
             L[ q ] = att_div + (weight_div + edge_div)
-        print(L)
         return np.argmin( L )
     
     def predict(self, X, Y):
