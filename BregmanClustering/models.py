@@ -1301,7 +1301,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         for node in range(self.N):
             divs = self.computeTotalDiv(node,X,self.predicted_memberships,H)
             c = divs.max()
-            divs -= c[:,None]
+            divs -= c
             prob_i = self.communities_weights.dot(np.exp(-divs))
             log_prob_total += np.log(prob_i)
         return log_prob_total
