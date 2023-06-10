@@ -408,14 +408,14 @@ class BregmanBenchmark():
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
                 X = Y = z_true = G = None
-                print("\nattribute_means: ",model.attribute_means,\
-                    "\nedge_means: ",model.edge_means,\
-                    "\nweight_means: ",model.weight_means
-                )
+                # print("\nattribute_means: ",model.attribute_means,\
+                #     "\nedge_means: ",model.edge_means,\
+                #     "\nweight_means: ",model.weight_means
+                # )
             stats["a"].append(a)
             stats["r"].append(r)
             stats["ARI"].append(aris_both_mean[-1])
-            print("PREDS: ",model.predicted_memberships)        
+            # print("PREDS: ",model.predicted_memberships)        
         return stats
 
     def run_2_2(self,n_average=10,cluster_sizes=100,\

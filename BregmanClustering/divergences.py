@@ -24,8 +24,8 @@ SEE:
 
 #Bernoulli | Logistic loss
 def logistic_loss(X,M):
-    total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
-    #total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) )) as stated in the paper
+    #total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
+    total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) )) #as stated in the paper
     return total.sum()
 
 #Multinomial | KL-divergence
