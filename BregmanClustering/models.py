@@ -819,7 +819,8 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
                  n_iters = 25, init_iters=100,
                  reduce_by=None,
                  divergence_precomputed=True,
-                 use_random_init=False):
+                 use_random_init=False,
+                 strategy=0):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
