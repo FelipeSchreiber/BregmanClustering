@@ -410,10 +410,6 @@ class BregmanBenchmark():
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
                 X = Y = z_true = G = None
-                # print("\nattribute_means: ",model.attribute_means,\
-                #     "\nedge_means: ",model.edge_means,\
-                #     "\nweight_means: ",model.weight_means
-                # )
             stats["a"].append(a)
             stats["r"].append(r)
             stats["ARI"].append(aris_both_mean[-1])
@@ -848,7 +844,9 @@ class BregmanBenchmark():
         datas,data_names = self.get_real_data()
         scores = {}
         scores["dataset"] = []
-        scores["ARI"] = []
+        scores["both_ARI"] = []
+        scores["net_ARI"] = []
+        scores["att_ARI"] = []
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
             attributes = data.x
@@ -882,7 +880,9 @@ class BregmanBenchmark():
             A = None
             E = None
             attributes = None
-            scores["ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
+            scores["both_ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
+            scores["net_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_graph) )
+            scores["att_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_attributes) )  
             scores["dataset"].append(data_name)
             z_pred_both = z_true = None
             torch.cuda.empty_cache()
