@@ -840,7 +840,8 @@ class BregmanBenchmark():
             data_names.append(data_set)
         return datas,data_names
     
-    def run_real_data(self,use_random_init=False,initializer="AIC",strategy=3,n_iters=25):
+    def run_real_data(self,use_random_init=False,initializer="AIC",strategy=3,n_iters=25,
+                      reduction_method="KBest"):
         datas,data_names = self.get_real_data()
         scores = {}
         scores["dataset"] = []
@@ -852,7 +853,7 @@ class BregmanBenchmark():
             attributes = data.x
             z_true = data.y.numpy()
             if self.preprocess:
-                attributes = torch.Tensor(preprocess(attributes.numpy(),z_true))
+                attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
             z_pred_both = None
             K = np.unique(z_true).shape[0]
             E = None
