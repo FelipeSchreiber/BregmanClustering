@@ -5,11 +5,19 @@ import numpy as np
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.manifold import SpectralEmbedding
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 
 SIZE_TITLE = 24
 SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
+
+def preprocess(X,Y,K=10):
+    fs = SelectKBest(score_func=chi2, k=K)
+    fs.fit(X, Y)
+    X_train_fs = fs.transform(X)
+    return X_train_fs
 
 def make_4d_plot(X,Y,Z,data,x_label="d",y_label="lambda",z_label="a",filename="contour.jpeg"):
     kw = {

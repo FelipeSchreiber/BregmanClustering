@@ -38,7 +38,7 @@ class BregmanBenchmark():
                     radius=None,return_G=False,reduce_by="sum",\
                     att_centers = None, weight_centers = None, run_torch=False,\
                     divergence_precomputed=True, initializer="AIC",\
-                    hard_clustering=True):
+                    hard_clustering=True,preprocess=True):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle
@@ -74,7 +74,8 @@ class BregmanBenchmark():
             self.model_ = edgeBreg
         else:
             self.model_ = softBreg
-            
+        self.preprocess = preprocess
+
     def generate_WSBM(self,complete_graph=False):
         N = np.sum(self.communities_sizes)
         ## Generate binary connectivity matrix
@@ -852,6 +853,8 @@ class BregmanBenchmark():
             print("\nCURRENT DATASET: ",data_name)
             attributes = data.x
             z_true = data.y.numpy()
+            if self.preprocess:
+                attributes = torch.Tensor(preprocess(attributes.numpy(),z_true),dtype=torch.float)
             z_pred_both = None
             K = np.unique(z_true).shape[0]
             E = None
