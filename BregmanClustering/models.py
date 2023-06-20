@@ -927,8 +927,8 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
                                                                         self.n_clusters)
         model.initialize( X, Y , self.edge_index, Z_init=Z_init)
         self.predicted_memberships = model.predicted_memberships
-        self.memberships_from_graph = model.memberships_from_graph
-        self.memberships_from_attributes = model.memberships_from_attributes
+        self.memberships_from_graph = frommembershipMatriceToVector(model.memberships_from_graph)
+        self.memberships_from_attributes = frommembershipMatriceToVector(model.memberships_from_attributes)
         self.graph_init = model.graph_init
 
     def assignInitialLabels( self, X, Y ):
