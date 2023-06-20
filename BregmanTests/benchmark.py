@@ -38,7 +38,7 @@ class BregmanBenchmark():
                     radius=None,return_G=False,reduce_by="sum",\
                     att_centers = None, weight_centers = None, run_torch=False,\
                     divergence_precomputed=True, initializer="AIC",\
-                    hard_clustering=True,preprocess=True, strategy=None):
+                    hard_clustering=True,preprocess=True):
         ## att_centers must have shape K x D, where K is the number
         #  of communities and D the number of dimensions.
         # If not specified, then the centers are taken from unit circle

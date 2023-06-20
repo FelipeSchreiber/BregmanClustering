@@ -48,7 +48,8 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
                  reduce_by="sum",
                  divergence_precomputed=True,
                  use_random_init=False,
-                 batch_size=32):
+                 batch_size=32, 
+                 strategy=None):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
