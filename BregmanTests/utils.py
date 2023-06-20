@@ -7,16 +7,21 @@ from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.manifold import SpectralEmbedding
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
+import umap
 
 SIZE_TITLE = 24
 SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
 
-def preprocess(X,Y,K=10):
-    fs = SelectKBest(score_func=chi2, k=K)
-    fs.fit(X, Y)
-    X_train_fs = fs.transform(X)
+def preprocess(X,Y,K=10,method="KBest"):
+    X_train_fs = None
+    if method == "KBest":
+        fs = SelectKBest(score_func=chi2, k=K)
+        fs.fit(X, Y)
+        X_train_fs = fs.transform(X)
+    else:
+        X_train_fs = umap.UMAP(n_components=K,metric="hamming",random_state=42).fit_transform(X)
     return X_train_fs
 
 def scatter_(dict_,x_name,y_name,z_name):
