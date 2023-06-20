@@ -412,12 +412,17 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
                     + self.precomputed_edge_div[0,q,z_t[v_idx_out_comp]].sum()\
                     - 2*self.precomputed_edge_div[0,q,q]
             weight_div = 0
+            if E[q,z_t[v_idx_out],:].isnan().any():
+                weight_div = torch.inf
+
             if len(v_idx_out) > 0:
                 weight_div += torch.sum( self.weight_divergence(
                                             X[edge_indices_out,:],\
                                             E[q,z_t[v_idx_out],:]
                                             )
                                         )
+            if E[z_t[v_idx_in],q,:].isnan().any():
+                weight_div = torch.inf
             if len(v_idx_in) > 0:
                 weight_div += torch.sum( self.weight_divergence(
                                                 X[edge_indices_in,:],\
