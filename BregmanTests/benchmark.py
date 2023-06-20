@@ -854,7 +854,7 @@ class BregmanBenchmark():
             attributes = data.x
             z_true = data.y.numpy()
             if self.preprocess:
-                attributes = torch.Tensor(preprocess(attributes.numpy(),z_true),dtype=torch.float)
+                attributes = torch.Tensor(preprocess(attributes.numpy(),z_true))
             z_pred_both = None
             K = np.unique(z_true).shape[0]
             E = None
