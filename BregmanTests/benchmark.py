@@ -883,9 +883,6 @@ class BregmanBenchmark():
             else:
                 z_pred_both = model.fit(A,E,attributes.numpy()).predict( None, None )
 
-            A = None
-            E = None
-            attributes = None
             kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(attributes.numpy())
             G_nx = to_networkx(data)
             G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
@@ -894,8 +891,12 @@ class BregmanBenchmark():
             scores["net_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_graph) )
             scores["att_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_attributes) )  
             scores["kmeans_ARI"].append(adjusted_rand_score(z_true,kmeans.labels_))
-            scores["leiden_ARI"].append(adjusted_rand_score(z_true,partition.membership))
+            scores["leiden_ARI"].append(adjusted_rand_score(z_true,np.array(partition.membership)))
             scores["dataset"].append(data_name)
+            
+            A = None
+            E = None
+            attributes = None
             z_pred_both = z_true = None
             torch.cuda.empty_cache()
         return scores
