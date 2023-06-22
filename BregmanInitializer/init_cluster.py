@@ -3,6 +3,7 @@ import scipy as sp
 from .divergences import *
 from sklearn.metrics.pairwise import pairwise_kernels, paired_distances, pairwise_distances
 from sklearn.mixture import GaussianMixture
+from sklearn.cluster import KMeans
 from sklearn.manifold import SpectralEmbedding
 from sklearn.preprocessing import OneHotEncoder
 from scipy.sparse import csr_matrix, csc_matrix 

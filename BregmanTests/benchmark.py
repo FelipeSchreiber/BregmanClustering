@@ -27,6 +27,9 @@ if (not other_algos_installed) and (not os.path.isfile("other_algos_installed.tx
         f.write('OK')
 from CSBM.Python import functions as csbm
 from itertools import product
+from sklearn.cluster import KMeans
+import igraph as ig
+import leidenalg as la
 
 class BregmanBenchmark():
     def __init__(self,P=None,communities_sizes=None,min_=1,max_=10,\
@@ -848,6 +851,8 @@ class BregmanBenchmark():
         scores["both_ARI"] = []
         scores["net_ARI"] = []
         scores["att_ARI"] = []
+        scores["kmeans_ARI"] = []
+        scores["leiden_ARI"] = []
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
             attributes = data.x
@@ -881,9 +886,15 @@ class BregmanBenchmark():
             A = None
             E = None
             attributes = None
+            kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(attributes.numpy())
+            G_nx = to_networkx(data)
+            G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
+            partition = la.find_partition(G, la.ModularityVertexPartition)
             scores["both_ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
             scores["net_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_graph) )
             scores["att_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_attributes) )  
+            scores["kmeans_ARI"].append(adjusted_rand_score(z_true,kmeans.labels_))
+            scores["leiden_ARI"].append(adjusted_rand_score(z_true,partition.membership))
             scores["dataset"].append(data_name)
             z_pred_both = z_true = None
             torch.cuda.empty_cache()
