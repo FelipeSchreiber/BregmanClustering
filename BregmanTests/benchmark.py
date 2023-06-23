@@ -247,7 +247,7 @@ class BregmanBenchmark():
                                         divergence_precomputed=self.divergence_precomputed,
                                         initializer=self.initializer)
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
-                    model.initialize(A,graph_data.x.numpy())
+                    model.initialize(A,X.reshape(n,n,-1),graph_data.x.numpy())
                     model.assignInitialLabels(None,None)
                     z_init = deepcopy(model.predicted_memberships.to("cpu").numpy())
                     print(z_init.shape)
