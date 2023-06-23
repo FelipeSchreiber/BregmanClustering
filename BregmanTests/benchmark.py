@@ -265,8 +265,8 @@ class BregmanBenchmark():
                         np.save(g, csbm.convertZ(z_init)+1)
 
                     z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
-                    z_pred_graph = frommembershipMatriceToVector( chernoff_graph_labels )
-                    z_pred_attributes = frommembershipMatriceToVector( chernoff_att_labels )
+                    z_pred_graph = chernoff_graph_labels
+                    z_pred_attributes = chernoff_att_labels
                     
                     # this code is for initialization comparison
                     ### > Start
