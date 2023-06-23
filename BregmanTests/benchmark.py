@@ -252,8 +252,8 @@ class BregmanBenchmark():
                     z_init = deepcopy(model.predicted_memberships)
                     print(z_init.shape)
                     chernoff_init_graph = model.graph_init
-                    chernoff_graph_labels = model.memberships_from_graph
-                    chernoff_att_labels = model.memberships_from_attributes
+                    chernoff_graph_labels = model.memberships_from_graph.astype(float)
+                    chernoff_att_labels = model.memberships_from_attributes.astype(float)
 
                     with open(f'{path_}att_{trial}.npy', 'wb') as g:
                         np.save(g, Y)
