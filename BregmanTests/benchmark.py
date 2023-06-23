@@ -249,7 +249,7 @@ class BregmanBenchmark():
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(A,X.reshape(n,n,-1),graph_data.x.numpy())
                     model.assignInitialLabels(None,None)
-                    z_init = deepcopy(model.predicted_memberships.to("cpu").numpy())
+                    z_init = deepcopy(model.predicted_memberships)
                     print(z_init.shape)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
@@ -262,14 +262,7 @@ class BregmanBenchmark():
                     with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
                         np.save(g, csbm.convertZ(z_init)+1)
 
-                    A = torch.tensor(A).to_sparse()
-                    E = None
-                    if (graph_data.edge_attr is None) or binary:
-                        E = torch.ones((graph_data.edge_index.shape[1],1))
-                    else:
-                        E = graph_data.edge_attr
-                    model.fit(A,E,graph_data.x)
-                    z_pred_both = model.predict( E, graph_data.x )
+                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y)
                     z_pred_graph = frommembershipMatriceToVector( chernoff_graph_labels )
                     z_pred_attributes = frommembershipMatriceToVector( chernoff_att_labels )
                     
