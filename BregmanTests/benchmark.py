@@ -447,7 +447,9 @@ class BregmanBenchmark():
                  mu_range = [ 0,1,2,3,4,5 ],\
                  dense=True,\
                  binary=False,\
-                 n_iters=25):
+                 n_iters=25,
+                 a=5,
+                 b=3):
         
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
@@ -459,6 +461,12 @@ class BregmanBenchmark():
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
         self.n_clusters = n_clusters
+
+        pout = b * np.log( n ) / n 
+        pin = a * np.log( n ) / n
+        p = (pin- pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
+        self.probability_matrix = p
+        
         stats = {"d":[],"mu":[],"ARI":[]}
         aris_both_mean = [ ]
         aris_both_std = [ ]
