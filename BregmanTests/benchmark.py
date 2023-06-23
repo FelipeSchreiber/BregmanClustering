@@ -301,6 +301,7 @@ class BregmanBenchmark():
                         ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
                         aris_oracle.append( max(aris_both[-1], ari_att_init))
                     elif not chernoff_init_graph:
+                        print("SHAPE: ",chernoff_graph_labels.shape)
                         z_pred_graph_init = model.fit(A,X.reshape(n,n,-1),graph_data.x.numpy(),chernoff_graph_labels).predict( None, None )
                         ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
                         aris_oracle.append( max(aris_both[-1], ari_graph_init))
