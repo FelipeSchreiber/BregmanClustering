@@ -257,6 +257,7 @@ class BregmanBenchmark():
                     chernoff_graph_labels = model.memberships_from_graph
                     chernoff_att_labels = model.memberships_from_attributes
 
+                    print("CHERNOFF SHAPE: ", chernoff_att_labels.shape, chernoff_graph_labels.shape) 
                     with open(f'{path_}att_{trial}.npy', 'wb') as g:
                         np.save(g, Y)
                     with open(f'{path_}net_{trial}.npy', 'wb') as g:
