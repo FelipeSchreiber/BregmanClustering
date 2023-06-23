@@ -30,6 +30,7 @@ from itertools import product
 from sklearn.cluster import KMeans
 import igraph as ig
 import leidenalg as la
+from BregmanInitializer.init_cluster import frommembershipMatriceToVector, fromVectorToMembershipMatrice
 
 class BregmanBenchmark():
     def __init__(self,P=None,communities_sizes=None,min_=1,max_=10,\
@@ -252,8 +253,8 @@ class BregmanBenchmark():
                     z_init = deepcopy(model.predicted_memberships)
                     print(z_init.shape)
                     chernoff_init_graph = model.graph_init
-                    chernoff_graph_labels = model.memberships_from_graph.astype(float)
-                    chernoff_att_labels = model.memberships_from_attributes.astype(float)
+                    chernoff_graph_labels = model.memberships_from_graph
+                    chernoff_att_labels = model.memberships_from_attributes
 
                     with open(f'{path_}att_{trial}.npy', 'wb') as g:
                         np.save(g, Y)
@@ -297,11 +298,13 @@ class BregmanBenchmark():
                     
                     if chernoff_init_graph:
                         print("SHAPE: ",chernoff_att_labels.shape)
+                        chernoff_att_labels = fromVectorToMembershipMatrice(chernoff_att_labels)
                         z_pred_att_init = model.fit(A,X.reshape(n,n,-1),graph_data.x.numpy(),chernoff_att_labels).predict( None, None )
                         ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
                         aris_oracle.append( max(aris_both[-1], ari_att_init))
                     elif not chernoff_init_graph:
                         print("SHAPE: ",chernoff_graph_labels.shape)
+                        chernoff_graph_labels = fromVectorToMembershipMatrice(chernoff_graph_labels)
                         z_pred_graph_init = model.fit(A,X.reshape(n,n,-1),graph_data.x.numpy(),chernoff_graph_labels).predict( None, None )
                         ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
                         aris_oracle.append( max(aris_both[-1], ari_graph_init))
