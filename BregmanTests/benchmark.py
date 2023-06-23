@@ -257,7 +257,7 @@ class BregmanBenchmark():
                     chernoff_graph_labels = model.memberships_from_graph
                     chernoff_att_labels = model.memberships_from_attributes
 
-                    print("CHERNOFF SHAPE: ", chernoff_att_labels.shape, chernoff_graph_labels.shape) 
+                    #print("CHERNOFF SHAPE: ", chernoff_att_labels.shape, chernoff_graph_labels.shape) 
                     with open(f'{path_}att_{trial}.npy', 'wb') as g:
                         np.save(g, Y)
                     with open(f'{path_}net_{trial}.npy', 'wb') as g:
@@ -480,7 +480,10 @@ class BregmanBenchmark():
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name,\
-                                        n_iters=n_iters)
+                                        n_iters=n_iters,
+                                        reduce_by=self.reduce_by,
+                                        divergence_precomputed=self.divergence_precomputed,
+                                        initializer=self.initializer)
                 if self.torch_model:
                     graph_data = self.to_pyg_data(X,Y)
                     A = torch.tensor(A).to_sparse()
@@ -491,6 +494,7 @@ class BregmanBenchmark():
                         E = graph_data.edge_attr.reshape(-1,1)
                     z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
                 else:
+                    print(A.shape,X.shape,Y.shape)
                     z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
