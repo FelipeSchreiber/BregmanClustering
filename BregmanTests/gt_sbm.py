@@ -2,7 +2,8 @@ import graph_tool.all as gt
 import numpy as np
 
 def get_SBM(num_nodes=6000,num_blocks=3,p_in=0.1,p_out=0.01,save=True,path="./"):
-    block_membership = np.repeat(np.arange(num_blocks),[ num_nodes // num_blocks ]*np.ones( num_blocks, dtype = int ))
+    sizes = ([ num_nodes // num_blocks ]*np.ones( num_blocks, dtype = int )).astype(int)
+    block_membership = np.repeat(np.arange(num_blocks),sizes)
     graph = gt.Graph(directed=False)
     graph.add_vertex(num_nodes)
 
