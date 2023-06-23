@@ -298,13 +298,13 @@ class BregmanBenchmark():
                     
                     if chernoff_init_graph:
                         print("SHAPE: ",chernoff_att_labels.shape)
-                        chernoff_att_labels = fromVectorToMembershipMatrice(chernoff_att_labels)
+                        chernoff_att_labels = fromVectorToMembershipMatrice(chernoff_att_labels,n_clusters)
                         z_pred_att_init = model.fit(A,X.reshape(n,n,-1),graph_data.x.numpy(),chernoff_att_labels).predict( None, None )
                         ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
                         aris_oracle.append( max(aris_both[-1], ari_att_init))
                     elif not chernoff_init_graph:
                         print("SHAPE: ",chernoff_graph_labels.shape)
-                        chernoff_graph_labels = fromVectorToMembershipMatrice(chernoff_graph_labels)
+                        chernoff_graph_labels = fromVectorToMembershipMatrice(chernoff_graph_labels,n_clusters)
                         z_pred_graph_init = model.fit(A,X.reshape(n,n,-1),graph_data.x.numpy(),chernoff_graph_labels).predict( None, None )
                         ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
                         aris_oracle.append( max(aris_both[-1], ari_graph_init))
