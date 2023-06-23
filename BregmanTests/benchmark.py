@@ -239,14 +239,15 @@ class BregmanBenchmark():
                     A = (X != 0).astype(int)
                     graph_data = self.to_pyg_data(X,Y)
                     model = self.model_(n_clusters=n_clusters,\
-                                    attributeDistribution=self.attributes_distribution_name,\
-                                    edgeDistribution=self.edge_distribution_name,\
-                                    weightDistribution=self.weight_distribution_name,\
-                                    n_iters=n_iters,
-                                    initializer = 'chernoff',
-                                    reduce_by="mean")
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        n_iters=n_iters,
+                                        reduce_by=self.reduce_by,
+                                        divergence_precomputed=self.divergence_precomputed,
+                                        initializer=self.initializer)
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
-                    model.initialize(A,graph_data.x)
+                    model.initialize(A,graph_data.x.numpy())
                     model.assignInitialLabels(None,None)
                     z_init = deepcopy(model.predicted_memberships.to("cpu").numpy())
                     print(z_init.shape)
