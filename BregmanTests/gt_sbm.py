@@ -29,6 +29,6 @@ def get_SBM(num_nodes=6000,num_blocks=3,p_in=0.1,p_out=0.01,save=True):
 
     if save == True:
         # Save the adjacency matrix as a numpy array
-        np.save("my_graph.npy", adjacency_matrix)
+        np.save(f"graph_{num_nodes}_pin_{p_in}_pout_{p_out}.npy", adjacency_matrix)
     
     return adjacency_matrix
