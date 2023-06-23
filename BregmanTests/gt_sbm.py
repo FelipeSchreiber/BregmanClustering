@@ -1,7 +1,7 @@
 import graph_tool.all as gt
 import numpy as np
 
-def get_SBM(num_nodes=6000,num_blocks=3,p_in=0.1,p_out=0.01,save=True):
+def get_SBM(num_nodes=6000,num_blocks=3,p_in=0.1,p_out=0.01,save=True,path="./"):
     block_membership = np.repeat(np.arange(num_blocks),[ num_nodes // num_blocks ]*np.ones( num_blocks, dtype = int ))
     graph = gt.Graph(directed=False)
     graph.add_vertex(num_nodes)
@@ -29,7 +29,7 @@ def get_SBM(num_nodes=6000,num_blocks=3,p_in=0.1,p_out=0.01,save=True):
 
     if save == True:
         # Save the adjacency matrix as a numpy array
-        np.save(f"graph_{num_nodes}_pin_{p_in}_pout_{p_out}.npy",\
+        np.save(path+f"graph_{num_nodes}_pin_{p_in}_pout_{p_out}.npy",\
                 adjacency_matrix)
     
     return adjacency_matrix
