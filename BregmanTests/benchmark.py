@@ -162,7 +162,7 @@ class BregmanBenchmark():
     
     def gen_config_file(self):
         cfg_data = f"""seed = "42"                   # RNG seed, use "" for no seeding
-n = "{self.num_nodes}"                   # number of vertices in graph
+n = "10000"                   # number of vertices in graph
 t1 = "3"                      # power-law exponent for degree distribution
 d_min = "5"                   # minimum degree
 d_max = "50"                  # maximum degree
