@@ -161,7 +161,7 @@ class BregmanBenchmark():
         return X,Y,labels_true,None
     
     def gen_config_file(self):
-        cfg = f"""
+        cfg_data = f"""
         seed = "42"                   
         n = "{self.num_nodes}"                  
         t1 = "3"                      
@@ -182,10 +182,16 @@ class BregmanBenchmark():
         networkfile = "edge.dat"      
         nout = "100"            
         """
+        with open('my_config.toml', 'w') as f:
+            f.write(cfg_data)
+        
         
     def generate_benchmark_ABCD(self):
-        subprocess.call(["julia",f"{path_to_ABCD_sampler}","example_config.toml"])
+        self.gen_config_file()
+        subprocess.call(["julia",f"{path_to_ABCD_sampler}","my_config.toml"])
         X = np.array(pd.read_csv('deg.dat',header=None)[0])
+        return X
+    
     def to_pyg_data(self,X,Y):
         X_sparse = torch.tensor(X).to_sparse()
         graph_data = Data(x=torch.tensor(Y),
