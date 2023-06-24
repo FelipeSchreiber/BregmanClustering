@@ -190,7 +190,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
     def generate_benchmark_ABCD(self):
         self.gen_config_file()
-        subprocess.call(["julia",f"{path_to_ABCD_sampler}/abcd_sampler.jl","my_config.toml"])
+        cwd = os.getcwd()
+        subprocess.call(["julia",f"{path_to_ABCD_sampler}","my_config.toml"])
         X = np.array(pd.read_csv('deg.dat',header=None)[0])
         return X
     
