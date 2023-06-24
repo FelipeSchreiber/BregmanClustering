@@ -11,6 +11,7 @@ from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
 from torch_geometric.data import Data
 from torch_geometric.utils import *
 from torch_geometric.datasets import Planetoid,WebKB
+import pandas as pd
 import torch 
 import subprocess
 from tqdm import tqdm
@@ -55,6 +56,7 @@ class BregmanBenchmark():
         self.reduce_by = reduce_by
         self.initializer = initializer
         self.communities_sizes=communities_sizes
+        self.num_nodes = np.sum(self.communities_sizes)
         ## min and max specifies the range of the weight distribution means in 1D
         self.min_ = min_
         self.max_ = max_
@@ -158,6 +160,32 @@ class BregmanBenchmark():
             return X,Y,labels_true,G
         return X,Y,labels_true,None
     
+    def gen_config_file(self):
+        cfg = f"""
+        seed = "42"                   
+        n = "{self.num_nodes}"                  
+        t1 = "3"                      
+        d_min = "5"                   
+        d_max = "50"                  
+        d_max_iter = "1000"           
+        t2 = "2"                      
+        c_min = "50"                  
+        c_max = "1000"                
+        c_max_iter = "1000"           
+        xi = "0.2"                    
+        #mu = "0.2"                   
+        islocal = "false"             
+        isCL = "false"                
+        degreefile = "deg.dat"        
+        communitysizesfile = "cs.dat" 
+        communityfile = "com.dat"     
+        networkfile = "edge.dat"      
+        nout = "100"            
+        """
+        
+    def generate_benchmark_ABCD(self):
+        subprocess.call(["julia",f"{path_to_ABCD_sampler}","example_config.toml"])
+        X = np.array(pd.read_csv('deg.dat',header=None)[0])
     def to_pyg_data(self,X,Y):
         X_sparse = torch.tensor(X).to_sparse()
         graph_data = Data(x=torch.tensor(Y),
