@@ -161,25 +161,25 @@ class BregmanBenchmark():
         return X,Y,labels_true,None
     
     def gen_config_file(self):
-        cfg_data = f"""
-        seed = "42"                   
-        n = "{self.num_nodes}"                  
-        t1 = "3"                      
-        d_min = "5"                   
-        d_max = "50"                  
-        d_max_iter = "1000"           
-        t2 = "2"                      
-        c_min = "50"                  
-        c_max = "1000"                
-        c_max_iter = "1000"           
-        xi = "0.2"                    
-        #mu = "0.2"                   
-        islocal = "false"             
-        isCL = "false"                
-        degreefile = "deg.dat"        
-        communitysizesfile = "cs.dat" 
-        communityfile = "com.dat"     
-        networkfile = "edge.dat"      
+        cfg_data = \
+        f"""seed = "42"
+        n = "{self.num_nodes}"
+        t1 = "3"
+        d_min = "5"
+        d_max = "50"
+        d_max_iter = "1000"
+        t2 = "2"
+        c_min = "50"
+        c_max = "1000"
+        c_max_iter = "1000"
+        xi = "0.2"
+        #mu = "0.2"
+        islocal = "false"
+        isCL = "false"
+        degreefile = "deg.dat"
+        communitysizesfile = "cs.dat"
+        communityfile = "com.dat"
+        networkfile = "edge.dat"
         nout = "100"            
         """
         with open('my_config.toml', 'w') as f:
@@ -188,7 +188,7 @@ class BregmanBenchmark():
         
     def generate_benchmark_ABCD(self):
         self.gen_config_file()
-        subprocess.call(["julia",f"{path_to_ABCD_sampler}","my_config.toml"])
+        subprocess.call(["julia",f"{path_to_ABCD_sampler}/abcd_sampler.jl","my_config.toml"])
         X = np.array(pd.read_csv('deg.dat',header=None)[0])
         return X
     
