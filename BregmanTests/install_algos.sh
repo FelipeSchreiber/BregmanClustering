@@ -12,16 +12,16 @@ git clone https://github.com/bkamins/ABCDGraphGenerator.jl.git
 # JULIA_NUM_THREADS=4
 # #---------------------------------------------------#
 
-# if [ -z `which julia` ]; then
-#   # Install Julia
-#   echo ">>>>>>>>>>>>>>>>>>>>INSTALLING JULIAAAAAAAAAAAA"
-#   JULIA_VER=`cut -d '.' -f -2 <<< "$JULIA_VERSION"`
-#   echo "Installing Julia $JULIA_VERSION on the current Colab Runtime..."
-#   BASE_URL="https://julialang-s3.julialang.org/bin/linux/x64"
-#   URL="$BASE_URL/$JULIA_VER/julia-$JULIA_VERSION-linux-x86_64.tar.gz"
-#   wget -nv $URL -O /tmp/julia.tar.gz # -nv means "not verbose"
-#   tar -x -f /tmp/julia.tar.gz -C /usr/local --strip-components 1
-#   rm /tmp/julia.tar.gz
+if [ -z `which julia` ]; then
+  # Install Julia
+  echo ">>>>>>>>>>>>>>>>>>>>INSTALLING JULIAAAAAAAAAAAA"
+  JULIA_VER=`cut -d '.' -f -2 <<< "$JULIA_VERSION"`
+  echo "Installing Julia $JULIA_VERSION on the current Colab Runtime..."
+  BASE_URL="https://julialang-s3.julialang.org/bin/linux/x64"
+  URL="$BASE_URL/$JULIA_VER/julia-$JULIA_VERSION-linux-x86_64.tar.gz"
+  wget -nv $URL -O /tmp/julia.tar.gz # -nv means "not verbose"
+  tar -x -f /tmp/julia.tar.gz -C /usr/local --strip-components 1
+  rm /tmp/julia.tar.gz
 
 #   # Install Packages
 #   nvidia-smi -L &> /dev/null && export GPU=1 || export GPU=0
