@@ -187,9 +187,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                               # isCL = "false", and xi (not mu) must be passed
                               # if nout > 0 then it is recommended that xi > 0      
         """
-        cfg_data = '\n'.join(cfg_data.split()[1:])
+        # cfg_data = '\n'.join(cfg_data.split("\n"))
         with open('my_config.toml', 'w') as f:
-            f.write(cfg_data)
+            f.write(cfg_data[1:])
         
         
     def generate_benchmark_ABCD(self):
