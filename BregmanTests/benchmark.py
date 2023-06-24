@@ -162,27 +162,32 @@ class BregmanBenchmark():
     
     def gen_config_file(self):
         cfg_data = \
-        f"""seed="42"
-        n="{self.num_nodes}"
-        t1="3"
-        d_min="5"
-        d_max="50"
-        d_max_iter="1000"
-        t2="2"
-        c_min="50"
-        c_max="1000"
-        c_max_iter="1000"
-        xi="0.2"
-        #mu="0.2"
-        islocal="false"
-        isCL="false"
-        degreefile="deg.dat"
-        communitysizesfile="cs.dat"
-        communityfile="com.dat"
-        networkfile="edge.dat"
-        nout="100"            
+        f"""
+seed = "42"                   # RNG seed, use "" for no seeding
+n = "{self.num_nodes}"                   # number of vertices in graph
+t1 = "3"                      # power-law exponent for degree distribution
+d_min = "5"                   # minimum degree
+d_max = "50"                  # maximum degree
+d_max_iter = "1000"           # maximum number of iterations for sampling degrees
+t2 = "2"                      # power-law exponent for cluster size distribution
+c_min = "50"                  # minimum cluster size
+c_max = "1000"                # maximum cluster size
+c_max_iter = "1000"           # maximum number of iterations for sampling cluster sizes
+# Exactly one of xi and mu must be passed as Float64. Also if xi is provided islocal must be set to false or omitted.
+xi = "0.2"                    # fraction of edges to fall in background graph
+#mu = "0.2"                   # mixing parameter
+islocal = "false"             # if "true" mixing parameter is restricted to local cluster, otherwise it is global
+isCL = "false"                # if "false" use configuration model, if "true" use Chung-Lu
+degreefile = "deg.dat"        # name of file do generate that contains vertex degrees
+communitysizesfile = "cs.dat" # name of file do generate that contains community sizes
+communityfile = "com.dat"     # name of file do generate that contains assignments of vertices to communities
+networkfile = "edge.dat"      # name of file do generate that contains edges of the generated graph
+nout = "100"                  # number of vertices in graph that are outliers; optional parameter
+                              # if nout is passed and is not zero then we require islocal = "false",
+                              # isCL = "false", and xi (not mu) must be passed
+                              # if nout > 0 then it is recommended that xi > 0      
         """
-        cfg_data = '\n'.join(cfg_data.split())
+        cfg_data = '\n'.join(cfg_data.split()[1:])
         with open('my_config.toml', 'w') as f:
             f.write(cfg_data)
         
