@@ -472,7 +472,7 @@ class BregmanBenchmark():
         aris_both_std = [ ]
         for d,mu in tqdm(product(d_range,mu_range)):
             aris_both = [ ]
-            self.dims=d
+            self.dims=int(d*np.log( n ) / n)
             ### HERE ATT_CENTERS IS K x 1
             arr = self.att_centers.reshape(-1,1)
             self.att_centers = np.repeat(arr,d,axis=1)
