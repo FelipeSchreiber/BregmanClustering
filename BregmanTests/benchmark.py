@@ -162,8 +162,7 @@ class BregmanBenchmark():
     
     def gen_config_file(self):
         cfg_data = \
-        f"""
-seed = "42"                   # RNG seed, use "" for no seeding
+        f"""seed = "42"                   # RNG seed, use "" for no seeding
 n = "{self.num_nodes}"                   # number of vertices in graph
 t1 = "3"                      # power-law exponent for degree distribution
 d_min = "5"                   # minimum degree
@@ -185,7 +184,8 @@ networkfile = "edge.dat"      # name of file do generate that contains edges of 
 nout = "100"                  # number of vertices in graph that are outliers; optional parameter
                               # if nout is passed and is not zero then we require islocal = "false",
                               # isCL = "false", and xi (not mu) must be passed
-                              # if nout > 0 then it is recommended that xi > 0"""
+                              # if nout > 0 then it is recommended that xi > 0      
+        """
         # cfg_data = '\n'.join(cfg_data.split("\n"))
         with open('my_config.toml', 'w') as f:
             f.write(cfg_data[1:])
