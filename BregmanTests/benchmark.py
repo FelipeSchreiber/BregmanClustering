@@ -182,6 +182,7 @@ class BregmanBenchmark():
         networkfile = "edge.dat"
         nout = "100"            
         """
+        cfg_data = '\n'.join(cfg_data.split())
         with open('my_config.toml', 'w') as f:
             f.write(cfg_data)
         
