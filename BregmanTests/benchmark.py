@@ -32,6 +32,7 @@ from sklearn.cluster import KMeans
 import igraph as ig
 import leidenalg as la
 from BregmanInitializer.init_cluster import frommembershipMatriceToVector, fromVectorToMembershipMatrice
+from find_julia import find as find_jl
 
 class BregmanBenchmark():
     def __init__(self,P=None,communities_sizes=None,min_=1,max_=10,\
@@ -190,8 +191,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
     def generate_benchmark_ABCD(self):
         self.gen_config_file()
-        cwd = os.getcwd()
-        subprocess.call(["julia",f"{path_to_ABCD_sampler}","my_config.toml"])
+        #cwd = os.getcwd()
+        jl_path = find_jl()
+        subprocess.call([f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml"])
         X = np.array(pd.read_csv('deg.dat',header=None)[0])
         return X
     
