@@ -6,7 +6,7 @@ git clone https://github.com/glmbraun/CSBM/
 git clone https://github.com/stanleyn/AttributedSBM.git
 git clone https://github.com/bkamins/ABCDGraphGenerator.jl.git
 # #---------------------------------------------------#
-# JULIA_VERSION="1.8.5" # any version ≥ 0.7.0
+JULIA_VERSION="1.8.5" # any version ≥ 0.7.0
 # JULIA_PACKAGES="IJulia BenchmarkTools PyCall PyPlot"
 # JULIA_PACKAGES_IF_GPU="CUDA" # or CuArrays for older Julia versions
 # JULIA_NUM_THREADS=4
