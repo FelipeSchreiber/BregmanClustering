@@ -162,27 +162,27 @@ class BregmanBenchmark():
     
     def gen_config_file(self):
         cfg_data = \
-        f"""seed = "42"
-        n = "{self.num_nodes}"
-        t1 = "3"
-        d_min = "5"
-        d_max = "50"
-        d_max_iter = "1000"
-        t2 = "2"
-        c_min = "50"
-        c_max = "1000"
-        c_max_iter = "1000"
-        xi = "0.2"
-        #mu = "0.2"
-        islocal = "false"
-        isCL = "false"
-        degreefile = "deg.dat"
-        communitysizesfile = "cs.dat"
-        communityfile = "com.dat"
-        networkfile = "edge.dat"
-        nout = "100"            
+        f"""seed="42"
+        n="{self.num_nodes}"
+        t1="3"
+        d_min="5"
+        d_max="50"
+        d_max_iter="1000"
+        t2="2"
+        c_min="50"
+        c_max="1000"
+        c_max_iter="1000"
+        xi="0.2"
+        #mu="0.2"
+        islocal="false"
+        isCL="false"
+        degreefile="deg.dat"
+        communitysizesfile="cs.dat"
+        communityfile="com.dat"
+        networkfile="edge.dat"
+        nout="100"            
         """
-        cfg_data = ''.join(cfg_data.split("\t"))
+        cfg_data = '\n'.join(cfg_data.split())
         with open('my_config.toml', 'w') as f:
             f.write(cfg_data)
         
