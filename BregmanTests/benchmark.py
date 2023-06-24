@@ -187,8 +187,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 """
         # cfg_data = '\n'.join(cfg_data.split("\n"))
         with open('my_config.toml', 'w') as f:
-            f.write(cfg_data[1:])
-        
+            f.write(cfg_data)
         
     def generate_benchmark_ABCD(self):
         self.gen_config_file()
