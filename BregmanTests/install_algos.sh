@@ -14,6 +14,7 @@ JULIA_NUM_THREADS=4
 
 if [ -z `which julia` ]; then
   # Install Julia
+  echo ">>>>>>>>>>>>>>>>>>>>INSTALLING JULIAAAAAAAAAAAA"
   JULIA_VER=`cut -d '.' -f -2 <<< "$JULIA_VERSION"`
   echo "Installing Julia $JULIA_VERSION on the current Colab Runtime..."
   BASE_URL="https://julialang-s3.julialang.org/bin/linux/x64"
