@@ -35,6 +35,18 @@ if [ -z `which julia` ]; then
     echo "Installing Julia package $PKG..."
     julia -e 'using Pkg; pkg"add '$PKG'; precompile;"' &> /dev/null
   done
+  # Install kernel and rename it to "julia"
+  echo "Installing IJulia kernel..."
+  LD_PRELOAD_ julia -e 'using IJulia; IJulia.installkernel("julia", env=Dict(
+      "JULIA_NUM_THREADS"=>"'"$JULIA_NUM_THREADS"'"))'
+  KERNEL_DIR=`julia -e "using IJulia; print(IJulia.kerneldir())"`
+  KERNEL_NAME=`ls -d "$KERNEL_DIR"/julia*`
+  mv -f $KERNEL_NAME "$KERNEL_DIR"/julia
+
+  echo ''
+  echo "Successfully installed `julia -v`!"
+  echo "Please reload this page (press Ctrl+R, ⌘+R, or the F5 key) then"
+  echo "jump to the 'Checking the Installation' section."
 fi
 cd ./ABCDGraphGenerator.jl/utils/
 julia install.jl
