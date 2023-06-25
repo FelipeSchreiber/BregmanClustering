@@ -2,6 +2,7 @@ import subprocess
 import fileinput
 from sys import platform
 import os
+import stat
 import rpy2.robjects.packages as rpackages
 from rpy2.robjects.vectors import StrVector
 from rpy2.robjects.packages import importr
@@ -35,13 +36,14 @@ def main():
     print("Downloading packages from github...\n")
     #subprocess.call(["chmod","777",f"{bash_path}"])
     if not os.path.isdir('CSBM'):
-        os.chmod(bash_path, 777)
+        st = os.stat(bash_path)
+        os.chmod(bash_path, st.st_mode | stat.S_IEXEC)
         print("Accessing "+bash_path)
         if platform == "win32":
             subprocess.call(["git","clone","https://github.com/glmbraun/CSBM/"])
             subprocess.call(["git","clone","https://github.com/stanleyn/AttributedSBM.git"])
         else:
-            subprocess.run([f"{bash_path}"])
+            subprocess.run(["sh",f"{bash_path}"])
         modify_csbm("./CSBM/Python/functions.py")
         modify_att_sbm("./AttributedSBM/FitAttribute.R")
     print("Installing R packages...\n This step takes about 5 min...\n")
