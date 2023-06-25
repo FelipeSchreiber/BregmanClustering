@@ -36,8 +36,9 @@ def main():
     print("Downloading packages from github...\n")
     #subprocess.call(["chmod","777",f"{bash_path}"])
     if not os.path.isdir('CSBM'):
-        st = os.stat(bash_path)
-        os.chmod(bash_path, st.st_mode | stat.S_IEXEC)
+        # st = os.stat(bash_path)
+        # os.chmod(bash_path, st.st_mode | stat.S_IEXEC)
+        os.chmod(bash_path, 0777)
         print("Accessing "+bash_path)
         if platform == "win32":
             subprocess.call(["git","clone","https://github.com/glmbraun/CSBM/"])
