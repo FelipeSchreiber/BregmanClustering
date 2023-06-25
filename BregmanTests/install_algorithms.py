@@ -38,7 +38,7 @@ def main():
     if not os.path.isdir('CSBM'):
         # st = os.stat(bash_path)
         # os.chmod(bash_path, st.st_mode | stat.S_IEXEC)
-        os.chmod(bash_path, 0777)
+        os.chmod(bash_path, 0o777)
         print("Accessing "+bash_path)
         if platform == "win32":
             subprocess.call(["git","clone","https://github.com/glmbraun/CSBM/"])
