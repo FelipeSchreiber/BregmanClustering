@@ -41,7 +41,7 @@ def main():
             subprocess.call(["git","clone","https://github.com/glmbraun/CSBM/"])
             subprocess.call(["git","clone","https://github.com/stanleyn/AttributedSBM.git"])
         else:
-            subprocess.run(["sh",f"{bash_path}"])
+            subprocess.run([f"{bash_path}"])
         modify_csbm("./CSBM/Python/functions.py")
         modify_att_sbm("./AttributedSBM/FitAttribute.R")
     print("Installing R packages...\n This step takes about 5 min...\n")
