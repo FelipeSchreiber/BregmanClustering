@@ -972,7 +972,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             H = np.hstack((A,A.T))
             SC = SpectralClustering(n_clusters=self.n_clusters,\
                                      assign_labels='discretize',random_state=0).fit(H)
-            scores["SC_ARI"].append(adjusted_rand_score(z_true,SC.labels_))
+            scores["SC_ARI"].append(adjusted_rand_score(z_true,K))
             scores["dataset"].append(data_name)
             
             A = None
