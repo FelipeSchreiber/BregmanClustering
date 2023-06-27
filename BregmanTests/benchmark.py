@@ -970,9 +970,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             scores["kmeans_ARI"].append(adjusted_rand_score(z_true,kmeans.labels_))
             scores["leiden_ARI"].append(adjusted_rand_score(z_true,np.array(partition.membership)))
             H = np.hstack((A,A.T))
-            SC = SpectralClustering(n_clusters=self.n_clusters,\
+            SC = SpectralClustering(n_clusters=K,\
                                      assign_labels='discretize',random_state=0).fit(H)
-            scores["SC_ARI"].append(adjusted_rand_score(z_true,K))
+            scores["SC_ARI"].append(adjusted_rand_score(z_true,SC.labels_))
             scores["dataset"].append(data_name)
             
             A = None
