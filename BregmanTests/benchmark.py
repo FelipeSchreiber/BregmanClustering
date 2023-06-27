@@ -28,7 +28,7 @@ if (not other_algos_installed) and (not os.path.isfile("other_algos_installed.tx
         f.write('OK')
 from CSBM.Python import functions as csbm
 from itertools import product
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans,SpectralClustering
 import igraph as ig
 import leidenalg as la
 from BregmanInitializer.init_cluster import frommembershipMatriceToVector, fromVectorToMembershipMatrice
@@ -929,6 +929,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         scores["att_ARI"] = []
         scores["kmeans_ARI"] = []
         scores["leiden_ARI"] = []
+        scores["SC_ARI"] = []
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
             attributes = data.x
@@ -968,6 +969,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             scores["att_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_attributes) )  
             scores["kmeans_ARI"].append(adjusted_rand_score(z_true,kmeans.labels_))
             scores["leiden_ARI"].append(adjusted_rand_score(z_true,np.array(partition.membership)))
+            H = np.hstack((A,A.T))
+            SC = SpectralClustering(n_clusters=self.n_clusters,\
+                                     assign_labels='discretize',random_state=0).fit(H)
+            scores["SC_ARI"].append(adjusted_rand_score(z_true,SC.labels_))
             scores["dataset"].append(data_name)
             
             A = None

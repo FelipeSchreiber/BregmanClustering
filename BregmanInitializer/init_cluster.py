@@ -85,8 +85,8 @@ class BregmanGraphClustering( BaseEstimator, ClusterMixin ):
         # print("BGC>>>",A.shape,X.shape)
         if Z_init is None:
             H = sp.sparse.hstack((A,A.T))
-            SC = SpectralClustering(n_clusters=self.n_clusters,
-            assign_labels='discretize',random_state=0).fit(H)
+            SC = SpectralClustering(n_clusters=self.n_clusters,\
+                                     assign_labels='discretize',random_state=0).fit(H)
             preds = SC.labels_.reshape(-1, 1)
             ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
             self.predicted_memberships= ohe.transform(preds)
