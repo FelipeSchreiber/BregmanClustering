@@ -920,7 +920,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         return datas,data_names
     
     def run_real_data(self,use_random_init=False,initializer="AIC",strategy=3,n_iters=25,
-                      reduction_method="KBest"):
+                      reduction_method="KBest",plot_class_dist=True):
         datas,data_names = self.get_real_data()
         scores = {}
         scores["dataset"] = []
@@ -934,6 +934,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             print("\nCURRENT DATASET: ",data_name)
             attributes = data.x
             z_true = data.y.numpy()
+            if plot_class_dist:
+                plot_class_dist_(z_true)
             if self.preprocess:
                 attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
             z_pred_both = None

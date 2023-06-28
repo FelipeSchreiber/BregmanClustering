@@ -8,11 +8,16 @@ from sklearn.manifold import SpectralEmbedding
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 import umap
+import seaborn as sns
 
 SIZE_TITLE = 24
 SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
+
+def plot_class_dist_(data):
+    sns.distplot(data,bins="doane",kde=False,hist_kws={"align" : "left"})
+    plt.show()
 
 def preprocess(X,Y,K=10,method="KBest"):
     X_train_fs = None
