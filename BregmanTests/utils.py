@@ -16,7 +16,7 @@ SIZE_TICKS = 18
 SIZE_LEGEND = 18
 
 def plot_class_dist_(data):
-    sns.countplot(data)
+    sns.countplot(x=data)
     plt.show()
 
 def preprocess(X,Y,K=10,method="KBest"):
