@@ -935,7 +935,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             attributes = data.x
             z_true = data.y.numpy()
             if plot_class_dist:
-                plot_class_dist_(z_true)
+                plot_class_dist_(z_true,data_name)
             if self.preprocess:
                 attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
             z_pred_both = None

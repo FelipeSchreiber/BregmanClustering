@@ -15,8 +15,9 @@ SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
 
-def plot_class_dist_(data):
+def plot_class_dist_(data,dataset_name):
     sns.countplot(x=data)
+    plt.title(dataset_name+" class freq")
     plt.show()
 
 def preprocess(X,Y,K=10,method="KBest"):
