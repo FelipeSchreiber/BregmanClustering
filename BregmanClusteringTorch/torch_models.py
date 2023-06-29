@@ -685,7 +685,7 @@ class torchWrapper(BregmanNodeEdgeAttributeGraphClusteringTorch):
             E = torch.ones((graph_data.edge_index.shape[1],1))
         else:
             E = graph_data.edge_attr.reshape(-1,1)
-        Z_init = torch.Tensor(Z_init) if (Z_init is not None) else None
+        Z_init = torch.tensor(Z_init) if (Z_init is not None) else None
         super().fit(A,E,graph_data.x,Z_init)
         return self
 
