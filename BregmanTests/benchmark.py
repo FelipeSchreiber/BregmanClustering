@@ -423,7 +423,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                  r_range = [ 0,1,2,3,4,5 ],\
                  dense=False,\
                  binary=True,\
-                 n_iters=100,strategy=0):
+                 n_iters=100):
         self.communities_sizes = cluster_sizes
         benchmark_instance = None
         if dense:
@@ -460,17 +460,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         n_iters=n_iters,
                                         reduce_by=self.reduce_by,
                                         divergence_precomputed=self.divergence_precomputed,
-                                        initializer=self.initializer,
-                                        strategy=strategy)
+                                        initializer=self.initializer)
                 if self.torch_model:
-                    graph_data = self.to_pyg_data(X,Y)
-                    A = torch.tensor(A).to_sparse()
-                    E = None
-                    if graph_data.edge_attr is None:
-                        E = torch.ones((graph_data.edge_index.shape[1],1))
-                    else:
-                        E = graph_data.edge_attr.reshape(-1,1)
-                    z_pred_both = model.fit(A,E,graph_data.x).predict( E, graph_data.x )
+                    z_pred_both = model.fit(A,X,Y).predict(None,None)
                 else:
                     z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y)
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
@@ -919,7 +911,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             data_names.append(data_set)
         return datas,data_names
     
-    def run_real_data(self,use_random_init=False,initializer="AIC",strategy=3,n_iters=25,
+    def run_real_data(self,use_random_init=False,initializer="AIC",n_iters=25,
                       reduction_method="KBest",plot_class_dist=True):
         datas,data_names = self.get_real_data()
         scores = {}
@@ -953,8 +945,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         weightDistribution=self.weight_distribution_name,\
                                         use_random_init=use_random_init,
                                         initializer=initializer,
-                                        n_iters=n_iters,
-                                        strategy=strategy
+                                        n_iters=n_iters
                                 )
             print("INPUTS: ",A.shape,E.shape,attributes.shape)
             if self.torch_model:

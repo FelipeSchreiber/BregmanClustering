@@ -13,10 +13,12 @@ from BregmanClustering.models import *
 from .torch_divergences import *
 from BregmanInitializer.init_cluster import *
 import networkx as nx
-from sys import platform
+from torch_geometric.data import Data
+from torch_geometric.utils import *
 import torch
 from torch.nn.functional import one_hot
-from torch_geometric.utils import index_to_mask,select,is_undirected
+from sys import platform
+
 
 device = "cpu"
 dtype = torch.FloatTensor
@@ -47,9 +49,7 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
                  n_iters = 25, init_iters=100,
                  reduce_by="sum",
                  divergence_precomputed=True,
-                 use_random_init=False,
-                 batch_size=32, 
-                 strategy=None):
+                 use_random_init=False):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
@@ -131,7 +131,6 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
         self.edge_div_pairwise = make_pairwise_breg(dist_to_divergence_dict[self.edgeDistribution])  
         self.use_random_init = use_random_init
         self.zero_and_one = torch.Tensor([0,1]).reshape(-1,1).to(device)
-        self.batch_size = batch_size
 
     ## return true when fit proccess is finished
     def stop_criterion(self,old,new,iteration):
@@ -204,83 +203,6 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
             self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
             self.weight_means = self.computeWeightMeans(X,self.predicted_memberships)
             new_memberships = self.assignments( X, Y )
-            self.precompute_edge_divergences()
-            
-            iteration += 1
-            if self.stop_criterion(self.predicted_memberships,new_memberships,iteration):
-                convergence = False
-            self.predicted_memberships = new_memberships
-        A = None
-        X = None
-        Y = None
-        return self
-    
-    ## return a sample of size self.batch_size from the data
-    def sample(self):
-        return torch.randperm(self.N)[:self.batch_size]
-    """
-    TO DO: Implement partial fit
-    """
-    def mini_batch_fit( self, A, X, Y, Z_init=None):
-        """
-        Training step.
-        Parameters
-        ----------
-        Y : ARRAY
-            Input data matrix (n, m) of n samples and m features.
-        X : ARRAY
-            Input (E,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
-        A : ARRAY
-            Input (n,n) matrix encoding the adjacency matrix
-        Returns
-        -------
-        TYPE
-            Trained model.
-        """
-        self.N = Y.shape[0]
-        self.row_indices = torch.arange(self.N).to(device)
-        self.edge_index = A.indices().long()
-        self.constant_mul = 1 if is_undirected(self.edge_index) else 0.5
-        if Z_init is None:
-            e_ind = self.edge_index.detach().numpy()
-            self.initialize(X.detach().numpy().reshape(len(e_ind[0]),1),Y.detach().numpy(), (e_ind[0,:],e_ind[1,:]))
-        else:
-            self.predicted_memberships = Z_init.type(dtype)
-        
-        ## stores the number of points in each cluster
-        self.N_C = self.predicted_memberships.sum(axis=0)
-        ## compute initial params
-        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships).to(device)
-        self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships).to(device)
-        self.weight_means = self.computeWeightMeans(X,self.predicted_memberships).to(device)
-        new_memberships = self.assignments( X, Y ).to(device)
-        self.precompute_edge_divergences()
-        
-        convergence = True
-        iteration = 0
-        while convergence:
-            self.idx_sample = self.sample()
-            
-            ## send data to device
-            A = A.type(dtype)
-            edge_indices_in = torch.argwhere(torch.isin(self.edge_index[1],self.idx_sample)).flatten()
-            edge_indices_out = torch.argwhere(torch.isin(self.edge_index[0],self.idx_sample)).flatten()
-            edge_indices = torch.cat((edge_indices_in,edge_indices_out), 0)
-            X_batch = X[edge_indices,:].type(dtype)
-            Y_batch = Y[self.idx_sample,:].type(dtype)
-            X_batch.requires_grad = True
-            Y_batch.requires_grad = True
-            ## Assign each data point in the mini-batch to
-            #  the closest cluster. z_batch has shape (batch_size x m).
-            z_batch = self.partial_assignments(X,Y)
-            # update number of data for each cluster center
-            self.N_C += z_batch.sum(0)
-            #calculate learning rate for each cluster
-            lr=1/self.N_C
-            outer_prod = torch.outer(self.N_C, self.N_C)
-            att_sums = z_batch.T@Y_batch
-            M = z_batch.T@torch.sparse.mm(A,z_batch)
-            lr_edge = 1/outer_prod  
             self.precompute_edge_divergences()
             
             iteration += 1
@@ -365,18 +287,7 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
         for node in range( self.N ):
             k = self.singleNodeAssignment( X, H, node )
             z[node,k]=1
-        return z
-
-    def partial_assignments(self,X,Y):
-        ## z must be in the same device as A,X,Y
-        ## Y has shape (batch_size x m)
-        batch_size = Y.shape[0]
-        z = torch.zeros( (batch_size,self.n_clusters)).to(device)
-        H = self.attribute_divergence_pairwise(Y, self.attribute_means)
-        for i,node in enumerate(self.idx_sample):
-            k = self.singleNodeAssignment( X, H, node )
-            z[i,k]=1
-        return z                   
+        return z      
     
     def singleNodeAssignment( self, X, H, node ):
         L = torch.zeros( self.n_clusters )
@@ -452,7 +363,7 @@ class BregmanNodeEdgeAttributeGraphClusteringTorch( BaseEstimator, ClusterMixin 
         z: Array
             Assigned cluster for each data point (n, )
         """
-        return torch.argmax(self.predicted_memberships,dim=1).to("cpu").numpy()
+        return torch.argmax(self.predicted_memberships,dim=1)
 
 class BregmanNodeEdgeAttributeGraphClusteringTorchSoft( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
@@ -464,8 +375,7 @@ class BregmanNodeEdgeAttributeGraphClusteringTorchSoft( BaseEstimator, ClusterMi
                  n_iters = 100, init_iters=100,
                  reduce_by=None,
                  divergence_precomputed=True,
-                 use_random_init=False,
-                 strategy=0):
+                 use_random_init=False):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
@@ -735,7 +645,55 @@ class BregmanNodeEdgeAttributeGraphClusteringTorchSoft( BaseEstimator, ClusterMi
             Assigned cluster for each data point (n, )
         """
         return frommembershipMatriceToVector( self.predicted_memberships )
+
+class torchWrapper(BregmanNodeEdgeAttributeGraphClusteringTorch):
+    def __init__( self, n_clusters, 
+                 edgeDistribution = "bernoulli",
+                 attributeDistribution = "gaussian",
+                 weightDistribution = "gaussian",
+                 initializer = 'chernoff', 
+                 graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
+                 n_iters = 25, init_iters=100,
+                 reduce_by="sum",
+                 divergence_precomputed=True,
+                 use_random_init=False):
+        
+        super().__init__(n_clusters, 
+                 edgeDistribution,
+                 attributeDistribution,
+                 weightDistribution,
+                 initializer, 
+                 graph_initializer,
+                 attribute_initializer, 
+                 n_iters, init_iters,
+                 reduce_by,
+                 divergence_precomputed,
+                 use_random_init)
+
+    def to_pyg_data(self,X,Y):
+        X_sparse = torch.tensor(X).to_sparse()
+        graph_data = Data(x=torch.tensor(Y),
+                    edge_index=X_sparse.indices(),
+                    edge_attr=X_sparse.values())
+        return graph_data
     
+    def fit( self, A, X, Y, Z_init=None):
+        graph_data = self.to_pyg_data(X,Y)
+        A = torch.tensor(A).to_sparse()
+        E = None
+        if graph_data.edge_attr is None:
+            E = torch.ones((graph_data.edge_index.shape[1],1))
+        else:
+            E = graph_data.edge_attr.reshape(-1,1)
+        super().fit(A,E,graph_data.x,torch.Tensor(Z_init))
+
+    def predict(self, X, Y):
+        res = super().predict(X, Y) 
+        return res.to("cpu").numpy()
+        
+
+    
+
 ## GNN propriamente dita
 class my_GCN(torch.nn.Module):
     def __init__(self,n_feat,n_clusters):

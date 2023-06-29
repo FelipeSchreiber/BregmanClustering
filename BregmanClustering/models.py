@@ -561,8 +561,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                  n_iters = 25, init_iters=100,
                  reduce_by=None,
                  divergence_precomputed=True,
-                 use_random_init=False,\
-                    strategy=0):
+                 use_random_init=False):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
@@ -604,7 +603,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         ## strategy = 1 is to consider the means equal to zero
         ## strategy = 2 is to consider the means equal to the global mean
         ## strategy = 3 ignore only the weight divergence
-        self.strategy = strategy
     def fit( self, A, X, Y, Z_init=None):
         """
         Training step.
@@ -702,13 +700,13 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                                     X_,\
                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
         
-        if (self.edge_means==0).any():
-            undefined_idx = np.where(self.edge_means==0)
-            if self.strategy == 2:
-                null_model = X_.mean(axis=0)
-                weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
-            if self.strategy == 1:
-                weight_means[undefined_idx[0],undefined_idx[1],:] = 0
+        # if (self.edge_means==0).any():
+        #     undefined_idx = np.where(self.edge_means==0)
+        #     if self.strategy == 2:
+        #         null_model = X_.mean(axis=0)
+        #         weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
+        #     if self.strategy == 1:
+        #         weight_means[undefined_idx[0],undefined_idx[1],:] = 0
 
         return weight_means
     
@@ -756,10 +754,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             
             sum_j phi_edge(e_ij, E[q,l,:])  
             """
-            # if ( (self.edge_means[q,:]==0).any() or \
-            #     (self.edge_means[:,q]==0).any() ) and self.strategy == 0:
-            #     L[q] = np.inf
-            # else:
             att_div = H[node,q]
             edge_div = self.edge_divergence( A[node,:], M_out ) \
                             + self.edge_divergence( A[:,node], M_in ) \
@@ -769,7 +763,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
             weight_div = 0
             contains_nan = False
             E_ = E[q,z_t[v_indices_out],:]
-            if np.isnan(E_).any() and self.strategy == 0:
+            if np.isnan(E_).any():
                 weight_div = np.inf
                 contains_nan = True
             not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
@@ -781,7 +775,7 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
                 
             ## same as before, but now for edges coming in node
             E_ = E[z_t[v_indices_in],q,:]
-            if np.isnan(E_).any() and self.strategy == 0:
+            if np.isnan(E_).any():
                 weight_div = np.inf
                 contains_nan = True
             not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
@@ -819,8 +813,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
                  n_iters = 25, init_iters=100,
                  reduce_by=None,
                  divergence_precomputed=True,
-                 use_random_init=False,
-                 strategy=0):
+                 use_random_init=False):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
@@ -1066,8 +1059,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                  n_iters = 100, init_iters=100,
                  reduce_by=None,
                  divergence_precomputed=True,
-                 use_random_init=False,
-                 strategy=0):
+                 use_random_init=False):
         """
         Bregman Hard Clustering Algorithm for partitioning graph with node attributes
         Parameters
