@@ -18,13 +18,18 @@ SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
 
-def make_riemannian_metric(N,n_features,gamma=None):
+def make_riemannian_metric(N,n_features,gamma=None,att_dist_=None):
     if gamma is None:
         gamma = 1.0 / n_features
+    if att_dist_ is None:
+        def att_dist_func(row1,row2):
+            d = euclidean_distances(row1[N:].reshape(1, -1),row2[N:].reshape(1, -1))
+            return gamma*d
+        att_dist_ = att_dist_func
     def riemannian_metric(row1,row2):
         net_dist = hamming_loss(row1[:N],row2[:N])
-        att_dist = euclidean_distances(row1[N:].reshape(1, -1),row2[N:].reshape(1, -1))
-        distance = np.exp(-(net_dist + gamma*att_dist)) 
+        att_dist = att_dist_(row1,row2)
+        distance = np.exp(-(net_dist + att_dist)) 
         return distance
     return riemannian_metric
 
