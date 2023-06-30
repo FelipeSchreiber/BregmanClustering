@@ -922,12 +922,16 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             print("\nCURRENT DATASET: ",data_name)
             attributes = data.x
             z_true = data.y.numpy()
+    
             if plot_class_dist:
                 plot_class_dist_(z_true,data_name)
+    
             if attributes.shape[0] > 1000:
                 continue
+    
             if self.preprocess:
                 attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
+    
             z_pred_both = None
             K = np.unique(z_true).shape[0]
             E = None
@@ -961,8 +965,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             H = np.hstack((A,A.T))
             SC = SpectralClustering(n_clusters=K,\
                                      assign_labels='discretize',random_state=0).fit(H)
-            
-            metric = make_riemannian_metric(H.shape[1],X_np.shape[1])
+        
+            metric = make_riemannian_metric(H.shape[1],X_np.shape[1],att_dist_=hamming_loss)
             H_and_att = np.hstack((H,X_np))
             SC2 = SpectralClustering(n_clusters=K,\
                                      affinity=metric,
