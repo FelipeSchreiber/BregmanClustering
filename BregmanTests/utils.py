@@ -221,7 +221,7 @@ def get_metrics_all_preds(y_true, y_preds, algo_names):
         results["algorithm"].append(algo_name)
         metrics_ = get_metrics_pred(y_true,y_pred)
         for key, value in metrics_.items():
-            results[key].aapend(value)
+            results[key].append(value)
     return results
 
 def get_spectral_decomposition(A,k):
