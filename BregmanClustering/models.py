@@ -1334,11 +1334,11 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
         c = Ztilde.min(axis=1)
         Ztilde -= c[:,None]
-        Ztilde = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
-        if(np.isnan(Ztilde).any()):
+        soft_assign = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
+        if(np.isnan(soft_assign).any()):
             print(Ztilde)
         # Ztilde = np.nan_to_num(Ztilde)        
-        return normalize(Ztilde, axis=1, norm='l1')
+        return normalize(soft_assign, axis=1, norm='l1')
             
     def M_projection(self,X_,Y,Z):
         Z_threshold = Z
