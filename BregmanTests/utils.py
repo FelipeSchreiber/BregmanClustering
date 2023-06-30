@@ -200,7 +200,7 @@ def best_perm_of_func(y_true,y_pred,f=accuracy_score):
     for combination in possible_combinations:
         pred = np.array([combination[i] for i in y_pred])
         score = f(y_true,pred)
-        if scores[-1] > best_score:
+        if score > best_score:
             best_score = score
             best_perm = pred
         del pred
