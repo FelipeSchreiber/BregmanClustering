@@ -1335,6 +1335,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         c = Ztilde.min(axis=1)
         Ztilde -= c[:,None]
         Ztilde = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
+        if(np.isnan(Ztilde).any()):
+            print(Ztilde)
         # Ztilde = np.nan_to_num(Ztilde)        
         return normalize(Ztilde, axis=1, norm='l1')
             
