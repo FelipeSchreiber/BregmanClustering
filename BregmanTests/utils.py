@@ -193,14 +193,18 @@ def best_perm_of_func(y_true,y_pred,f=accuracy_score):
         raise ValueError('x and y must be arrays of the same size')
     scores = []
     possible_combinations = list(itertools.permutations(np.unique(y_pred)))
-    permutations = []
+    # permutations = []
+    best_perm = None
+    best_score = -np.inf
     for combination in possible_combinations:
         pred = np.array([combination[i] for i in y_pred])
         scores.append(f(y_true,pred))
-        permutations.append(pred)
+        if scores[-1] > best_score:
+            best_score = scores[-1]
+            best_perm = pred
+        # permutations.append(pred)
     id_max = np.argmax(scores)
     score = scores[id_max]
-    best_perm = permutations[id_max]
     return score,best_perm
 
 def get_metrics_pred(y_true,y_pred):
