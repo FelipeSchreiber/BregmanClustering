@@ -1154,22 +1154,23 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         """
         self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
+        X_ = X[self.edge_index[0],self.edge_index[1],:]
         self.node_indices = np.arange(self.N)
         if Z_init is None:
-            self.initialize( A, X, Y)
-            self.assignInitialLabels( X, Y )
+            self.initialize( A, X_, Y)
+            self.assignInitialLabels( X_, Y )
         else:
             self.predicted_memberships = Z_init
         #init_labels = self.predicted_memberships
-        self.M_projection(X,Y,self.predicted_memberships)
+        self.M_projection(X_,Y,self.predicted_memberships)
         convergence = False
         iteration = 0
         old_log_prob = np.inf
         while not convergence:
-            Z_new = self.E_projection(X, Y)
-            new_log_prob = self.logprob(X,Y)
-            self.M_projection( X,Y,Z_new)
-            convergence = self.stop_criterion(X,Y,\
+            Z_new = self.E_projection(X_, Y)
+            new_log_prob = self.logprob(X_,Y)
+            self.M_projection( X_,Y,Z_new)
+            convergence = self.stop_criterion(X_,Y,\
                                               self.predicted_memberships,Z_new,\
                                                 old_log_prob,new_log_prob,\
                                                 iteration)
@@ -1178,7 +1179,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             iteration += 1 
         return self
     
-    def initialize( self, A, X, Y ):
+    def initialize( self, A, X_, Y ):
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
                                     edgeDistribution = self.edgeDistribution,
                                     attributeDistribution = self.attributeDistribution,
@@ -1189,7 +1190,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         if self.use_random_init == True:
             Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
                                                                         self.n_clusters)
-        model.initialize( X, Y , self.edge_index, Z_init=Z_init)
+        model.initialize( X_, Y , self.edge_index, Z_init=Z_init)
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = frommembershipMatriceToVector(model.memberships_from_graph)
         self.memberships_from_attributes = frommembershipMatriceToVector(model.memberships_from_attributes)
@@ -1227,7 +1228,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             weights.sum(axis=(-1,-2))
         return edge_means 
     
-    def computeWeightMeans( self, X, Z):
+    def computeWeightMeans( self, X_, Z):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -1235,7 +1236,6 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
         weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
-        X_ = X[self.edge_index[0],self.edge_index[1],:]
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
@@ -1248,7 +1248,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         
         return weight_means
     
-    def computeTotalDiv(self,node,X,Z,H):
+    def computeTotalDiv(self,node,X_,Z,H):
         L = np.zeros( self.n_clusters )
         edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
         v_idx_in = self.edge_index[0][edge_indices_in]
@@ -1281,15 +1281,42 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                     + self.precomputed_edge_div[0,z_t[v_idx_in_comp],q].sum()\
                     + self.precomputed_edge_div[0,q,z_t[v_idx_out_comp]].sum()\
                     - 2*self.precomputed_edge_div[0,q,q]
+
+            ## compute weight divergence
             weight_div = 0
-            if len(v_idx_out) > 0:
-                weight_div += np.sum( paired_distances(X[node,v_idx_out,:],\
-                                                        E[q,z_t[v_idx_out],:],\
-                                                        metric=self.weight_divergence))
-            if len(v_idx_in) > 0:
-                weight_div += np.sum( paired_distances(X[v_idx_in,node,:],\
-                                                        E[z_t[v_idx_in],q,:],\
-                                                        metric=self.weight_divergence))
+            contains_nan = False
+            E_ = E[q,z_t[v_idx_out],:]
+            if np.isnan(E_).any():
+                weight_div = np.inf
+                contains_nan = True
+            not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
+            E_without_nan = E_[not_nan_idx,:]
+            if (len(v_idx_out) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
+                weight_div += np.sum( paired_distances(X_[edge_indices_out,:],\
+                                                            E_without_nan,\
+                                                            metric=self.weight_divergence))
+                
+            ## same as before, but now for edges coming in node
+            E_ = E[z_t[v_idx_in],q,:]
+            if np.isnan(E_).any():
+                weight_div = np.inf
+                contains_nan = True
+            not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
+            E_without_nan = E_[not_nan_idx,:]
+            if (len(v_idx_in) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
+                weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
+                                                            E_without_nan,\
+                                                            metric=self.weight_divergence))
+
+            # weight_div = 0
+            # if len(v_idx_out) > 0:
+            #     weight_div += np.sum( paired_distances(X[node,v_idx_out,:],\
+            #                                             E[q,z_t[v_idx_out],:],\
+            #                                             metric=self.weight_divergence))
+            # if len(v_idx_in) > 0:
+            #     weight_div += np.sum( paired_distances(X[v_idx_in,node,:],\
+            #                                             E[z_t[v_idx_in],q,:],\
+            #                                             metric=self.weight_divergence))
             L[ q ] = att_div + weight_div + edge_div
         return L
 
@@ -1306,14 +1333,14 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         Ztilde = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
         return normalize(Ztilde, axis=1, norm='l1')
             
-    def M_projection(self,X,Y,Z):
+    def M_projection(self,X_,Y,Z):
         Z_threshold = Z
         # idx = np.argmax(Z, axis=-1)
         # Z_threshold = np.zeros( Z.shape )
         # Z_threshold[ np.arange(Z.shape[0]), idx] = 1
         self.attribute_means = self.computeAttributeMeans(Y, Z_threshold)
         self.edge_means = self.computeEdgeMeans(Z_threshold)
-        self.weight_means = self.computeWeightMeans( X, Z_threshold)
+        self.weight_means = self.computeWeightMeans( X_, Z_threshold)
         self.precompute_edge_divergences()
         self.communities_weights = Z.mean(axis=0)
         # print("\n-----------------------------------------------------------\n",\
@@ -1321,13 +1348,13 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         #       "\nWeight_MEANS: ",self.weight_means,
         #       "\nAtt_MEANS: ",self.attribute_means)
 
-    def logprob(self,X,Y):
+    def logprob(self,X_,Y):
         H = pairwise_distances(Y,\
                                self.attribute_means,\
                                 metric=self.attribute_divergence)
         log_prob_total = 0
         for node in range(self.N):
-            divs = self.computeTotalDiv(node,X,self.predicted_memberships,H)
+            divs = self.computeTotalDiv(node,X_,self.predicted_memberships,H)
             c = divs.max()
             divs -= c
             prob_i = self.communities_weights.dot(np.exp(-divs))
