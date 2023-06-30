@@ -1288,9 +1288,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             weight_div = 0
             contains_nan = False
             E_ = E[q,z_t[v_idx_out],:]
-            # if np.isnan(E_).any():
-            #     weight_div = np.inf
-            #     contains_nan = True
+            if np.isnan(E_).any():
+                weight_div = np.inf
+                contains_nan = True
             not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
             E_without_nan = E_[not_nan_idx,:]
             if (len(v_idx_out) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
@@ -1300,9 +1300,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                 
             ## same as before, but now for edges coming in node
             E_ = E[z_t[v_idx_in],q,:]
-            # if np.isnan(E_).any():
-            #     weight_div = np.inf
-            #     contains_nan = True
+            if np.isnan(E_).any():
+                weight_div = np.inf
+                contains_nan = True
             not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
             E_without_nan = E_[not_nan_idx,:]
             if (len(v_idx_in) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
