@@ -1021,15 +1021,42 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
                     + self.precomputed_edge_div[0,z_t[v_idx_in_comp],q].sum()\
                     + self.precomputed_edge_div[0,q,z_t[v_idx_out_comp]].sum()\
                     - 2*self.precomputed_edge_div[0,q,q]
+
+            ## compute weight divergence
             weight_div = 0
-            if len(v_idx_out) > 0:
+            contains_nan = False
+            E_ = E[q,z_t[v_idx_out],:]
+            if np.isnan(E_).any():
+                weight_div = np.inf
+                contains_nan = True
+            not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
+            E_without_nan = E_[not_nan_idx,:]
+            if (len(v_idx_out) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
                 weight_div += np.sum( paired_distances(X_[edge_indices_out,:],\
-                                                        E[q,z_t[v_idx_out],:],\
-                                                        metric=self.weight_divergence))
-            if len(v_idx_in) > 0:
+                                                            E_without_nan,\
+                                                            metric=self.weight_divergence))
+                
+            ## same as before, but now for edges coming in node
+            E_ = E[z_t[v_idx_in],q,:]
+            if np.isnan(E_).any():
+                weight_div = np.inf
+                contains_nan = True
+            not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
+            E_without_nan = E_[not_nan_idx,:]
+            if (len(v_idx_in) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
                 weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
-                                                        E[z_t[v_idx_in],q,:],\
-                                                        metric=self.weight_divergence))
+                                                            E_without_nan,\
+                                                            metric=self.weight_divergence))
+                
+            # weight_div = 0
+            # if len(v_idx_out) > 0:
+            #     weight_div += np.sum( paired_distances(X_[edge_indices_out,:],\
+            #                                             E[q,z_t[v_idx_out],:],\
+            #                                             metric=self.weight_divergence))
+            # if len(v_idx_in) > 0:
+            #     weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
+            #                                             E[z_t[v_idx_in],q,:],\
+            #                                             metric=self.weight_divergence))
             L[ q ] = att_div + (weight_div + edge_div)
         return np.argmin( L )
     
