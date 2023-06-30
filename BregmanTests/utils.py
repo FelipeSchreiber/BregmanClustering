@@ -196,7 +196,7 @@ def best_perm_of_func(y_true,y_pred,f=accuracy_score):
     permutations = []
     for combination in possible_combinations:
         pred = np.array([combination[i] for i in y_pred])
-        scores.append(f(y_true,pred))
+        scores.append(f(y_true,pred,average='macro'))
         permutations.append(pred)
     id_max = np.argmax(scores)
     score = scores[id_max]
@@ -207,7 +207,7 @@ def get_metrics_pred(y_true,y_pred):
     acc,y_best = best_perm_of_func(y_true,y_pred,f=accuracy_score)
     ari = adjusted_rand_score( y_true , y_best )
     nmi = normalized_mutual_info_score( y_true , y_best )
-    f1 = f1_score( y_true , y_best )
+    f1 = f1_score( y_true , y_best , average='macro')
     return {"NMI":nmi,"ARI":ari,"ACC":acc,"F1":f1}
 
 def get_metrics_all_preds(y_true, y_preds, algo_names):
