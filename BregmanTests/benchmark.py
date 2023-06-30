@@ -985,12 +985,12 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             ]
 
             scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
-            scores_all["dataset"] = []
-            scores_all["dataset"].append([data_name]*len(algo_names))
             for key, value in scores_all.items():
                 if key not in scores_agg_datasets:
                     scores_agg_datasets[key] = []
                 scores_agg_datasets[key].extend(value)
+            scores_agg_datasets["dataset"] = []
+            scores_agg_datasets["dataset"].extend([data_name]*len(algo_names))
             # scores["both_ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
             # scores["net_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_graph) )
             # scores["att_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_attributes) )  
