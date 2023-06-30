@@ -914,7 +914,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         return datas,data_names
     
     def run_real_data(self,use_random_init=False,initializer="AIC",n_iters=25,
-                      reduction_method="KBest",plot_class_dist=True):
+                      reduction_method="KBest",plot_class_dist=True,n_components=10):
         datas,data_names = self.get_real_data()
         
         scores_agg_datasets = {}
@@ -969,7 +969,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
             SC2 = None
             if attributes.shape[0] > 1000:
-                feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=60)
+                feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=n_components)
                 data_transformed = feature_map_nystroem.fit_transform(H_and_att)
                 SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
 
