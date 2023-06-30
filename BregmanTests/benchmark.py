@@ -969,10 +969,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
             SC2 = None
             if attributes.shape[0] > 1000:
-                feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=300)
+                feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=60)
                 data_transformed = feature_map_nystroem.fit_transform(H_and_att)
                 SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
-                
+
             else:
                 SC2 = SpectralClustering(n_clusters=K,\
                                      affinity=metric,
