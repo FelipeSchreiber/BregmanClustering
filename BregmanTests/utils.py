@@ -196,16 +196,21 @@ def best_perm_of_func(y_true,y_pred,f=accuracy_score):
     # permutations = []
     best_perm = None
     best_score = -np.inf
+    i = 0
     for combination in possible_combinations:
         pred = np.array([combination[i] for i in y_pred])
-        scores.append(f(y_true,pred))
+        score = f(y_true,pred)
         if scores[-1] > best_score:
-            best_score = scores[-1]
+            best_score = score
             best_perm = pred
-        # permutations.append(pred)
-    id_max = np.argmax(scores)
-    score = scores[id_max]
-    return score,best_perm
+        del pred
+        del score
+        i+=1
+        print("Iteration: ",i)
+    # permutations.append(pred)
+    # id_max = np.argmax(scores)
+    # score = scores[id_max]
+    return best_score,best_perm
 
 def get_metrics_pred(y_true,y_pred):
     acc,y_best = best_perm_of_func(y_true,y_pred,f=accuracy_score)
