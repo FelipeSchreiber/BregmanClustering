@@ -8,6 +8,8 @@ from sklearn.manifold import SpectralEmbedding
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 import umap
+import itertools
+from sklearn.metrics import *
 import seaborn as sns
 
 SIZE_TITLE = 24
@@ -183,6 +185,44 @@ def plotting( x, curves, labels, xticks,
     if saveFig:
         plt.savefig( fileName, format = 'jpeg', bbox_inches = 'tight' )
     plt.show()
+
+#Funcao que dada a matriz de probabilidades retornada pelo algoritmo e
+#  o groundtruth computa a acurácia
+def best_perm_of_func(y_true,y_pred,f=accuracy_score):
+    if len(y_pred) != len(y_true):
+        raise ValueError('x and y must be arrays of the same size')
+    scores = []
+    possible_combinations = list(itertools.permutations(np.unique(y_pred)))
+    permutations = []
+    for combination in possible_combinations:
+        pred = np.array([combination[i] for i in y_pred])
+        scores.append(f(y_true,pred))
+        permutations.append(pred)
+    id_max = np.argmax(scores)
+    score = scores[id_max]
+    best_perm = permutations[id_max]
+    return score,best_perm
+
+def get_metrics_pred(y_true,y_pred):
+    acc,y_best = best_perm_of_func(y_true,y_pred,f=accuracy_score)
+    ari = adjusted_rand_score( y_true , y_best )
+    nmi = normalized_mutual_info_score( y_true , y_best )
+    f1 = f1_score( y_true , y_best )
+    return {"NMI":nmi,"ARI":ari,"ACC":acc,"F1":f1}
+
+def get_metrics_all_preds(y_true, y_preds, algo_names):
+    results = {}
+    metrics_ = get_metrics_pred(y_true,y_preds[0])
+    for key in metrics_:
+        results[key] = []
+    results["algorithm"] = []
+
+    for algo_name,y_pred in zip(algo_names,y_preds):
+        results["algorithm"].append(algo_name)
+        metrics_ = get_metrics_pred(y_true,y_pred)
+        for key, value in metrics_.items():
+            results[key].aapend(value)
+    return results
 
 def get_spectral_decomposition(A,k):
     if (A<0).any():

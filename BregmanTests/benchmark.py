@@ -955,23 +955,46 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 z_pred_both = model.fit(A,E,attributes.numpy()).predict( None, None )
 
             kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(attributes.numpy())
+            
             G_nx = to_networkx(data)
             G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
             partition = la.find_partition(G, la.ModularityVertexPartition)
-            scores["both_ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
-            scores["net_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_graph) )
-            scores["att_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_attributes) )  
-            scores["kmeans_ARI"].append(adjusted_rand_score(z_true,kmeans.labels_))
-            scores["leiden_ARI"].append(adjusted_rand_score(z_true,np.array(partition.membership)))
+
             H = np.hstack((A,A.T))
             SC = SpectralClustering(n_clusters=K,\
                                      assign_labels='discretize',random_state=0).fit(H)
-            scores["SC_ARI"].append(adjusted_rand_score(z_true,SC.labels_))
-            scores["dataset"].append(data_name)
+            
+            y_preds = [
+                z_pred_both,
+                model.memberships_from_graph,
+                model.memberships_from_attributes,
+                kmeans.labels_,
+                np.array(partition.membership),
+                SC.labels_
+            ]
+
+            algo_names = [
+                "both",
+                "net",
+                "att",
+                "kmeans",
+                "leiden",
+                "SC"
+            ]
+
+            scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
+            scores_all["dataset"].append([data_name]*len(algo_names))
+            # scores["both_ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
+            # scores["net_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_graph) )
+            # scores["att_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_attributes) )  
+            # scores["kmeans_ARI"].append(adjusted_rand_score(z_true,kmeans.labels_))
+            # scores["leiden_ARI"].append(adjusted_rand_score(z_true,np.array(partition.membership)))
+            # scores["SC_ARI"].append(adjusted_rand_score(z_true,SC.labels_))
+            # scores["dataset"].append(data_name)
             
             A = None
             E = None
             attributes = None
             z_pred_both = z_true = None
             torch.cuda.empty_cache()
-        return scores
+        return scores_all
