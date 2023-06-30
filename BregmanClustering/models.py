@@ -1335,7 +1335,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         soft_assign = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
         if(np.isnan(soft_assign).any()):
             print(f"Ztilde: {Ztilde}\n",f"edge_means: {self.edge_means}")
-        Ztilde = np.nan_to_num(Ztilde)        
+        soft_assign = np.nan_to_num(soft_assign)       
         return normalize(soft_assign, axis=1, norm='l1')
             
     def M_projection(self,X_,Y,Z):
