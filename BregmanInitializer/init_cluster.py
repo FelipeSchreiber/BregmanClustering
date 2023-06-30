@@ -410,7 +410,7 @@ class BregmanInitializer():
             preds = model.fit(U).predict(U).reshape(-1, 1)
             self.graph_model_init = model
         else:
-            G_nx = nx.from_scipy_sparse_array(A)
+            G_nx = nx.from_scipy_sparse_array(self.A)
             nx.set_edge_attributes(G_nx,self.X,"weight")
             G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
             partition = la.find_partition(G, la.ModularityVertexPartition)
