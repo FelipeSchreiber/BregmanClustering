@@ -1332,7 +1332,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range(self.N):
             Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
-        c = Ztilde.min(axis=1)
+        c = Ztilde.max(axis=1)
         Ztilde -= c[:,None]
         Ztilde = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
         Ztilde = np.nan_to_num(Ztilde)        
@@ -1360,7 +1360,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         log_prob_total = 0
         for node in range(self.N):
             divs = self.computeTotalDiv(node,X_,self.predicted_memberships,H)
-            c = divs.min()
+            c = divs.max()
             divs -= c
             prob_i = self.communities_weights.dot(np.exp(-divs))
             log_prob_total += np.log(prob_i)
