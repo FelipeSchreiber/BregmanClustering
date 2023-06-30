@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
 from sklearn.mixture import GaussianMixture
-from sklearn.metrics.pairwise import pairwise_kernels
+from sklearn.metrics.pairwise import pairwise_kernels, rbf_kernel, euclidean_distances
 from sklearn.manifold import SpectralEmbedding
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
+from sklearn.metrics import hamming_loss
 import umap
 import itertools
 from sklearn.metrics import *
@@ -16,6 +17,16 @@ SIZE_TITLE = 24
 SIZE_LABELS = 24
 SIZE_TICKS = 18
 SIZE_LEGEND = 18
+
+def make_riemannian_metric(N,n_features,gamma=None):
+    if gamma is None:
+        gamma = 1.0 / n_features
+    def riemannian_metric(row1,row2):
+        net_dist = hamming_loss(row1[:N],row2[:N])
+        att_dist = euclidean_distances(row1[N:].reshape(1, -1),row2[N:].reshape(1, -1))
+        distance = np.exp(-(net_dist + gamma*att_dist)) 
+        return distance
+    return riemannian_metric
 
 def plot_class_dist_(data,dataset_name):
     sns.countplot(x=data)

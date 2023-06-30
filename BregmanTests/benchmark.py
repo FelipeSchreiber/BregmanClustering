@@ -915,15 +915,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
     def run_real_data(self,use_random_init=False,initializer="AIC",n_iters=25,
                       reduction_method="KBest",plot_class_dist=True):
         datas,data_names = self.get_real_data()
-        scores = {}
-        # scores["dataset"] = []
-        # scores["both_ARI"] = []
-        # scores["net_ARI"] = []
-        # scores["att_ARI"] = []
-        # scores["kmeans_ARI"] = []
-        # scores["leiden_ARI"] = []
-        # scores["SC_ARI"] = []
-
+        
         scores_agg_datasets = {}
         scores_agg_datasets["dataset"] = []
         for data,data_name in zip(datas,data_names):
@@ -952,12 +944,13 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         n_iters=n_iters
                                 )
             print("INPUTS: ",A.shape,E.shape,attributes.shape)
+            X_np = attributes.numpy()
             if self.torch_model:
                 z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
             else:
-                z_pred_both = model.fit(A,E,attributes.numpy()).predict( None, None )
+                z_pred_both = model.fit(A,E,X_np).predict( None, None )
 
-            kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(attributes.numpy())
+            kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(X_np)
             
             G_nx = to_networkx(data)
             G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
@@ -966,14 +959,12 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             H = np.hstack((A,A.T))
             SC = SpectralClustering(n_clusters=K,\
                                      assign_labels='discretize',random_state=0).fit(H)
-
-            SC2 = SpectralClustering(n_clusters=K,\
-                                     assign_labels='discretize',random_state=0).fit(A)
-
-            A = nx.adjacency_matrix(G_nx)
-            SC3 = SpectralClustering(n_clusters=K,\
-                                     assign_labels='discretize',random_state=0).fit(A)
             
+            metric = make_riemannian_metric(H.shape[1],X_np.shape[1])
+            H_and_att = np.hstack((H,X_np))
+            SC2 = SpectralClustering(n_clusters=K,\
+                                     affinity=metric,
+                                    assign_labels='discretize',random_state=0).fit(H_and_att)
             y_preds = [
                 z_pred_both,
                 model.memberships_from_graph,
@@ -981,8 +972,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 kmeans.labels_,
                 np.array(partition.membership),
                 SC.labels_,
-                SC2.labels_,
-                SC3.labels_
+                SC2.labels_
 
             ]
 
@@ -993,8 +983,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "kmeans",
                 "leiden",
                 "SC",
-                "SC2",
-                "SC3"
+                "SC2"
             ]
 
             scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
@@ -1003,13 +992,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     scores_agg_datasets[key] = []
                 scores_agg_datasets[key].extend(value)
             scores_agg_datasets["dataset"].extend([data_name]*len(algo_names))
-            # scores["both_ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
-            # scores["net_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_graph) )
-            # scores["att_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_attributes) )  
-            # scores["kmeans_ARI"].append(adjusted_rand_score(z_true,kmeans.labels_))
-            # scores["leiden_ARI"].append(adjusted_rand_score(z_true,np.array(partition.membership)))
-            # scores["SC_ARI"].append(adjusted_rand_score(z_true,SC.labels_))
-            # scores["dataset"].append(data_name)
             
             A = None
             E = None
