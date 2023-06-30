@@ -414,7 +414,7 @@ class BregmanInitializer():
             nx.set_edge_attributes(G_nx,self.X,"weight")
             G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
             partition = la.find_partition(G, la.ModularityVertexPartition)
-            preds = np.array(partition.membership)
+            preds = np.array(partition.membership).reshape(-1, 1)
             self.graph_model_init = la
             # print("K",self.n_clusters)
             # model = BregmanGraphClustering(n_clusters=self.n_clusters,\
