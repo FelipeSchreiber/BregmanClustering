@@ -916,13 +916,13 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                       reduction_method="KBest",plot_class_dist=True):
         datas,data_names = self.get_real_data()
         scores = {}
-        scores["dataset"] = []
-        scores["both_ARI"] = []
-        scores["net_ARI"] = []
-        scores["att_ARI"] = []
-        scores["kmeans_ARI"] = []
-        scores["leiden_ARI"] = []
-        scores["SC_ARI"] = []
+        # scores["dataset"] = []
+        # scores["both_ARI"] = []
+        # scores["net_ARI"] = []
+        # scores["att_ARI"] = []
+        # scores["kmeans_ARI"] = []
+        # scores["leiden_ARI"] = []
+        # scores["SC_ARI"] = []
 
         scores_agg_datasets = {}
         scores_agg_datasets["dataset"] = []
@@ -966,6 +966,13 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             H = np.hstack((A,A.T))
             SC = SpectralClustering(n_clusters=K,\
                                      assign_labels='discretize',random_state=0).fit(H)
+
+            SC2 = SpectralClustering(n_clusters=K,\
+                                     assign_labels='discretize',random_state=0).fit(A)
+
+            A = nx.adjacency_matrix(G_nx)
+            SC3 = SpectralClustering(n_clusters=K,\
+                                     assign_labels='discretize',random_state=0).fit(A)
             
             y_preds = [
                 z_pred_both,
@@ -973,7 +980,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 model.memberships_from_attributes,
                 kmeans.labels_,
                 np.array(partition.membership),
-                SC.labels_
+                SC.labels_,
+                SC2.labels_,
+                SC3.labels_
+
             ]
 
             algo_names = [
@@ -982,7 +992,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "att",
                 "kmeans",
                 "leiden",
-                "SC"
+                "SC",
+                "SC2",
+                "SC3"
             ]
 
             scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
