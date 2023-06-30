@@ -196,7 +196,7 @@ def best_perm_of_func(y_true,y_pred,f=accuracy_score):
     permutations = []
     for combination in possible_combinations:
         pred = np.array([combination[i] for i in y_pred])
-        scores.append(f(y_true,pred,average='macro'))
+        scores.append(f(y_true,pred))
         permutations.append(pred)
     id_max = np.argmax(scores)
     score = scores[id_max]
