@@ -1228,8 +1228,6 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         """
         edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
             weights.sum(axis=(-1,-2))
-        if(np.isnan(edge_means).any()):
-            print("------------>",weights)
         return edge_means 
     
     def computeWeightMeans( self, X_, Z):
@@ -1336,7 +1334,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         Ztilde -= c[:,None]
         soft_assign = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
         if(np.isnan(soft_assign).any()):
-            print(Ztilde)
+            print(f"Ztilde: {Ztilde}\n",f"edge_means: {self.edge_means}")
         # Ztilde = np.nan_to_num(Ztilde)        
         return normalize(soft_assign, axis=1, norm='l1')
             
