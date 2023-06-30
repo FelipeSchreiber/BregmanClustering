@@ -925,6 +925,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         scores["SC_ARI"] = []
 
         scores_agg_datasets = {}
+        scores_agg_datasets["dataset"] = []
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
             attributes = data.x
@@ -989,7 +990,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 if key not in scores_agg_datasets:
                     scores_agg_datasets[key] = []
                 scores_agg_datasets[key].extend(value)
-            scores_agg_datasets["dataset"] = []
             scores_agg_datasets["dataset"].extend([data_name]*len(algo_names))
             # scores["both_ARI"].append(adjusted_rand_score( z_true, z_pred_both ))
             # scores["net_ARI"].append(adjusted_rand_score(z_true, model.memberships_from_graph) )
