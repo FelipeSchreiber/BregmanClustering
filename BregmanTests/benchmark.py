@@ -6,6 +6,7 @@ from BregmanTests.distributions import *
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as edgeBreg
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
+from sklearn.kernel_approximation import Nystroem
 # from BregmanClusteringTorch.torch_models import BregmanNodeEdgeAttributeGraphClusteringTorch as torchBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
 from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
@@ -926,9 +927,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             if plot_class_dist:
                 plot_class_dist_(z_true,data_name)
     
-            if attributes.shape[0] > 1000:
-                continue
-    
             if self.preprocess:
                 attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
     
@@ -968,7 +966,15 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
             metric = make_riemannian_metric(H.shape[1],X_np.shape[1],att_dist_=hamming_loss)
             H_and_att = np.hstack((H,X_np))
-            SC2 = SpectralClustering(n_clusters=K,\
+            
+            SC2 = None
+            if attributes.shape[0] > 1000:
+                feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=300)
+                data_transformed = feature_map_nystroem.fit_transform(H_and_att)
+                SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
+                
+            else:
+                SC2 = SpectralClustering(n_clusters=K,\
                                      affinity=metric,
                                     assign_labels='discretize',random_state=0).fit(H_and_att)
             y_preds = [
