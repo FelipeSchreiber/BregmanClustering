@@ -213,11 +213,12 @@ def best_perm_of_func(y_true,y_pred,f=accuracy_score):
     return best_score,best_perm
 
 def get_metrics_pred(y_true,y_pred):
-    acc,y_best = best_perm_of_func(y_true,y_pred,f=accuracy_score)
+    # acc,y_best = best_perm_of_func(y_true,y_pred,f=accuracy_score)
+    y_best = y_pred
     ari = adjusted_rand_score( y_true , y_best )
     nmi = normalized_mutual_info_score( y_true , y_best )
-    f1 = f1_score( y_true , y_best , average='macro')
-    return {"NMI":nmi,"ARI":ari,"ACC":acc,"F1":f1}
+    # f1 = f1_score( y_true , y_best , average='macro'),"ACC":acc,"F1":f1
+    return {"NMI":nmi,"ARI":ari}
 
 def get_metrics_all_preds(y_true, y_preds, algo_names):
     results = {}
