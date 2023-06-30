@@ -410,19 +410,19 @@ class BregmanInitializer():
             preds = model.fit(U).predict(U).reshape(-1, 1)
             self.graph_model_init = model
         else:
-            G_nx = nx.from_scipy_sparse_array(self.A)
-            nx.set_edge_attributes(G_nx,self.X,"weight")
-            G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
-            partition = la.find_partition(G, la.ModularityVertexPartition)
-            preds = np.array(partition.membership).reshape(-1, 1)
-            self.graph_model_init = la
-            # print("K",self.n_clusters)
-            # model = BregmanGraphClustering(n_clusters=self.n_clusters,\
-            #                             edgeDistribution=self.edgeDistribution,\
-            #                             weightDistribution=self.weightDistribution
-            #                             )
-            # preds = model.fit(self.A,self.X,Z_init=Z_init).predict(None, None).reshape(-1, 1)
-            # self.graph_model_init = model
+            # G_nx = nx.from_scipy_sparse_array(self.A)
+            # nx.set_edge_attributes(G_nx,self.X,"weight")
+            # G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
+            # partition = la.find_partition(G, la.ModularityVertexPartition)
+            # preds = np.array(partition.membership).reshape(-1, 1)
+            # self.graph_model_init = la
+            print("K",self.n_clusters)
+            model = BregmanGraphClustering(n_clusters=self.n_clusters,\
+                                        edgeDistribution=self.edgeDistribution,\
+                                        weightDistribution=self.weightDistribution
+                                        )
+            preds = model.fit(self.A,self.X,Z_init=Z_init).predict(None, None).reshape(-1, 1)
+            self.graph_model_init = model
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
         
