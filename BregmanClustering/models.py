@@ -1124,7 +1124,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
     
     def precompute_edge_divergences(self):
         if(np.isnan(self.edge_means).any()):
-            print(self.edge_means)
+            raise ValueError ("GOT NAN EDGE MEANS")
         self.precomputed_edge_div = pairwise_distances(np.array([0,1]).reshape(-1,1),\
                                              self.edge_means.reshape(-1,1),\
                                              metric=self.edge_divergence)\
