@@ -1297,7 +1297,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                 weight_div += np.sum( paired_distances(X_[edge_indices_out,:][not_nan_idx,:],\
                                                             E_without_nan,\
                                                             metric=self.weight_divergence))
-                
+                print(f"E.shape: {E_without_nan.shape} , {X_[edge_indices_out].shape}")                
             ## same as before, but now for edges coming in node
             E_ = E[z_t[v_idx_in],q,:]
             if np.isnan(E_).any():
@@ -1309,7 +1309,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                 weight_div += np.sum( paired_distances(X_[edge_indices_in,:][not_nan_idx,:],\
                                                             E_without_nan,\
                                                             metric=self.weight_divergence))
-
+                print(f"E.shape: {E_without_nan.shape} , {X_[edge_indices_in].shape}")                
             # weight_div = 0
             # if len(v_idx_out) > 0:
             #     weight_div += np.sum( paired_distances(X[node,v_idx_out,:],\
