@@ -1312,7 +1312,6 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                                                             metric=self.weight_divergence))
                 if (not np.array_equal(E_without_nan.shape,X_[edge_indices_out].shape)):
                     raise ValueError ("ERROR mishape")
-                # print(f"E.shape: {E_without_nan.shape} , {X_[edge_indices_out].shape}")                
             ## same as before, but now for edges coming in node
             E_ = E[z_t[v_idx_in],q,:]
             if np.isnan(E_).any():
@@ -1336,8 +1335,6 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             #                                             E[z_t[v_idx_in],q,:],\
             #                                             metric=self.weight_divergence))
             L[ q ] = att_div + weight_div + edge_div
-            # if np.isnan(L[q]):
-            #     print(f"Att: {att_div}, weight_div: {weight_div}, edge_div: {edge_div}")
         if (np.isnan(L).any()):
             raise ValueError ("L contains Nan")
         return L
@@ -1348,6 +1345,13 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
     def E_projection(self, X, Y):
         Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
+        if np.isnan(H).any():
+            if np.isnan(Y).any():
+                print("Att contains nan")
+            if np.isnan(self.attribute_means):
+                print("Att means contains nan")
+            
+            raise ValueError("H contains nan")
         for node in range(self.N):
             Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
         # print(f"Ztilde: {Ztilde}")
