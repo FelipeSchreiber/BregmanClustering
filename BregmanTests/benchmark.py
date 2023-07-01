@@ -198,7 +198,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml"])
         print(f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml")
         #X = np.array(pd.read_csv('deg.dat',header=None)[0])
-        edges = open('test.csv', "r")
+        edges = open('edge.dat', "r")
         G = nx.parse_edgelist(Data, nodetype=int)
         edges.close()
         com_df = pd.read_csv('com.dat',header=None)
