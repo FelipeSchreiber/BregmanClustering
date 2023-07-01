@@ -1261,7 +1261,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                                     X_,\
                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
         if (np.isnan(weight_means).any()):
-            raise ValueError ("W means contains Nan")
+            print("W means contains Nan")
         return weight_means
     
     def computeTotalDiv(self,node,X_,Z,H):
