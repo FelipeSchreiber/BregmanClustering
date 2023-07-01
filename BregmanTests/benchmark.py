@@ -197,10 +197,12 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_installer}"])
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml"])
         print(f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml")
-        X = np.array(pd.read_csv('deg.dat',header=None)[0])
-        Data = open('test.csv', "r")
+        #X = np.array(pd.read_csv('deg.dat',header=None)[0])
+        edges = open('test.csv', "r")
         G = nx.parse_edgelist(Data, nodetype=int)
-        return G,X
+        edges.close()
+        com_df = pd.read_csv('com.dat',header=None)
+        return G,com_df
     
     def to_pyg_data(self,X,Y):
         X_sparse = torch.tensor(X).to_sparse()
