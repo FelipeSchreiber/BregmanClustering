@@ -974,7 +974,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             if self.torch_model:
                 z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
             else:
-                z_pred_both = model.fit(A,E,X_np,fromVectorToMembershipMatrice(SC2.labels_,K)).predict( None, None )
+                #fromVectorToMembershipMatrice(SC2.labels_,K)
+                z_pred_both = model.fit(A,E,X_np).predict( None, None )
 
             kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(X_np)
             
