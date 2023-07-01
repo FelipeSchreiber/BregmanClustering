@@ -1,11 +1,10 @@
 import numpy as np
 import networkx as nx
 from BregmanTests.distributions import *
-# from BregmanClustering.models import *
-# from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClustering as edgeBreg
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as edgeBreg
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
+from BregmanKernel import BregmanKernelClustering
 from sklearn.kernel_approximation import Nystroem
 # from BregmanClusteringTorch.torch_models import BregmanNodeEdgeAttributeGraphClusteringTorch as torchBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
@@ -1018,17 +1017,24 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         metric = make_riemannian_metric(H.shape[1],Y.shape[1],att_dist_=hamming_loss)
         H_and_att = np.hstack((H,Y))
-        
-        SC2 = None
-        if Y.shape[0] > 1000:
-            feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=K)
-            data_transformed = feature_map_nystroem.fit_transform(H_and_att)
-            SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
 
-        else:
-            SC2 = SpectralClustering(n_clusters=K,\
-                                    affinity=metric,
-                                    assign_labels='discretize',random_state=0).fit(H_and_att)
+        SC2 = BregmanKernelClustering(K, 
+                edgeDistribution = "bernoulli",
+                attributeDistribution = "bernoulli",
+                weightDistribution = "gaussian",
+                n_iters = 25, full_kernel=False)
+        
+        SC2.fit(A,E,Y)
+        # SC2 = None
+        # if Y.shape[0] > 1000:
+        #     feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=K)
+        #     data_transformed = feature_map_nystroem.fit_transform(H_and_att)
+        #     SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
+
+        # else:
+        #     SC2 = SpectralClustering(n_clusters=K,\
+        #                             affinity=metric,
+        #                             assign_labels='discretize',random_state=0).fit(H_and_att)
                 
         z_pred_both = None
         #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)

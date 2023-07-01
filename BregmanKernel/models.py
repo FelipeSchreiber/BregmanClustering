@@ -1,118 +1,122 @@
-# #!/usr/bin/env python3
-# # -*- coding: utf-8 -*-
-# """
-# Created on Fri Feb 17 16:59:19 2023
-# @author: maximilien, Felipe Schreiber Fernandes
-# felipesc@cos.ufrj.br
-# """
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Feb 17 16:59:19 2023
+@author: maximilien, Felipe Schreiber Fernandes
+felipesc@cos.ufrj.br
+"""
 
-# import numpy as np
-# import scipy as sp
-# from sklearn.preprocessing import normalize
-# from sklearn.base import BaseEstimator, ClusterMixin
-# from .divergences import *
-# from .phi import *
-# from BregmanInitializer.init_cluster import *
-# from sklearn.metrics import accuracy_score
-# from sklearn.metrics.pairwise import pairwise_kernels, paired_distances, pairwise_distances
-# from sklearn.mixture import GaussianMixture
-# from sklearn.manifold import SpectralEmbedding
-# from tqdm import tqdm
-# from sklearn.cluster import SpectralClustering
-# from sklearn.preprocessing import normalize, MinMaxScaler
-# import warnings
-# warnings.filterwarnings("ignore")
+import numpy as np
+import scipy as sp
+from sklearn.preprocessing import normalize
+from sklearn.base import BaseEstimator, ClusterMixin
+from .divergences import *
+from BregmanInitializer.init_cluster import *
+from sklearn.metrics import accuracy_score
+from sklearn.metrics.pairwise import pairwise_kernels, paired_distances, pairwise_distances
+from sklearn.mixture import GaussianMixture
+from sklearn.manifold import SpectralEmbedding
+from tqdm import tqdm
+from sklearn.cluster import SpectralClustering
+from sklearn.kernel_approximation import Nystroem
+from sklearn.preprocessing import normalize, MinMaxScaler
+import warnings
+warnings.filterwarnings("ignore")
 
-# def fromVectorToMembershipMatrice( z, n_clusters = 2 ):
-#     if len( set ( z ) ) > n_clusters:
-#         raise TypeError( 'There is a problem with the number of clusters' )
-#     n = len( z )
-#     Z = np.zeros( ( n, n_clusters ) )
-#     for i in range( n ):
-#         Z[ i, z[i] ] = 1
-#     return Z
+def fromVectorToMembershipMatrice( z, n_clusters = 2 ):
+    if len( set ( z ) ) > n_clusters:
+        raise TypeError( 'There is a problem with the number of clusters' )
+    n = len( z )
+    Z = np.zeros( ( n, n_clusters ) )
+    for i in range( n ):
+        Z[ i, z[i] ] = 1
+    return Z
 
-# def frommembershipMatriceToVector( Z ):
-#     z = np.argmax(Z,axis=1)
-#     return z
+def frommembershipMatriceToVector( Z ):
+    z = np.argmax(Z,axis=1)
+    return z
 
-# class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
-#     def __init__( self, n_clusters, 
-#                  edgeDistribution = "bernoulli",
-#                  attributeDistribution = "gaussian",
-#                  weightDistribution = "gaussian",
-#                  n_iters = 25):
-#         self.n_clusters = n_clusters
-#         self.n_iters = n_iters
-#         self.edgeDistribution = edgeDistribution
-#         self.attributeDistribution = attributeDistribution
-#         self.weightDistribution = weightDistribution
-#         self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
-#         self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
-#         self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
+class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
+    def __init__( self, n_clusters, 
+                 edgeDistribution = "bernoulli",
+                 attributeDistribution = "gaussian",
+                 weightDistribution = "gaussian",
+                 n_iters = 25, full_kernel=False):
+        self.n_clusters = n_clusters
+        self.n_iters = n_iters
+        self.edgeDistribution = edgeDistribution
+        self.attributeDistribution = attributeDistribution
+        self.weightDistribution = weightDistribution
+        self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
+        self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
+        self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
+        self.full_kernel = full_kernel
 
-#     def make_single_riemannian_metric(self,n_features,gamma=None,att_dist_=None):
-#         if gamma is None:
-#             gamma = 1.0 / n_features
+    def make_single_riemannian_metric(self,n_features,gamma=None):
+        if gamma is None:
+            gamma = 1.0 / n_features
         
-#         if att_dist_ is None:
-#             def att_dist_func(row1,row2):
-#                 d = euclidean_distances(row1.reshape(1, -1),row2.reshape(1, -1))
-#                 return gamma*d
-#             att_dist_ = att_dist_func
+        N = self.N
+        def riemannian_metric(row1,row2):
+            net_d = self.edge_divergence(row1[:N],row2[:N])/N
+            att_d = gamma*self.attribute_divergence(row1[N:],row2[N:])
+            distance = np.exp(-(net_d + att_d)) 
+            return distance
         
-#         def riemannian_metric(row1,row2):
-#             net_d = hamming_loss(row1[:N],row2[:N])
-#             att_d = att_dist_(row1[N:],row2[N:])
-#             distance = np.exp(-(net_d + att_d)) 
-#             return distance
-        
-#         return riemannian_metric
-#     def fit( self, A, X, Y):
-#         """
-#         Training step.
-#         Parameters
-#         ----------
-#         Y : ARRAY
-#             Input data matrix (n, m) of n samples and m features.
-#         X : ARRAY
-#             Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
-#         A : ARRAY
-#             Input (n,n) matrix encoding the adjacency matrix
-#         Returns
-#         -------
-#         TYPE
-#             Trained model.
-#         """
-#         self.N = A.shape[0]
-#         self.edge_index = np.nonzero(A)
-#         X_ = X[self.edge_index[0],self.edge_index[1],:]
-#         metric = make_riemannian_metric(H.shape[1],X_np.shape[1],att_dist_=hamming_loss)
-#             H_and_att = np.hstack((H,X_np))
+        return riemannian_metric
+    
+    def fit( self, A, X, Y):
+        """
+        Training step.
+        Parameters
+        ----------
+        Y : ARRAY
+            Input data matrix (n, m) of n samples and m features.
+        X : ARRAY
+            Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
+        A : ARRAY
+            Input (n,n) matrix encoding the adjacency matrix
+        Returns
+        -------
+        TYPE
+            Trained model.
+        """
+        self.N = A.shape[0]
+        self.edge_index = np.nonzero(A)
+        self.model = None
+        X_ = X[self.edge_index[0],self.edge_index[1],:]
+        metric = self.make_single_riemannian_metric(Y.shape[1],gamma=None)
+        H = np.hstack((A,A.T))
+        H_and_att = np.hstack((H,Y))
             
-#             SC2 = None
-#             if attributes.shape[0] > 1000:
-#                 feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=n_components)
-#                 data_transformed = feature_map_nystroem.fit_transform(H_and_att)
-#                 SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
-
-#             else:
-#                 SC2 = SpectralClustering(n_clusters=K,\
-#                                      affinity=metric,
-#                                     assign_labels='discretize',random_state=0).fit(H_and_att)
+        if self.full_kernel:
+            self.model = SpectralClustering(n_clusters=self.n_clusters,\
+                                     affinity=metric,
+                                    assign_labels='discretize',random_state=0).fit(H_and_att)
+        else:
+            feature_map_nystroem = Nystroem(kernel=metric,\
+                                            random_state=42,\
+                                            n_components=self.n_clusters)
+            
+            data_transformed = feature_map_nystroem.fit_transform(H_and_att)
+            self.model = KMeans(n_clusters=self.n_clusters,\
+                                random_state=0,\
+                                n_init="auto")\
+                                .fit(data_transformed)
+        self.labels_ = self.model.labels_
         
-#     def predict(self, X, Y):
-#         """
-#         Prediction step.
-#         Parameters
-#         ----------
-#         X : ARRAY
-#             Input data matrix (n, n) of the node interactions
-#         Y : ARRAY
-#             Input data matrix (n, m) of the attributes of the n nodes (each attribute has m features).
-#         Returns
-#         -------
-#         z: Array
-#             Assigned cluster for each data point (n, )
-#         """
-#         return frommembershipMatriceToVector( self.predicted_memberships )
+    def predict(self, X, Y):
+        """
+        Prediction step.
+        Parameters
+        ----------
+        X : ARRAY
+            Input data matrix (n, n) of the node interactions
+        Y : ARRAY
+            Input data matrix (n, m) of the attributes of the n nodes (each attribute has m features).
+        Returns
+        -------
+        z: Array
+            Assigned cluster for each data point (n, )
+        """
+        return self.model.labels_

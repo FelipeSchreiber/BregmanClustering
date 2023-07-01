@@ -11,7 +11,7 @@ import scipy as sp
 from sklearn.preprocessing import normalize
 from sklearn.base import BaseEstimator, ClusterMixin
 from .divergences import *
-from .phi import *
+# from .phi import *
 from BregmanInitializer.init_cluster import *
 from sklearn.metrics import accuracy_score
 from sklearn.metrics.pairwise import pairwise_kernels, paired_distances, pairwise_distances

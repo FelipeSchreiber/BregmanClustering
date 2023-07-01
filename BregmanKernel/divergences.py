@@ -26,8 +26,9 @@ SEE:
 #as stated in the paper page 1709
 def logistic_loss(X,M):
     # total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
-    total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) ))
-    return total.sum()
+    # total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) ))
+    total = np.linalg.norm((X-M).flatten(),ord=1)
+    return total
 
 #Multinomial | KL-divergence
 def KL_div(X,M):
