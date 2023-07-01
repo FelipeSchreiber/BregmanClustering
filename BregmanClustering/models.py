@@ -1332,7 +1332,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             # if np.isnan(L[q]):
             #     print(f"Att: {att_div}, weight_div: {weight_div}, edge_div: {edge_div}")
         if (np.isnan(L).any()):
-            print("L contains Nan")
+            raise ValueError ("L contains Nan")
         return L
 
     def q_exp(self,x,q):
