@@ -201,7 +201,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         edges = open('edge.dat', "r")
         G = nx.parse_edgelist(edges, nodetype=int)
         edges.close()
-        com_df = pd.read_csv('com.dat',header=None)
+        com_df = pd.read_csv('com.dat',delimiter="\t",header=None)
         return G,com_df
     
     def to_pyg_data(self,X,Y):
