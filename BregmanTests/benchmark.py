@@ -1055,7 +1055,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
         return scores_all,algo_names
 
-    def run_real_data(self,use_random_init=False,initializer="AIC",n_iters=25,
+    def run_real_data(self,use_random_init=False,n_iters=25,
                       reduction_method="KBest",plot_class_dist=True,n_runs=10):
         datas,data_names = self.get_real_data()
         scores_agg_datasets = {}
@@ -1083,7 +1083,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name,\
                                         use_random_init=use_random_init,
-                                        initializer=initializer,
+                                        initializer=self.initializer,
                                         n_iters=n_iters
                                 )
             
