@@ -74,7 +74,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         else:
             feature_map_nystroem = Nystroem(kernel=metric,\
                                             random_state=42,\
-                                            n_components=self.n_clusters)
+                                            n_components=self.n_clusters*4)
             
             data_transformed = feature_map_nystroem.fit_transform(H_and_att)
             self.model = KMeans(n_clusters=self.n_clusters,\
