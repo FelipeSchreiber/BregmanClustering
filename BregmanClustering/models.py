@@ -1330,14 +1330,15 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range(self.N):
             Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
-        print(f"Ztilde: {Ztilde}")
+        # print(f"Ztilde: {Ztilde}")
+        Ztilde = np.nan_to_num(Ztilde ,  nan=np.inf)
         c = Ztilde.min(axis=1)
         Ztilde -= c[:,None]
-        print(f"c + Ztilde: {Ztilde}")
+        # print(f"c + Ztilde: {Ztilde}")
         soft_assign = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
         # if(np.isnan(soft_assign).any()):
         #     print(f"Ztilde: {Ztilde}\n",f"edge_means: {self.edge_means}")
-        soft_assign = np.nan_to_num(soft_assign)       
+        # soft_assign = np.nan_to_num(soft_assign)       
         return normalize(soft_assign, axis=1, norm='l1')
             
     def M_projection(self,X_,Y,Z):
