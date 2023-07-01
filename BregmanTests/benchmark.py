@@ -191,12 +191,12 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         with open('my_config.toml', 'w') as f:
             f.write(cfg_data)
         
-    def generate_benchmark_ABCD(self):
+    def generate_ABCD_benchmark(self):
         self.gen_config_file()
         jl_path = find_jl()
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_installer}"])
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml"])
-        print(f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml")
+        # print(f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml")
         #X = np.array(pd.read_csv('deg.dat',header=None)[0])
         edges = open('edge.dat', "r")
         G = nx.parse_edgelist(edges, nodetype=int)
@@ -898,6 +898,85 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         return stats
     
+    # def run_ABCD_benchmark(self,plot_class_dist=False):
+    #     G,df = self.generate_benchmark_ABCD()
+    #     if plot_class_dist:
+    #         plot_class_dist_(z_true,data_name)
+    
+    #     z_pred_both = None
+    #     K = np.unique(z_true).shape[0]
+    #     E = None
+    #     A = to_dense_adj(data.edge_index).numpy()[0]
+    #     n = A.shape[0]
+    #     if datas[0].edge_attr is None:
+    #         E = A.reshape(n,n,1)
+    #     else:
+    #         E = datas[0].edge_attr.numpy()
+    #     model = self.model_(n_clusters=K,\
+    #                             attributeDistribution=self.attributes_distribution_name,\
+    #                             edgeDistribution=self.edge_distribution_name,\
+    #                             weightDistribution=self.weight_distribution_name,\
+    #                             use_random_init=use_random_init,
+    #                             initializer=initializer,
+    #                             n_iters=n_iters
+    #                         )
+    #     print("INPUTS: ",A.shape,E.shape,attributes.shape)
+    #     X_np = attributes.numpy()
+
+    #     H = np.hstack((A,A.T))
+    #     SC = SpectralClustering(n_clusters=K,\
+    #                                 assign_labels='discretize',random_state=0).fit(H)
+        
+    #     metric = make_riemannian_metric(H.shape[1],X_np.shape[1],att_dist_=hamming_loss)
+    #     H_and_att = np.hstack((H,X_np))
+            
+    #     SC2 = None
+    #     if attributes.shape[0] > 1000:
+    #         feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=n_components)
+    #         data_transformed = feature_map_nystroem.fit_transform(H_and_att)
+    #         SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
+
+    #     else:
+    #         SC2 = SpectralClustering(n_clusters=K,\
+    #                                  affinity=metric,
+    #                                 assign_labels='discretize',random_state=0).fit(H_and_att)
+                
+    #     if self.torch_model:
+    #         z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
+    #     else:
+    #         #fromVectorToMembershipMatrice(SC2.labels_,K)
+    #         z_pred_both = model.fit(A,E,X_np).predict( None, None )
+
+    #     kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(X_np)
+            
+    #     G_nx = to_networkx(data)
+    #     G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
+    #     partition = la.find_partition(G, la.ModularityVertexPartition)
+
+    #     y_preds = [
+    #             z_pred_both,
+    #             model.memberships_from_graph,
+    #             model.memberships_from_attributes,
+    #             kmeans.labels_,
+    #             np.array(partition.membership),
+    #             SC.labels_,
+    #             SC2.labels_
+
+    #         ]
+
+    #     algo_names = [
+    #             "both",
+    #             "net",
+    #             "att",
+    #             "kmeans",
+    #             "leiden",
+    #             "SC",
+    #             "SC2"
+    #         ]
+
+    #     scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
+    #     return scores_all
+
     def get_real_data(self):
         data_dir = "../../RealDataSets/"
         data_sets = ["Cora","CiteSeer"]
