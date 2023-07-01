@@ -23,19 +23,6 @@ from sklearn.preprocessing import normalize, MinMaxScaler
 import warnings
 warnings.filterwarnings("ignore")
 
-def fromVectorToMembershipMatrice( z, n_clusters = 2 ):
-    if len( set ( z ) ) > n_clusters:
-        raise TypeError( 'There is a problem with the number of clusters' )
-    n = len( z )
-    Z = np.zeros( ( n, n_clusters ) )
-    for i in range( n ):
-        Z[ i, z[i] ] = 1
-    return Z
-
-def frommembershipMatriceToVector( Z ):
-    z = np.argmax(Z,axis=1)
-    return z
-
 class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
                  edgeDistribution = "bernoulli",
