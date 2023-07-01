@@ -8,18 +8,11 @@ felipesc@cos.ufrj.br
 
 import numpy as np
 import scipy as sp
-from sklearn.preprocessing import normalize
 from sklearn.base import BaseEstimator, ClusterMixin
 from .divergences import *
 from BregmanInitializer.init_cluster import *
-from sklearn.metrics import accuracy_score
-from sklearn.metrics.pairwise import pairwise_kernels, paired_distances, pairwise_distances
-from sklearn.mixture import GaussianMixture
-from sklearn.manifold import SpectralEmbedding
-from tqdm import tqdm
 from sklearn.cluster import SpectralClustering
 from sklearn.kernel_approximation import Nystroem
-from sklearn.preprocessing import normalize, MinMaxScaler
 import warnings
 warnings.filterwarnings("ignore")
 

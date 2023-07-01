@@ -4,7 +4,7 @@ from BregmanTests.distributions import *
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as edgeBreg
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
-from BregmanKernel import *
+from BregmanKernel import BregmanKernelClustering
 from sklearn.kernel_approximation import Nystroem
 # from BregmanClusteringTorch.torch_models import BregmanNodeEdgeAttributeGraphClusteringTorch as torchBreg
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
