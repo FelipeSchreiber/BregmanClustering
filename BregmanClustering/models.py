@@ -1298,7 +1298,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                                                             E_without_nan,\
                                                             metric=self.weight_divergence))
                 if (not np.array_equal(E_without_nan.shape,X_[edge_indices_out].shape)):
-                    print("ERROR mishape")
+                    raise ValueError ("ERROR mishape")
                 # print(f"E.shape: {E_without_nan.shape} , {X_[edge_indices_out].shape}")                
             ## same as before, but now for edges coming in node
             E_ = E[z_t[v_idx_in],q,:]
@@ -1312,7 +1312,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                                                             E_without_nan,\
                                                             metric=self.weight_divergence))
                 if (not np.array_equal(E_without_nan.shape,X_[edge_indices_in].shape)):
-                    print("ERROR mishape")
+                    raise ValueError ("ERROR mishape")
             # weight_div = 0
             # if len(v_idx_out) > 0:
             #     weight_div += np.sum( paired_distances(X[node,v_idx_out,:],\
@@ -1354,6 +1354,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         self.weight_means = self.computeWeightMeans( X_, Z_threshold)
         self.precompute_edge_divergences()
         self.communities_weights = Z.mean(axis=0)
+        if (self.communities_weights == 0).any():
+            raise ValueError ("ERROR Community is zero")
         print("\n-----------------------------------------------------------\n",\
               "\nEDGE_MEANS: ",self.edge_means,
               "\nWeight_MEANS: ",self.weight_means,
