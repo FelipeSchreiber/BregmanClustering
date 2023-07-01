@@ -9,7 +9,7 @@ felipesc@cos.ufrj.br
 import numpy as np
 from sklearn.base import BaseEstimator, ClusterMixin
 from .kernel_divergences import *
-from sklearn.cluster import SpectralClustering
+from sklearn.cluster import SpectralClustering, KMeans
 from sklearn.kernel_approximation import Nystroem
 import warnings
 warnings.filterwarnings("ignore")
