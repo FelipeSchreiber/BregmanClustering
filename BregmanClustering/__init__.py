@@ -1,1 +1,1 @@
-__all__ = ["distributions","divergences","models","phi","WSBM"]
+__all__ = ["divergences","models","phi"]
