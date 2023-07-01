@@ -1014,9 +1014,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         H = np.hstack((A,A.T))
         SC = SpectralClustering(n_clusters=K,\
                                 assign_labels='discretize',random_state=0).fit(H)
-        
-        metric = make_riemannian_metric(H.shape[1],Y.shape[1],att_dist_=hamming_loss)
-        H_and_att = np.hstack((H,Y))
 
         SC2 = BregmanKernelClustering(K, 
                 edgeDistribution = "bernoulli",
@@ -1025,17 +1022,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 n_iters = 25, full_kernel=False)
         
         SC2.fit(A,E,Y)
-        # SC2 = None
-        # if Y.shape[0] > 1000:
-        #     feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=K)
-        #     data_transformed = feature_map_nystroem.fit_transform(H_and_att)
-        #     SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
-
-        # else:
-        #     SC2 = SpectralClustering(n_clusters=K,\
-        #                             affinity=metric,
-        #                             assign_labels='discretize',random_state=0).fit(H_and_att)
-                
         z_pred_both = None
         #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
         z_pred_both = model.fit(A,E,Y).predict( None, None )
@@ -1068,15 +1054,21 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
         return scores_all,algo_names
-    
-
 
     def run_real_data(self,use_random_init=False,initializer="AIC",n_iters=25,
-                      reduction_method="KBest",plot_class_dist=True,n_components=10):
+                      reduction_method="KBest",plot_class_dist=True,n_runs=10):
         datas,data_names = self.get_real_data()
-        
         scores_agg_datasets = {}
+
+        dict_ = get_metrics_pred(np.random.randint(0,2,4),np.random.randint(0,2,4))
+        metric_names = []
+        for key in dict_:
+            metric_names.append(key)
+            scores_agg_datasets[key] = []        
+            scores_agg_datasets[key+"_std"] = []
+        scores_agg_datasets["algorithm"] = []
         scores_agg_datasets["dataset"] = []
+
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
 
@@ -1094,14 +1086,21 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         n_iters=n_iters
                                 )
             
+            metrics_per_run = {}
+            algo_names = None
+            for metric in metric_names:
+                metrics_per_run[metric] = np.array(7,n_runs)
             # print("INPUTS: ",A.shape,E.shape,Y.shape)
             
-            scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,model,data)
-
-            for key, value in scores_all.items():
-                if key not in scores_agg_datasets:
-                    scores_agg_datasets[key] = []
-                scores_agg_datasets[key].extend(value)
+            for j in range(n_runs):
+                scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,model,data)
+                for metric_name in metric_names:
+                    metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
+            
+            scores_agg_datasets["algorithm"].extend(algo_names)
+            for metric in metric_names:
+                scores_agg_datasets[metric].extend(list(metrics_per_run[metric].mean(axis=1)))
+                scores_agg_datasets[metric+"_std"].extend(list(metrics_per_run[metric].std(axis=1)))
             scores_agg_datasets["dataset"].extend([data_name]*len(algo_names))
             
             A = None
