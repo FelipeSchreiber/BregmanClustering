@@ -949,16 +949,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                 )
             print("INPUTS: ",A.shape,E.shape,attributes.shape)
             X_np = attributes.numpy()
-            if self.torch_model:
-                z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
-            else:
-                z_pred_both = model.fit(A,E,X_np).predict( None, None )
-
-            kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(X_np)
-            
-            G_nx = to_networkx(data)
-            G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
-            partition = la.find_partition(G, la.ModularityVertexPartition)
 
             H = np.hstack((A,A.T))
             SC = SpectralClustering(n_clusters=K,\
@@ -977,6 +967,18 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 SC2 = SpectralClustering(n_clusters=K,\
                                      affinity=metric,
                                     assign_labels='discretize',random_state=0).fit(H_and_att)
+                
+            if self.torch_model:
+                z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
+            else:
+                z_pred_both = model.fit(A,E,X_np,fromVectorToMembershipMatrice(SC2.labels_,K)).predict( None, None )
+
+            kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(X_np)
+            
+            G_nx = to_networkx(data)
+            G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
+            partition = la.find_partition(G, la.ModularityVertexPartition)
+
             y_preds = [
                 z_pred_both,
                 model.memberships_from_graph,
