@@ -1066,6 +1066,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             metric_names.append(key)
             scores_agg_datasets[key] = []        
             scores_agg_datasets[key+"_std"] = []
+        print(metric_names)
         scores_agg_datasets["algorithm"] = []
         scores_agg_datasets["dataset"] = []
 
