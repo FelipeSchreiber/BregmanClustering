@@ -995,74 +995,52 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             data_names.append(data_set)
         return datas,data_names
     
-    def run_real_data(self,use_random_init=False,initializer="AIC",n_iters=25,
-                      reduction_method="KBest",plot_class_dist=True,n_components=10):
-        datas,data_names = self.get_real_data()
+    def preprocess_real_data(self,data,reduction_method):
+        attributes = data.x
+        z_true = data.y.numpy()
+        if self.preprocess:
+            attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
+    
+        K = np.unique(z_true).shape[0] ##Number of clusters
+        E = None ##Edge data
+        A = to_dense_adj(data.edge_index).numpy()[0]
+        n = A.shape[0]
+        if data.edge_attr is None:
+            E = A.reshape(n,n,1)
+        else:
+            E = data.edge_attr.numpy()
+        return K,A,E,attributes.numpy(),z_true
+    
+    def real_data_single_run(self,K,A,E,Y,z_true,model,data):
+        H = np.hstack((A,A.T))
+        SC = SpectralClustering(n_clusters=K,\
+                                assign_labels='discretize',random_state=0).fit(H)
         
-        scores_agg_datasets = {}
-        scores_agg_datasets["dataset"] = []
-        for data,data_name in zip(datas,data_names):
-            print("\nCURRENT DATASET: ",data_name)
-            attributes = data.x
-            z_true = data.y.numpy()
-    
-            if plot_class_dist:
-                plot_class_dist_(z_true,data_name)
-    
-            if self.preprocess:
-                attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
-    
-            z_pred_both = None
-            K = np.unique(z_true).shape[0]
-            E = None
-            A = to_dense_adj(data.edge_index).numpy()[0]
-            n = A.shape[0]
-            if datas[0].edge_attr is None:
-                E = A.reshape(n,n,1)
-            else:
-                E = datas[0].edge_attr.numpy()
-            model = self.model_(n_clusters=K,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name,\
-                                        use_random_init=use_random_init,
-                                        initializer=initializer,
-                                        n_iters=n_iters
-                                )
-            print("INPUTS: ",A.shape,E.shape,attributes.shape)
-            X_np = attributes.numpy()
-
-            H = np.hstack((A,A.T))
-            SC = SpectralClustering(n_clusters=K,\
-                                     assign_labels='discretize',random_state=0).fit(H)
+        metric = make_riemannian_metric(H.shape[1],Y.shape[1],att_dist_=hamming_loss)
+        H_and_att = np.hstack((H,Y))
         
-            metric = make_riemannian_metric(H.shape[1],X_np.shape[1],att_dist_=hamming_loss)
-            H_and_att = np.hstack((H,X_np))
-            
-            SC2 = None
-            if attributes.shape[0] > 1000:
-                feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=n_components)
-                data_transformed = feature_map_nystroem.fit_transform(H_and_att)
-                SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
+        SC2 = None
+        if Y.shape[0] > 1000:
+            feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=K)
+            data_transformed = feature_map_nystroem.fit_transform(H_and_att)
+            SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
 
-            else:
-                SC2 = SpectralClustering(n_clusters=K,\
-                                     affinity=metric,
+        else:
+            SC2 = SpectralClustering(n_clusters=K,\
+                                    affinity=metric,
                                     assign_labels='discretize',random_state=0).fit(H_and_att)
                 
-            if self.torch_model:
-                z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
-            else:
-                #fromVectorToMembershipMatrice(SC2.labels_,K)
-                z_pred_both = model.fit(A,E,X_np).predict( None, None )
+        z_pred_both = None
+        #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
+        z_pred_both = model.fit(A,E,Y).predict( None, None )
 
-            kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(X_np)
+        kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
             
-            G_nx = to_networkx(data)
-            G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
-            partition = la.find_partition(G, la.ModularityVertexPartition)
+        G_nx = to_networkx(data)
+        G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
+        partition = la.find_partition(G, la.ModularityVertexPartition)
 
-            y_preds = [
+        y_preds = [
                 z_pred_both,
                 model.memberships_from_graph,
                 model.memberships_from_attributes,
@@ -1070,10 +1048,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 np.array(partition.membership),
                 SC.labels_,
                 SC2.labels_
-
             ]
 
-            algo_names = [
+        algo_names = [
                 "both",
                 "net",
                 "att",
@@ -1083,7 +1060,38 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "SC2"
             ]
 
-            scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
+        scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
+        return scores_all,algo_names
+    
+
+
+    def run_real_data(self,use_random_init=False,initializer="AIC",n_iters=25,
+                      reduction_method="KBest",plot_class_dist=True,n_components=10):
+        datas,data_names = self.get_real_data()
+        
+        scores_agg_datasets = {}
+        scores_agg_datasets["dataset"] = []
+        for data,data_name in zip(datas,data_names):
+            print("\nCURRENT DATASET: ",data_name)
+
+            K,A,E,Y,z_true = self.preprocess_real_data(data,reduction_method)
+            
+            if plot_class_dist:
+                plot_class_dist_(z_true,data_name)
+            
+            model = self.model_(n_clusters=K,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        use_random_init=use_random_init,
+                                        initializer=initializer,
+                                        n_iters=n_iters
+                                )
+            
+            # print("INPUTS: ",A.shape,E.shape,Y.shape)
+            
+            scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,model,data)
+
             for key, value in scores_all.items():
                 if key not in scores_agg_datasets:
                     scores_agg_datasets[key] = []
@@ -1092,7 +1100,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
             A = None
             E = None
-            attributes = None
-            z_pred_both = z_true = None
+            Y = None
+            z_true = None
             torch.cuda.empty_cache()
         return scores_agg_datasets

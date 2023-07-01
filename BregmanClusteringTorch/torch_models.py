@@ -681,12 +681,14 @@ class torchWrapper(BregmanNodeEdgeAttributeGraphClusteringTorch):
         graph_data = self.to_pyg_data(X,Y)
         A = torch.tensor(A).to_sparse()
         E = None
-        if graph_data.edge_attr is None:
-            E = torch.ones((graph_data.edge_index.shape[1],1))
-        else:
-            E = graph_data.edge_attr.reshape(-1,1)
+        # if graph_data.edge_attr is None:
+        #     E = torch.ones((graph_data.edge_index.shape[1],1))
+        # else:
+        #     E = graph_data.edge_attr.reshape(-1,1)
+        # Y = graph_data.x
+        Y = torch.Tensor(Y)
         Z_init = torch.tensor(Z_init) if (Z_init is not None) else None
-        super().fit(A,E,graph_data.x,Z_init)
+        super().fit(A,E,Y,Z_init)
         return self
 
     def predict(self, X, Y):
