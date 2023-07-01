@@ -699,14 +699,6 @@ class BregmanNodeEdgeAttributeGraphClustering( BaseEstimator, ClusterMixin ):
         weight_means = np.tensordot( weights,\
                                     X_,\
                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
-        
-        # if (self.edge_means==0).any():
-        #     undefined_idx = np.where(self.edge_means==0)
-        #     if self.strategy == 2:
-        #         null_model = X_.mean(axis=0)
-        #         weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
-        #     if self.strategy == 1:
-        #         weight_means[undefined_idx[0],undefined_idx[1],:] = 0
 
         return weight_means
     
@@ -1047,16 +1039,6 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
                 weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
                                                             E_without_nan,\
                                                             metric=self.weight_divergence))
-                
-            # weight_div = 0
-            # if len(v_idx_out) > 0:
-            #     weight_div += np.sum( paired_distances(X_[edge_indices_out,:],\
-            #                                             E[q,z_t[v_idx_out],:],\
-            #                                             metric=self.weight_divergence))
-            # if len(v_idx_in) > 0:
-            #     weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
-            #                                             E[z_t[v_idx_in],q,:],\
-            #                                             metric=self.weight_divergence))
             L[ q ] = att_div + (weight_div + edge_div)
         return np.argmin( L )
     
@@ -1233,14 +1215,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         """
         edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
             weights.sum(axis=(-1,-2))
-        
-        # if(np.isnan(edge_means).any()):
-        #     print(f">>>{weights.sum(axis=(-1,-2))},\n \
-        #           { weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)}" )
-        
+
         if (np.isnan(edge_means).any()):
             raise ValueError ("edge means contains Nan")
-        # edge_means = np.nan_to_num(edge_means ,  nan=0)
         return edge_means 
     
     def computeWeightMeans( self, X_, Z):
@@ -1311,8 +1288,10 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                 weight_div += np.sum( paired_distances(X_[edge_indices_out,:],\
                                                             E_without_nan,\
                                                             metric=self.weight_divergence))
+                
                 if (not np.array_equal(E_without_nan.shape,X_[edge_indices_out].shape)):
                     raise ValueError ("ERROR mishape")
+                
             ## same as before, but now for edges coming in node
             E_ = E[z_t[v_idx_in],q,:]
             if np.isnan(E_).any():
@@ -1324,17 +1303,10 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                 weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
                                                             E_without_nan,\
                                                             metric=self.weight_divergence))
+                
                 if (not np.array_equal(E_without_nan.shape,X_[edge_indices_in].shape)):
                     raise ValueError ("ERROR mishape")
-            # weight_div = 0
-            # if len(v_idx_out) > 0:
-            #     weight_div += np.sum( paired_distances(X[node,v_idx_out,:],\
-            #                                             E[q,z_t[v_idx_out],:],\
-            #                                             metric=self.weight_divergence))
-            # if len(v_idx_in) > 0:
-            #     weight_div += np.sum( paired_distances(X[v_idx_in,node,:],\
-            #                                             E[z_t[v_idx_in],q,:],\
-            #                                             metric=self.weight_divergence))
+            
             L[ q ] = att_div + weight_div + edge_div
         if (np.isnan(L).any()):
             raise ValueError ("L contains Nan")
@@ -1346,42 +1318,33 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
     def E_projection(self, X, Y):
         Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
+        
         if np.isnan(H).any():
             if np.isnan(Y).any():
                 print("Att contains nan")
             if np.isnan(self.attribute_means).any():
                 print("Att means contains nan")
-            
             raise ValueError("H contains nan")
+        
         for node in range(self.N):
             Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
-        # print(f"Ztilde: {Ztilde}")
-        # Ztilde = np.nan_to_num(Ztilde ,  nan=np.inf)
         c = Ztilde.min(axis=1)
         Ztilde -= c[:,None]
-        # print(f"c + Ztilde: {Ztilde}")
-        soft_assign = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)
-        # if(np.isnan(soft_assign).any()):
-        #     print(f"Ztilde: {Ztilde}\n",f"edge_means: {self.edge_means}")
-        # soft_assign = np.nan_to_num(soft_assign)       
+        soft_assign = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)    
         return normalize(soft_assign, axis=1, norm='l1')
             
     def M_projection(self,X_,Y,Z):
-        Z_threshold = Z
-        # idx = np.argmax(Z, axis=-1)
-        # Z_threshold = np.zeros( Z.shape )
-        # Z_threshold[ np.arange(Z.shape[0]), idx] = 1
-        self.attribute_means = self.computeAttributeMeans(Y, Z_threshold)
-        self.edge_means = self.computeEdgeMeans(Z_threshold)
-        self.weight_means = self.computeWeightMeans( X_, Z_threshold)
+        self.attribute_means = self.computeAttributeMeans(Y, Z)
+        self.edge_means = self.computeEdgeMeans(Z)
+        self.weight_means = self.computeWeightMeans( X_, Z)
         self.precompute_edge_divergences()
         self.communities_weights = Z.mean(axis=0)
         if (self.communities_weights == 0).any():
             raise ValueError ("ERROR Community is zero")
-        print("\n-----------------------------------------------------------\n",\
-              "\nEDGE_MEANS: ",self.edge_means,
-              "\nWeight_MEANS: ",self.weight_means,
-              "\nAtt_MEANS: ",self.attribute_means)
+        # print("\n-----------------------------------------------------------\n",\
+        #       "\nEDGE_MEANS: ",self.edge_means,
+        #       "\nWeight_MEANS: ",self.weight_means,
+        #       "\nAtt_MEANS: ",self.attribute_means)
 
     def logprob(self,X_,Y):
         H = pairwise_distances(Y,\
@@ -1402,241 +1365,6 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         if np.abs(old_log_prob - new_log_prob) < 0.1 or iteration >= self.n_iters:
             return True
         return False    
-    
-    def predict(self, X, Y):
-        """
-        Prediction step.
-        Parameters
-        ----------
-        X : ARRAY
-            Input data matrix (n, n) of the node interactions
-        Y : ARRAY
-            Input data matrix (n, m) of the attributes of the n nodes (each attribute has m features).
-        Returns
-        -------
-        z: Array
-            Assigned cluster for each data point (n, )
-        """
-        return frommembershipMatriceToVector( self.predicted_memberships )
-    
-class BregmanClusteringVariational( BaseEstimator, ClusterMixin ):
-    def __init__( self, n_clusters, 
-                 edgeDistribution = "bernoulli",
-                 attributeDistribution = "gaussian",
-                 weightDistribution = "gaussian",
-                 initializer = 'chernoff', 
-                 graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
-                 n_iters = 25, init_iters=100,
-                 reduce_by=None,
-                 divergence_precomputed=True,
-                 q=1.5):
-        """
-        Bregman Soft Clustering Algorithm for partitioning graph with node attributes
-        Parameters
-        ----------
-        n_clusters : INT
-            Number of clustes.
-        edge_divergence, attribute_divergence : function
-            Pairwise divergence function. The default is euclidean_distance.
-        n_iters : INT, optional
-            Number of clustering iterations. The default is 25.
-        graph_initialize, attribute_initializer : STR, optional
-            Specifies if the centroids are initialized at random "rand", K-Means++ "kmeans++", or a pretrained K-Means model "pretrained". The default is "rand".
-        init_iters : INT, optional
-            Number of iterations for K-Means++. The default is 100.
-        Returns
-        -------
-        None.
-        """
-        self.q = q ## parameter for q_exp
-        self.n_clusters = n_clusters
-        self.communities_weights = np.ones(n_clusters)/n_clusters
-        self.n_iters = n_iters
-        self.initializer = initializer
-        self.graph_initializer = graph_initializer
-        self.attribute_initializer = attribute_initializer
-        self.init_iters = init_iters
-        ## Variable that stores which initialization was chosen
-        self.graph_init = False
-        self.edgeDistribution = edgeDistribution
-        self.attributeDistribution = attributeDistribution
-        self.weightDistribution = weightDistribution
-        self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
-        self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
-        self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
-        self.edge_index = None
-
-    def initialize( self, A, X, Y ):
-        model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
-                                    edgeDistribution = self.edgeDistribution,
-                                    attributeDistribution = self.attributeDistribution,
-                                    weightDistribution = self.weightDistribution)
-        if self.edge_index is None:
-            self.edge_index = np.nonzero(A)
-        model.initialize( X, Y , self.edge_index)
-        self.predicted_memberships = model.predicted_memberships
-        self.memberships_from_graph = model.memberships_from_graph
-        self.memberships_from_attributes = model.memberships_from_attributes
-        self.graph_init = model.graph_init
-
-    def assignInitialLabels( self, X, Y ):
-        return self
-
-    def q_exp(self,x,q):
-        return np.power(1 + (1-q)*x, 1/(1-q))
-
-    def computeAttributeMeans( self, Y, tau ):
-        attribute_means = np.dot(tau.T, Y)/(tau.sum(axis=0) + 10 * np.finfo(tau.dtype).eps)[:, np.newaxis]
-        return attribute_means
-
-    def computeEdgeMeans(self,tau):
-        weights = np.tensordot(tau, tau, axes=((), ()))
-        """
-        weights[i,q,j,l] = tau[i,q]*tau[j,l]
-        desired output:
-        weights[q,l,i,j] = tau[i,q]*tau[j,l]
-        """
-        weights = np.transpose(weights,(1,3,0,2))
-        """
-        weights is a k x k x N x N tensor
-        desired output: 
-        out[q,l] = sum_e weights[q,l,e]
-        """
-        edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
-            weights.sum(axis=(-1,-2))
-        return edge_means 
-
-    def threshold(self,tau):
-        idx = np.argmax(tau, axis=-1)
-        Z_threshold = np.zeros( tau.shape )
-        Z_threshold[ np.arange(tau.shape[0]), idx] = 1
-        return Z_threshold
-    
-    def get_net_div(self,A):
-        shape = (self.N,self.N,self.n_clusters,self.n_clusters)
-        net_divergences_elementwise = np.where(A[:,:,None,None] == 0,\
-                                              np.broadcast_to(self.precomputed_edge_div[0],\
-                                                              shape),\
-                                              np.broadcast_to(self.precomputed_edge_div[1],\
-                                                              shape)
-                                            )
-        
-        return net_divergences_elementwise
-    
-    def get_att_div(self,Y):
-        att_divergence_total = pairwise_distances(Y,self.attribute_means,\
-                                                metric=self.attribute_divergence)
-        return att_divergence_total
-
-
-    
-    def VE_projection(self,A, X, Y,tau):         
-      """
-        Inputs: 
-        A: adjacency matrix
-        X: weight matrix
-        Y: attributes matrix
-        tau: membership matrix
-      """
-      pi = self.communities_weights 
-      """
-        Compute divergences for every pair X[i,j], mu[k,l]
-      """
-      net_divergences_elementwise = self.get_net_div(A)
-      att_divergence_total = self.get_att_div(Y)
-      """
-        net_divergences has shape N x N x K x K
-        tau has shape N x K
-        the result must be N x K
-        result[i,k] = sum_j sum_l tau[j,l] * net_div[i,j,k,l]
-        tensordot performs the multiplication and sum over specified axes.
-        "j" appears at axes 0 for tau and at axes 1 for net_divergence
-        "l" appears at axes 1 for tau and at axes 3 for net_divergence
-      """
-      tau_old = tau
-      while True:
-        net_divergence_total = np.tensordot(tau_old,\
-                                            net_divergences_elementwise,\
-                                            axes=[(0,1),(1,3)])
-
-        # t = self.q_exp(-net_divergence_total -att_divergence_total,\
-        #                                       self.q)
-        # # print("\nT:",t)
-        tau_new = pi[np.newaxis,:]*self.q_exp(-net_divergence_total -att_divergence_total,\
-                                              self.q)
-        tau_new = normalize(tau_new, axis=1, norm='l1')
-        if np.allclose(tau_old,tau_new):
-            return tau_new
-        tau_old = tau_new
-           
-    def M_projection(self,A,X,Y,tau):
-        self.attribute_means = self.computeAttributeMeans(Y, tau)
-        self.edge_means = self.computeEdgeMeans(tau)
-        self.precomputed_edge_div = pairwise_distances(np.array([0,1]).reshape(-1,1),\
-                                             self.edge_means.reshape(-1,1),\
-                                             metric=self.edge_divergence)\
-                                            .reshape(
-                                                        (2,\
-                                                        self.n_clusters,self.n_clusters
-                                                        )
-                                                    )
-        # self.weight_means = self.computeWeightMeans( X, Z_threshold)
-        self.communities_weights = tau.mean(axis=0)
-        self.weight_means = None
-
-    def logprob(self,A,X,Y,Z):
-        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
-        log_prob_total = 0
-        for node in range(self.N):
-            prob_i = 0 
-            for q in range(self.n_clusters):
-                total_div = self.computeTotalDiv(node,q,A,X,Z,H)
-                prob_i += self.communities_weights[q]*np.exp(-total_div)
-            log_prob_total += np.log(prob_i)
-        return log_prob_total
-    
-    def stop_criterion(self,A,X,Y,Z_old,Z_new,iteration):
-        # old_log_prob = self.logprob(A,X,Y,Z_old)
-        # new_log_prob = self.logprob(A,X,Y,Z_new)
-        # np.abs(old_log_prob - new_log_prob) < 0.1
-        if False or iteration >= self.n_iters:
-            return True
-        return False
-    
-    def fit( self, A, X, Y, Z_init=None ):
-        """
-        Training step.
-        Parameters
-        ----------
-        Y : ARRAY
-            Input data matrix (n, m) of n samples and m features.
-        X : ARRAY
-            Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
-        A : ARRAY
-            Input (n,n) matrix encoding the adjacency matrix
-        Returns
-        -------
-        TYPE
-            Trained model.
-        """
-        self.N = A.shape[0]
-        self.edge_index = np.nonzero(A)
-        self.node_indices = np.arange(self.N)
-        if Z_init is None:
-            self.initialize( A, X, Y)
-            self.assignInitialLabels( X, Y )
-        else:
-            self.predicted_memberships = Z_init
-        self.M_projection(A,X,Y,self.predicted_memberships)
-        convergence = False
-        iteration = 0
-        while not convergence:
-            tau_new = self.VE_projection(A, X, Y, self.predicted_memberships)
-            self.M_projection(A,X,Y,tau_new)
-            convergence = self.stop_criterion(A,X,Y,self.predicted_memberships,tau_new,iteration)
-            self.predicted_memberships = tau_new
-            iteration += 1 
-        return self
     
     def predict(self, X, Y):
         """
