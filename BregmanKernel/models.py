@@ -7,10 +7,8 @@ felipesc@cos.ufrj.br
 """
 
 import numpy as np
-import scipy as sp
 from sklearn.base import BaseEstimator, ClusterMixin
-from .divergences import *
-from BregmanInitializer.init_cluster import *
+from .kernel_divergences import *
 from sklearn.cluster import SpectralClustering
 from sklearn.kernel_approximation import Nystroem
 import warnings

@@ -1,1 +1,1 @@
-__all__ = ["divergences","models"]
+__all__ = ["kernel_divergences","models"]
