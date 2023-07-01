@@ -1329,6 +1329,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             #                                             E[z_t[v_idx_in],q,:],\
             #                                             metric=self.weight_divergence))
             L[ q ] = att_div + weight_div + edge_div
+            if np.isnan(L[q]):
+                print(f"Att: {att_div}, weight_div: {weight_div}, edge_div: {edge_div}")
         if (np.isnan(L).any()):
             print("L contains Nan")
         return L
