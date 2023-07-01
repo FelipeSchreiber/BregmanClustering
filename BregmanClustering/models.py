@@ -1229,9 +1229,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
             weights.sum(axis=(-1,-2))
         
-        if(np.isnan(edge_means).any()):
-            print(f">>>{weights.sum(axis=(-1,-2))},\n \
-                  { weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)}" )
+        # if(np.isnan(edge_means).any()):
+        #     print(f">>>{weights.sum(axis=(-1,-2))},\n \
+        #           { weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)}" )
         
         edge_means = np.nan_to_num(edge_means ,  nan=0)
         return edge_means 
@@ -1340,7 +1340,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         for node in range(self.N):
             Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
         # print(f"Ztilde: {Ztilde}")
-        Ztilde = np.nan_to_num(Ztilde ,  nan=np.inf)
+        # Ztilde = np.nan_to_num(Ztilde ,  nan=np.inf)
         c = Ztilde.min(axis=1)
         Ztilde -= c[:,None]
         # print(f"c + Ztilde: {Ztilde}")
