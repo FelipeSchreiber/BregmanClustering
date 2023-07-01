@@ -1230,8 +1230,10 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             weights.sum(axis=(-1,-2))
         
         if(np.isnan(edge_means).any()):
-            print(f"{weights.sum(axis=(-1,-2))},\n \
+            print(f">>>{weights.sum(axis=(-1,-2))},\n \
                   { weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)}" )
+        
+        edge_means = np.nan_to_num(edge_means ,  nan=0)
         return edge_means 
     
     def computeWeightMeans( self, X_, Z):
