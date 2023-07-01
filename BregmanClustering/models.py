@@ -1348,7 +1348,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         if np.isnan(H).any():
             if np.isnan(Y).any():
                 print("Att contains nan")
-            if np.isnan(self.attribute_means):
+            if np.isnan(self.attribute_means).any():
                 print("Att means contains nan")
             
             raise ValueError("H contains nan")
