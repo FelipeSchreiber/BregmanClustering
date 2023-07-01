@@ -1195,6 +1195,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         model.initialize( X_, Y , self.edge_index, Z_init=Z_init)
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = frommembershipMatriceToVector(model.memberships_from_graph)
+        if self.memberships_from_graph is None:
+            print(f"GRAPH IS NONE: {self.memberships_from_graph}")
         self.memberships_from_attributes = frommembershipMatriceToVector(model.memberships_from_attributes)
         self.graph_init = model.graph_init
 
