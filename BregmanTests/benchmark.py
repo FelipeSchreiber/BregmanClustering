@@ -1028,6 +1028,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name,\
                                         initializer=self.initializer,
+                                        use_random_init=False,
                                         n_iters=n_iters
                             )
         #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
@@ -1039,6 +1040,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name,\
                                         initializer=self.initializer,
+                                        use_random_init=False,
                                         n_iters=n_iters
                             )
         #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
