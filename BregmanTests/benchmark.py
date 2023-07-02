@@ -1,7 +1,7 @@
 import numpy as np
 import networkx as nx
 from BregmanTests.distributions import *
-from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as edgeBreg
+from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as hardBreg
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
 from BregmanKernel.kernel_models import BregmanKernelClustering
@@ -79,7 +79,7 @@ class BregmanBenchmark():
         if run_torch:
             self.model_ = torchBreg
         elif hard_clustering:
-            self.model_ = edgeBreg
+            self.model_ = hardBreg
         else:
             self.model_ = softBreg
         self.preprocess = preprocess
@@ -1010,7 +1010,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             E = data.edge_attr.numpy()
         return K,A,E,attributes.numpy(),z_true
     
-    def real_data_single_run(self,K,A,E,Y,z_true,model,data):
+    def real_data_single_run(self,K,A,E,Y,z_true,n_iters,data):
         H = np.hstack((A,A.T))
         SC = SpectralClustering(n_clusters=K,\
                                 assign_labels='discretize',random_state=0).fit(H)
@@ -1022,9 +1022,27 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 n_iters = 25, full_kernel=False)
         
         SC2.fit(A,E,Y)
-        z_pred_both = None
+        both_hard = None
+        model_hard = hardBreg(n_clusters=K,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        initializer=self.initializer,
+                                        n_iters=n_iters
+                            )
         #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
-        z_pred_both = model.fit(A,E,Y).predict( None, None )
+        both_hard = model_hard.fit(A,E,Y).predict( None, None )
+
+        both_soft = None
+        model_soft = softBreg(n_clusters=K,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        initializer=self.initializer,
+                                        n_iters=n_iters
+                            )
+        #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
+        both_soft = model_soft.fit(A,E,Y).predict( None, None )
 
         kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
             
@@ -1033,9 +1051,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         partition = la.find_partition(G, la.ModularityVertexPartition)
 
         y_preds = [
-                z_pred_both,
-                model.memberships_from_graph,
-                model.memberships_from_attributes,
+                both_hard,
+                both_soft,
+                model_hard.memberships_from_graph,
+                model_hard.memberships_from_attributes,
                 kmeans.labels_,
                 np.array(partition.membership),
                 SC.labels_,
@@ -1043,7 +1062,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             ]
 
         algo_names = [
-                "both",
+                "both_hard",
+                "both_soft"
                 "net",
                 "att",
                 "kmeans",
@@ -1055,7 +1075,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
         return scores_all,algo_names
 
-    def run_real_data(self,use_random_init=False,n_iters=25,
+    def run_real_data(self,n_iters=25,
                       reduction_method="KBest",plot_class_dist=True,n_runs=10):
         datas,data_names = self.get_real_data()
         scores_agg_datasets = {}
@@ -1078,15 +1098,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             if plot_class_dist:
                 plot_class_dist_(z_true,data_name)
             
-            model = self.model_(n_clusters=K,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name,\
-                                        use_random_init=use_random_init,
-                                        initializer=self.initializer,
-                                        n_iters=n_iters
-                                )
-            
             metrics_per_run = {}
             algo_names = None
             for metric in metric_names:
@@ -1094,7 +1105,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             # print("INPUTS: ",A.shape,E.shape,Y.shape)
             
             for j in range(n_runs):
-                scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,model,data)
+                scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,n_iters,data)
                 for metric_name in metric_names:
                     metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
             
