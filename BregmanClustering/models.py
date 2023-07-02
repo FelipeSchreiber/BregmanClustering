@@ -1317,16 +1317,13 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
     
     def E_projection(self, X, Y):
         Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
-
-        H = pairwise_distances(Y,np.clip(self.attribute_means,a_min=0,a_max=1),\
-                               metric=self.attribute_divergence)
+        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         
         if np.isnan(H).any():
             if np.isnan(Y).any():
                 print("Att contains nan")
             if np.isnan(self.attribute_means).any():
                 print("Att means contains nan")
-            print(self.attribute_means)
             raise ValueError("H contains nan")
         
         for node in range(self.N):
