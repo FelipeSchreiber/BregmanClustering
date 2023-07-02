@@ -26,9 +26,10 @@ SEE:
 #as stated in the paper page 1709
 def logistic_loss(X,M):
     # total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
-    if (M < 0).any():
-        print("ERROR: M NEG")
     total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) ))
+    mask = np.isnan(total)
+    if mask.any():
+        print(X[mask],M[mask])
     # total = np.clip(total,a_min=0,a_max=1e6)
     return total.sum()
 
