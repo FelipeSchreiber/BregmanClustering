@@ -19,7 +19,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                  edgeDistribution = "bernoulli",
                  attributeDistribution = "gaussian",
                  weightDistribution = "gaussian",
-                 n_iters = 25, full_kernel=False):
+                 n_iters = 25, full_kernel=False, n_components=None):
         self.n_clusters = n_clusters
         self.n_iters = n_iters
         self.edgeDistribution = edgeDistribution
@@ -29,6 +29,9 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
         self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.full_kernel = full_kernel
+        self.n_components = n_components
+        if n_components is None:
+            self.n_components = n_clusters
 
     def make_single_riemannian_metric(self,n_features,gamma=None):
         if gamma is None:
@@ -74,7 +77,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         else:
             feature_map_nystroem = Nystroem(kernel=metric,\
                                             random_state=42,\
-                                            n_components=self.n_clusters*4)
+                                            n_components=self.n_components)
             
             data_transformed = feature_map_nystroem.fit_transform(H_and_att)
             self.model = KMeans(n_clusters=self.n_clusters,\
