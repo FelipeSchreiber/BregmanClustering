@@ -848,7 +848,8 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.edge_index = None 
         self.use_random_init = use_random_init
-    
+        self.n_jobs = effective_n_jobs(-1)
+
     def precompute_edge_divergences(self):
         self.precomputed_edge_div = pairwise_distances(np.array([0,1]).reshape(-1,1),\
                                              self.edge_means.reshape(-1,1),\
@@ -993,9 +994,9 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
 
     def assignments_joblib(self,A,X_,Y):
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
-        Parallel(backend="threading",n_jobs=-1)\
+        Parallel(backend="multiprocessing",n_jobs=self.n_jobs)\
             (delayed(singleAssignmentContainer)(self,A,X_, H, ranges)\
-              for ranges in gen_even_slices(self.N,effective_n_jobs(-1)) )        
+              for ranges in gen_even_slices(self.N,self.n_jobs) )        
         return fromVectorToMembershipMatrice( self.Z, n_clusters = self.n_clusters )
 
     def singleNodeAssignment( self, A, X_, H, node ):
