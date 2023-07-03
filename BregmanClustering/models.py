@@ -9,7 +9,7 @@ felipesc@cos.ufrj.br
 import numpy as np
 import scipy as sp
 from sklearn.preprocessing import normalize
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, effective_n_jobs
 from sklearn.base import BaseEstimator, ClusterMixin
 from .divergences import *
 # from .phi import *
@@ -23,11 +23,13 @@ from sklearn.cluster import SpectralClustering
 from sklearn.preprocessing import normalize, MinMaxScaler
 import os
 import tempfile
+from BregmanTests.utils import gen_even_slices
 import warnings
 warnings.filterwarnings("ignore")
 
-def singleAssignmentContainer(self,A,X_, H, node):
-    self.Z[ node ] = self.singleNodeAssignment( A, X_, H, node )
+def singleAssignmentContainer(self,A,X_, H, nodes):
+    for node in nodes:
+        self.Z[ node ] = self.singleNodeAssignment( A, X_, H, node )
     
 def fromVectorToMembershipMatrice( z, n_clusters = 2 ):
     if len( set ( z ) ) > n_clusters:
@@ -991,10 +993,10 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
 
     def assignments_joblib(self,A,X_,Y):
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
-        Parallel(n_jobs=-1)\
-            (delayed(singleAssignmentContainer)(self,A,X_, H, node) for node in range(self.N) )        
+        Parallel(backend="threading",n_jobs=-1)\
+            (delayed(singleAssignmentContainer)(self,A,X_, H, ranges)\
+              for ranges in gen_even_slices(self.N,effective_n_jobs(-1)) )        
         return fromVectorToMembershipMatrice( self.Z, n_clusters = self.n_clusters )
-    
 
     def singleNodeAssignment( self, A, X_, H, node ):
         L = np.zeros( self.n_clusters )
