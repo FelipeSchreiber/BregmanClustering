@@ -988,7 +988,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             if (E>1).any():
                 print(E.max())
         E = np.clip(E,a_min=0,a_max=1)
-        return K,A,E,attributes.numpy(),z_true
+        attributes = np.clip(attributes.numpy(),a_min=0,a_max=1)
+        return K,A,E,attributes,z_true
     
     def real_data_single_run(self,K,A,E,Y,z_true,n_iters,data):
         H = np.hstack((A,A.T))
