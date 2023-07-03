@@ -9,6 +9,7 @@ felipesc@cos.ufrj.br
 import numpy as np
 import scipy as sp
 from sklearn.preprocessing import normalize
+from sklearn.externals.joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, ClusterMixin
 from .divergences import *
 # from .phi import *
@@ -20,9 +21,14 @@ from sklearn.manifold import SpectralEmbedding
 from tqdm import tqdm
 from sklearn.cluster import SpectralClustering
 from sklearn.preprocessing import normalize, MinMaxScaler
+import os
+import tempfile
 import warnings
 warnings.filterwarnings("ignore")
 
+def singleAssignmentContainer(self,A,X_, H, node):
+    self.Z[ node ] = self.singleNodeAssignment( A, X_, H, node )
+    
 def fromVectorToMembershipMatrice( z, n_clusters = 2 ):
     if len( set ( z ) ) > n_clusters:
         raise TypeError( 'There is a problem with the number of clusters' )
@@ -879,6 +885,9 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
             self.assignInitialLabels( X_, Y )
         else:
             self.predicted_memberships = Z_init
+        path = tempfile.mkdtemp()
+        Zpath = os.path.join(path,'z.mmap')
+        self.Z = np.memmap(Zpath, dtype=int, shape=self.N, mode='w+')
         #init_labels = self.predicted_memberships
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
@@ -887,7 +896,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         convergence = True
         iteration = 0
         while convergence:
-            new_memberships = self.assignments( A, X_, Y )
+            new_memberships = self.assignments_joblib( A, X_, Y )
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
             self.edge_means = self.computeEdgeMeans( A, new_memberships )
@@ -978,8 +987,15 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range( len( z ) ):
             z[ node ] = self.singleNodeAssignment( A, X_, H, node )
-        return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )        
+        return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
+
+    def assignments_joblib(self,A,X_,Y):
+        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
+        Parallel(backend='threading',n_jobs=-1)\
+            (delayed(singleAssignmentContainer)(self,A,X_, H, node) for node in range(self.N) )        
+        return fromVectorToMembershipMatrice( self.Z, n_clusters = self.n_clusters )
     
+
     def singleNodeAssignment( self, A, X_, H, node ):
         L = np.zeros( self.n_clusters )
         edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
