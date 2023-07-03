@@ -1043,7 +1043,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         algo_names = [
                 "both_hard",
-                "both_soft"
+                "both_soft",
                 "net",
                 "att",
                 "kmeans",
