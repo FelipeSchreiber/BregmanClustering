@@ -1357,8 +1357,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
     def M_projection(self,X_,Y,Z):
         self.attribute_means = self.computeAttributeMeans(Y, Z)
         if (self.attribute_means > Y.max()).any():
-            print(self.attribute_means.max())
-            raise ValueError("Att inconsistent")
+            self.attribute_means = np.clip(self.attribute_means,a_min=Y.min(),a_max=Y.max())
+            # print(self.attribute_means.max())
+            # raise ValueError("Att inconsistent")
         self.edge_means = self.computeEdgeMeans(Z)
         self.weight_means = self.computeWeightMeans( X_, Z)
         self.precompute_edge_divergences()
