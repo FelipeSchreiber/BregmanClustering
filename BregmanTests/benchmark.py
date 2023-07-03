@@ -5,9 +5,8 @@ from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEffi
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
 from BregmanKernel.kernel_models import BregmanKernelClustering
-from sklearn.kernel_approximation import Nystroem
-# from BregmanClusteringTorch.torch_models import BregmanNodeEdgeAttributeGraphClusteringTorch as torchBreg
-from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score, accuracy_score
+from sklearn.metrics import adjusted_rand_score
+from sklearn.datasets import make_classification
 from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
 from torch_geometric.data import Data
 from torch_geometric.utils import *
@@ -897,84 +896,62 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         return stats
     
-    # def run_ABCD_benchmark(self,plot_class_dist=False):
-    #     G,df = self.generate_benchmark_ABCD()
-    #     if plot_class_dist:
-    #         plot_class_dist_(z_true,data_name)
-    
-    #     z_pred_both = None
-    #     K = np.unique(z_true).shape[0]
-    #     E = None
-    #     A = to_dense_adj(data.edge_index).numpy()[0]
-    #     n = A.shape[0]
-    #     if datas[0].edge_attr is None:
-    #         E = A.reshape(n,n,1)
-    #     else:
-    #         E = datas[0].edge_attr.numpy()
-    #     model = self.model_(n_clusters=K,\
-    #                             attributeDistribution=self.attributes_distribution_name,\
-    #                             edgeDistribution=self.edge_distribution_name,\
-    #                             weightDistribution=self.weight_distribution_name,\
-    #                             use_random_init=use_random_init,
-    #                             initializer=initializer,
-    #                             n_iters=n_iters
-    #                         )
-    #     print("INPUTS: ",A.shape,E.shape,attributes.shape)
-    #     X_np = attributes.numpy()
+    def run_ABCD_benchmark(self,plot_class_dist=False):
+        G,df = self.generate_ABCD_benchmark()
+        K = df[1].max()
+        w = df[1].value_counts()/df.shape[0]
+        Y, _ = make_classification(
+                    n_features=2,\
+                    n_redundant=0,\
+                    n_informative=2,\
+                    random_state=1,\
+                    n_clusters_per_class=1,\
+                    n_classes = K,
+                    n_samples=df.shape[0],
+                    weights = w
+                )
+        scores_agg_datasets = {}
+        dict_ = get_metrics_pred(np.random.randint(0,2,4),np.random.randint(0,2,4))
+        metric_names = []
+        # for key in dict_:
+        #     metric_names.append(key)
+        #     scores_agg_datasets[key] = []        
+        #     scores_agg_datasets[key+"_std"] = []
+        # print(metric_names)
+        # scores_agg_datasets["algorithm"] = []
+        # scores_agg_datasets["dataset"] = []
 
-    #     H = np.hstack((A,A.T))
-    #     SC = SpectralClustering(n_clusters=K,\
-    #                                 assign_labels='discretize',random_state=0).fit(H)
-        
-    #     metric = make_riemannian_metric(H.shape[1],X_np.shape[1],att_dist_=hamming_loss)
-    #     H_and_att = np.hstack((H,X_np))
+        # for data,data_name in zip(datas,data_names):
+        #     print("\nCURRENT DATASET: ",data_name)
+
+        #     K,A,E,Y,z_true = 
             
-    #     SC2 = None
-    #     if attributes.shape[0] > 1000:
-    #         feature_map_nystroem = Nystroem(kernel=metric , random_state=42, n_components=n_components)
-    #         data_transformed = feature_map_nystroem.fit_transform(H_and_att)
-    #         SC2 = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(data_transformed)
-
-    #     else:
-    #         SC2 = SpectralClustering(n_clusters=K,\
-    #                                  affinity=metric,
-    #                                 assign_labels='discretize',random_state=0).fit(H_and_att)
-                
-    #     if self.torch_model:
-    #         z_pred_both = model.fit(A,E,attributes).predict( E, attributes )
-    #     else:
-    #         #fromVectorToMembershipMatrice(SC2.labels_,K)
-    #         z_pred_both = model.fit(A,E,X_np).predict( None, None )
-
-    #     kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(X_np)
+        #     if plot_class_dist:
+        #         plot_class_dist_(z_true,data_name)
             
-    #     G_nx = to_networkx(data)
-    #     G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
-    #     partition = la.find_partition(G, la.ModularityVertexPartition)
-
-    #     y_preds = [
-    #             z_pred_both,
-    #             model.memberships_from_graph,
-    #             model.memberships_from_attributes,
-    #             kmeans.labels_,
-    #             np.array(partition.membership),
-    #             SC.labels_,
-    #             SC2.labels_
-
-    #         ]
-
-    #     algo_names = [
-    #             "both",
-    #             "net",
-    #             "att",
-    #             "kmeans",
-    #             "leiden",
-    #             "SC",
-    #             "SC2"
-    #         ]
-
-    #     scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
-    #     return scores_all
+        #     metrics_per_run = {}
+        #     algo_names = None
+        #     for metric in metric_names:
+        #         metrics_per_run[metric] = np.zeros((7,n_runs))
+        #     # print("INPUTS: ",A.shape,E.shape,Y.shape)
+            
+        #     for j in range(n_runs):
+        #         scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,n_iters,data)
+        #         for metric_name in metric_names:
+        #             metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
+            
+        #     scores_agg_datasets["algorithm"].extend(algo_names)
+        #     for metric in metric_names:
+        #         scores_agg_datasets[metric].extend(list(metrics_per_run[metric].mean(axis=1)))
+        #         scores_agg_datasets[metric+"_std"].extend(list(metrics_per_run[metric].std(axis=1)))
+        #     scores_agg_datasets["dataset"].extend([data_name]*len(algo_names))
+            
+        #     A = None
+        #     E = None
+        #     Y = None
+        #     z_true = None
+        #     torch.cuda.empty_cache()
+        # return scores_agg_datasets
 
     def get_real_data(self):
         data_dir = "../../RealDataSets/"
