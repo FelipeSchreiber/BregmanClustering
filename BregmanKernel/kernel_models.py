@@ -39,7 +39,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         
         N = self.N
         def riemannian_metric(row1,row2):
-            net_d = self.edge_divergence(row1[:N],row2[:N])/N
+            net_d = self.edge_divergence(row1[:2*N],row2[:2*N])/(2*N)
             att_d = gamma*self.attribute_divergence(row1[N:],row2[N:])
             distance = np.exp(-(net_d + att_d)) 
             return distance
