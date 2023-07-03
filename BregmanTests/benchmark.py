@@ -983,6 +983,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         n = A.shape[0]
         if data.edge_attr is None:
             E = A.reshape(n,n,1)
+            E = np.clip(E,a_min=0,a_max=1)
         else:
             E = data.edge_attr.numpy()
         return K,A,E,attributes.numpy(),z_true
