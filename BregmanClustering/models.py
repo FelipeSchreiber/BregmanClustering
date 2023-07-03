@@ -9,7 +9,7 @@ felipesc@cos.ufrj.br
 import numpy as np
 import scipy as sp
 from sklearn.preprocessing import normalize
-from sklearn.externals.joblib import Parallel, delayed
+from joblib import Parallel, delayed
 from sklearn.base import BaseEstimator, ClusterMixin
 from .divergences import *
 # from .phi import *
