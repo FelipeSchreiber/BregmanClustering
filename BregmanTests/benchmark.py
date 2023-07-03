@@ -1082,7 +1082,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             metrics_per_run = {}
             algo_names = None
             for metric in metric_names:
-                metrics_per_run[metric] = np.zeros((7,n_runs))
+                metrics_per_run[metric] = np.zeros((8,n_runs))
             # print("INPUTS: ",A.shape,E.shape,Y.shape)
             
             for j in range(n_runs):
