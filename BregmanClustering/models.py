@@ -1216,8 +1216,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
             weights.sum(axis=(-1,-2))
 
-        if (np.isnan(edge_means).any()):
-            raise ValueError ("edge means contains Nan")
+        # if (np.isnan(edge_means).any()):
+        #     raise ValueError ("edge means contains Nan")
         return edge_means 
     
     def computeWeightMeans( self, X_, Z):
@@ -1237,8 +1237,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         weight_means = np.tensordot( weights,\
                                     X_,\
                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
-        if (np.isnan(weight_means).any()):
-            print("W means contains Nan")
+        # if (np.isnan(weight_means).any()):
+        #     print("W means contains Nan")
         return weight_means
     
     def computeTotalDiv(self,node,X_,Z,H):
@@ -1320,10 +1320,10 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         
         if np.isnan(H).any():
-            if np.isnan(Y).any():
-                print("Att contains nan")
-            if np.isnan(self.attribute_means).any():
-                print("Att means contains nan")
+            # if np.isnan(Y).any():
+            #     print("Att contains nan")
+            # if np.isnan(self.attribute_means).any():
+                # print("Att means contains nan")
             raise ValueError("H contains nan")
         
         for node in range(self.N):
