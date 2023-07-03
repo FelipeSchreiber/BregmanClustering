@@ -68,7 +68,7 @@ def gen_even_slices(n, n_packs, *, n_samples=None):
             end = start + this_n
             if n_samples is not None:
                 end = min(n_samples, end)
-            yield range(start, end, None)
+            yield range(start, end)
             start = end
 
 def make_riemannian_metric(N,n_features,gamma=None,att_dist_=None):
