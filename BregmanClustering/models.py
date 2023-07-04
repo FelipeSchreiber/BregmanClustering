@@ -1171,7 +1171,9 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             self.memberships_from_graph = self.memberships_from_attributes \
                 = self.predicted_memberships = Z_init
         #init_labels = self.predicted_memberships
-        self.Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
+        path = tempfile.mkdtemp()
+        Zpath = os.path.join(path,'z.mmap')
+        self.Ztilde = np.memmap(Zpath, dtype=float, shape=(self.N,self.n_clusters), mode='w+')
         self.M_projection(X_,Y,self.predicted_memberships)
         convergence = False
         iteration = 0
