@@ -986,11 +986,11 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             E = A.reshape(n,n,1)
         else:
             E = data.edge_attr.numpy()
-            if (E>1).any():
-                print(E.max())
-        E = np.clip(E,a_min=0,a_max=1)
-        attributes = np.clip(attributes.numpy(),a_min=0,a_max=1)
-        return K,A,E,attributes,z_true
+        #     if (E>1).any():
+        #         print(E.max())
+        # E = np.clip(E,a_min=0,a_max=1)
+        # attributes = np.clip(attributes.numpy(),a_min=0,a_max=1)
+        return K,A,E,attributes.numpy(),z_true
     
     def real_data_single_run(self,K,A,E,Y,z_true,n_iters,data):
         H = np.hstack((A,A.T))
@@ -1040,7 +1040,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
             
         G_nx = to_networkx(data)
-        G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
+        # G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
+        G = ig.Graph.from_networkx(G_nx)
         partition = la.find_partition(G, la.ModularityVertexPartition)
 
         y_preds = [
@@ -1096,13 +1097,18 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             metrics_per_run = {}
             algo_names = None
             for metric in metric_names:
-                metrics_per_run[metric] = np.zeros((8,n_runs))
+                metrics_per_run[metric] = None
             # print("INPUTS: ",A.shape,E.shape,Y.shape)
             
             for j in range(n_runs):
                 scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,n_iters,data)
                 for metric_name in metric_names:
-                    metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
+                    if metrics_per_run[metric_name] is None:
+                        metrics_per_run[metric_name] = np.array(scores_all[metric_name])
+                    else:
+                        metrics_per_run[metric_name] = np.hstack([metrics_per_run[metric_name],\
+                                                                 np.array(scores_all[metric_name])])
+                    #metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
             
             scores_agg_datasets["algorithm"].extend(algo_names)
             for metric in metric_names:
