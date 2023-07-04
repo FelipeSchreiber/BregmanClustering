@@ -10,6 +10,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, ClusterMixin
 from .kernel_divergences import *
 from sklearn.cluster import SpectralClustering, KMeans
+from sklearn.manifold import SpectralEmbedding
 from sklearn.kernel_approximation import Nystroem
 import warnings
 warnings.filterwarnings("ignore")
@@ -19,7 +20,10 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                  edgeDistribution = "bernoulli",
                  attributeDistribution = "gaussian",
                  weightDistribution = "gaussian",
-                 n_iters = 25, full_kernel=False, n_components=None):
+                 n_iters = 25,\
+                 full_kernel=False,\
+                 n_components=None,\
+                 use_nystrom=False):
         self.n_clusters = n_clusters
         self.n_iters = n_iters
         self.edgeDistribution = edgeDistribution
@@ -32,6 +36,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         self.n_components = n_components
         if n_components is None:
             self.n_components = n_clusters*2
+        self.use_nystrom = use_nystrom
 
     def make_single_riemannian_metric(self,att_feats,net_feats,gamma=None):
         if gamma is None:
@@ -44,6 +49,12 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
             return distance
         
         return riemannian_metric
+    
+    def spectralEmbedding(self, X , metric):
+        U = SpectralEmbedding(n_components=self.n_clusters,\
+								affinity=metric)\
+								.fit_transform(X)
+        return U
     
     def fit( self, A, X, Y):
         """
@@ -74,11 +85,16 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                                      affinity=metric,
                                     assign_labels='discretize',random_state=0).fit(H_and_att)
         else:
-            feature_map_nystroem = Nystroem(kernel=metric,\
-                                            random_state=42,\
-                                            n_components=self.n_components)
-            
-            data_transformed = feature_map_nystroem.fit_transform(H_and_att)
+            data_transformed = None
+            if self.use_nystrom:
+                feature_map_nystroem = Nystroem(kernel=metric,\
+                                                random_state=42,\
+                                                n_components=self.n_components)
+                
+                data_transformed = feature_map_nystroem.fit_transform(H_and_att)
+            else:
+                data_transformed = self.spectralEmbedding(H_and_att,metric)
+                
             self.model = KMeans(n_clusters=self.n_clusters,\
                                 random_state=0,\
                                 n_init="auto")\
