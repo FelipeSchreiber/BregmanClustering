@@ -12,6 +12,7 @@ from .kernel_divergences import *
 from sklearn.cluster import SpectralClustering, KMeans
 from sklearn.manifold import SpectralEmbedding
 from sklearn.kernel_approximation import Nystroem
+from sklearn.metrics.pairwise import pairwise_kernels
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -51,8 +52,9 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         return riemannian_metric
     
     def spectralEmbedding(self, X , metric):
+        X = pairwise_kernels(X,metric=metric)
         U = SpectralEmbedding(n_components=self.n_clusters,\
-								affinity=metric)\
+								affinity="precomputed")\
 								.fit_transform(X)
         return U
     
@@ -94,7 +96,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                 data_transformed = feature_map_nystroem.fit_transform(H_and_att)
             else:
                 data_transformed = self.spectralEmbedding(H_and_att,metric)
-                
+
             self.model = KMeans(n_clusters=self.n_clusters,\
                                 random_state=0,\
                                 n_init="auto")\
