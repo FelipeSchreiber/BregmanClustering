@@ -1001,9 +1001,17 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 edgeDistribution = "bernoulli",
                 attributeDistribution = "bernoulli",
                 weightDistribution = "gaussian",
-                n_iters = 25, full_kernel=False)
+                single_metric=True)
         
         SC2.fit(A,E,Y)
+
+        SC3 = BregmanKernelClustering(K, 
+                edgeDistribution = "bernoulli",
+                attributeDistribution = "bernoulli",
+                weightDistribution = "gaussian",
+                single_metric=False)
+        
+        SC3.fit(A,E,Y)
 
         both_soft = None
         model_soft = softBreg(n_clusters=K,\
@@ -1043,7 +1051,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 kmeans.labels_,
                 np.array(partition.membership),
                 SC.labels_,
-                SC2.labels_
+                SC2.labels_,
+                SC3.labels_
             ]
 
         algo_names = [
@@ -1054,7 +1063,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "kmeans",
                 "leiden",
                 "SC",
-                "SC2"
+                "SC2",
+                "SC3"
             ]
 
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
