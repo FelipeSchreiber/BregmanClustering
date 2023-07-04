@@ -1040,6 +1040,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
             
         G_nx = to_networkx(data)
+        nx.set_edge_attributes(G_nx,E,"weight")
         # G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
         G = ig.Graph.from_networkx(G_nx)
         partition = la.find_partition(G, la.ModularityVertexPartition)
