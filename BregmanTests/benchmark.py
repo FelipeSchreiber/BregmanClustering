@@ -1097,19 +1097,18 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             metrics_per_run = {}
             algo_names = None
             for metric in metric_names:
-                metrics_per_run[metric] = None
+                metrics_per_run[metric] = np.zeros((9,n_runs))
             # print("INPUTS: ",A.shape,E.shape,Y.shape)
             
             for j in range(n_runs):
                 scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,n_iters,data)
                 for metric_name in metric_names:
-                    if metrics_per_run[metric_name] is None:
-                        metrics_per_run[metric_name] = np.array(scores_all[metric_name])
-                    else:
-                        metrics_per_run[metric_name] = np.hstack([metrics_per_run[metric_name],\
-                                                                 np.array(scores_all[metric_name])])
-                    #metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
-            
+                    metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
+            #  if metrics_per_run[metric_name] is None:
+            #             metrics_per_run[metric_name] = np.array(scores_all[metric_name])
+            #         else:
+            #             metrics_per_run[metric_name] = np.hstack([metrics_per_run[metric_name],\
+            #                                                      np.array(scores_all[metric_name])])
             scores_agg_datasets["algorithm"].extend(algo_names)
             for metric in metric_names:
                 scores_agg_datasets[metric].extend(list(metrics_per_run[metric].mean(axis=1)))

@@ -30,6 +30,10 @@ warnings.filterwarnings("ignore")
 def singleAssignmentContainer(self,A,X_, H, nodes):
     for node in nodes:
         self.Z[ node ] = self.singleNodeAssignment( A, X_, H, node )
+
+def singlecomputeTotalDivContainer(self,X, H, nodes):
+    for node in nodes:
+        self.Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
     
 def fromVectorToMembershipMatrice( z, n_clusters = 2 ):
     if len( set ( z ) ) > n_clusters:
@@ -1122,7 +1126,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.edge_index = None 
         self.use_random_init = use_random_init
-    
+        self.n_jobs = effective_n_jobs(-1)
+
     def precompute_edge_divergences(self):
         if(np.isnan(self.edge_means).any()):
             raise ValueError ("GOT NAN EDGE MEANS")
@@ -1166,6 +1171,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             self.memberships_from_graph = self.memberships_from_attributes \
                 = self.predicted_memberships = Z_init
         #init_labels = self.predicted_memberships
+        self.Ztilde = np.zeros( (self.N,self.n_clusters), dtype = float)
         self.M_projection(X_,Y,self.predicted_memberships)
         convergence = False
         iteration = 0
@@ -1348,13 +1354,21 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
                 # print("Att means contains nan")
             raise ValueError("H contains nan")
         
-        for node in range(self.N):
-            Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
+        # for node in range(self.N):
+        #     Ztilde[node,:] = self.computeTotalDiv(node,X,self.predicted_memberships,H)
+        Ztilde = self.computeTotalDiv_joblib(X, H)
+
         c = Ztilde.min(axis=1)
         Ztilde -= c[:,None]
         soft_assign = self.communities_weights.reshape(1, -1)*np.exp(-Ztilde)    
         return normalize(soft_assign, axis=1, norm='l1')
-            
+    
+    def computeTotalDiv_joblib(self, X, H):
+        Parallel(backend="multiprocessing",n_jobs=self.n_jobs)\
+            (delayed(singlecomputeTotalDivContainer)(self, X, H, ranges)\
+              for ranges in gen_even_slices(self.N,self.n_jobs) )        
+        return self.Ztilde
+          
     def M_projection(self,X_,Y,Z):
         self.attribute_means = self.computeAttributeMeans(Y, Z)
         if (self.attribute_means > Y.max()).any():
