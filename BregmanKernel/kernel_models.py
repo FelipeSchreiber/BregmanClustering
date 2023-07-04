@@ -33,14 +33,13 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         if n_components is None:
             self.n_components = n_clusters
 
-    def make_single_riemannian_metric(self,n_features,gamma=None):
+    def make_single_riemannian_metric(self,att_feats,net_feats,gamma=None):
         if gamma is None:
-            gamma = 1.0 / n_features
-        
-        N = self.N
+            gamma = 1.0 / att_feats
+
         def riemannian_metric(row1,row2):
-            net_d = self.edge_divergence(row1[:2*N],row2[:2*N])/(2*N)
-            att_d = gamma*self.attribute_divergence(row1[N:],row2[N:])
+            net_d = self.edge_divergence(row1[:net_feats],row2[:net_feats])/(net_feats)
+            att_d = gamma*self.attribute_divergence(row1[-att_feats:],row2[-att_feats:])
             distance = np.exp(-(net_d + att_d)) 
             return distance
         
@@ -66,9 +65,9 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         self.edge_index = np.nonzero(A)
         self.model = None
         X_ = X[self.edge_index[0],self.edge_index[1],:]
-        metric = self.make_single_riemannian_metric(Y.shape[1],gamma=None)
         H = np.hstack((A,A.T))
         H_and_att = np.hstack((H,Y))
+        metric = self.make_single_riemannian_metric(Y.shape[1],H.shape[1],gamma=None)
             
         if self.full_kernel:
             self.model = SpectralClustering(n_clusters=self.n_clusters,\
