@@ -31,7 +31,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         self.full_kernel = full_kernel
         self.n_components = n_components
         if n_components is None:
-            self.n_components = n_clusters
+            self.n_components = n_clusters*2
 
     def make_single_riemannian_metric(self,att_feats,net_feats,gamma=None):
         if gamma is None:
