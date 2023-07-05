@@ -189,8 +189,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         with open('my_config.toml', 'w') as f:
             f.write(cfg_data)
         
-    def generate_ABCD_benchmark(self,d_min=5,d_max=50,c_min=50,c_max=1000):
-        self.gen_config_file(d_min=d_min,d_max=d_max,c_min=c_min,c_max=c_max)
+    def generate_ABCD_benchmark(self,d_min=5,d_max=50,c_min=50,c_max=1000,t1=3,t2=2):
+        self.gen_config_file(d_min=d_min,d_max=d_max,c_min=c_min,c_max=c_max,t1=t1,t2=t2)
         jl_path = find_jl()
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_installer}"])
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml"])
