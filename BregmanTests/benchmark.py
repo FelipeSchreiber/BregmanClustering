@@ -975,12 +975,15 @@ nout = "100"                  # number of vertices in graph that are outliers; o
     def preprocess_real_data(self,data,reduction_method):
         attributes = data.x
         z_true = data.y.numpy()
+        G_nx = to_networkx(data)
+        #nx.set_edge_attributes(G_nx,E,"weight")
         if self.preprocess:
             attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
     
         K = np.unique(z_true).shape[0] ##Number of clusters
         E = None ##Edge data
-        A = to_dense_adj(data.edge_index).numpy()[0]
+        A = nx.to_numpy_array(G_nx)
+        # A = to_dense_adj(data.edge_index).numpy()[0]
         n = A.shape[0]
         if data.edge_attr is None:
             E = A.reshape(n,n,1)
@@ -1041,7 +1044,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
         G_nx = to_networkx(data)
         nx.set_edge_attributes(G_nx,E,"weight")
-        # G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
         G = ig.Graph.from_networkx(G_nx)
         partition = la.find_partition(G, la.ModularityVertexPartition)
 
@@ -1105,11 +1107,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,n_iters,data)
                 for metric_name in metric_names:
                     metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
-            #  if metrics_per_run[metric_name] is None:
-            #             metrics_per_run[metric_name] = np.array(scores_all[metric_name])
-            #         else:
-            #             metrics_per_run[metric_name] = np.hstack([metrics_per_run[metric_name],\
-            #                                                      np.array(scores_all[metric_name])])
+
             scores_agg_datasets["algorithm"].extend(algo_names)
             for metric in metric_names:
                 scores_agg_datasets[metric].extend(list(metrics_per_run[metric].mean(axis=1)))

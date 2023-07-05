@@ -9,7 +9,8 @@ felipesc@cos.ufrj.br
 import numpy as np
 import scipy as sp
 from sklearn.preprocessing import normalize
-from joblib import Parallel, delayed, effective_n_jobs
+from joblib import effective_n_jobs
+from sklearn.utils.parallel import Parallel, delayed
 from sklearn.base import BaseEstimator, ClusterMixin
 from .divergences import *
 # from .phi import *
@@ -998,7 +999,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
 
     def assignments_joblib(self,A,X_,Y):
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
-        Parallel(backend="multiprocessing",n_jobs=self.n_jobs)\
+        Parallel(backend="threading",n_jobs=self.n_jobs)\
             (delayed(singleAssignmentContainer)(self,A,X_, H, ranges)\
               for ranges in gen_even_slices(self.N,self.n_jobs) )        
         return fromVectorToMembershipMatrice( self.Z, n_clusters = self.n_clusters )
@@ -1366,7 +1367,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         return normalize(soft_assign, axis=1, norm='l1')
     
     def computeTotalDiv_joblib(self, X, H):
-        Parallel(backend="multiprocessing",n_jobs=self.n_jobs)\
+        Parallel(backend="threading",n_jobs=self.n_jobs)\
             (delayed(singlecomputeTotalDivContainer)(self, X, H, ranges)\
               for ranges in gen_even_slices(self.N,self.n_jobs) )        
         return self.Ztilde
