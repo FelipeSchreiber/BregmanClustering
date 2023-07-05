@@ -161,14 +161,14 @@ class BregmanBenchmark():
             return X,Y,labels_true,G
         return X,Y,labels_true,None
     
-    def gen_config_file(self,d_min=5,d_max=50,c_min=50,c_max=1000):
+    def gen_config_file(self,d_min=5,d_max=50,c_min=50,c_max=1000,t1=3,t2=2):
         cfg_data = f"""seed = "42"                   # RNG seed, use "" for no seeding
 n = "{int(self.num_nodes)}"                   # number of vertices in graph
-t1 = "3"                      # power-law exponent for degree distribution
+t1 = "{int(t1)}"                      # power-law exponent for degree distribution
 d_min = "{int(d_min)}"                   # minimum degree
 d_max = "{int(d_max)}"                  # maximum degree
 d_max_iter = "1000"           # maximum number of iterations for sampling degrees
-t2 = "2"                      # power-law exponent for cluster size distribution
+t2 = "{int(t2)}"                      # power-law exponent for cluster size distribution
 c_min = "{int(c_min)}"                  # minimum cluster size
 c_max = "{int(c_max)}"                # maximum cluster size
 c_max_iter = "1000"           # maximum number of iterations for sampling cluster sizes
