@@ -989,10 +989,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             E = A.reshape(n,n,1)
         else:
             E = data.edge_attr.numpy()
-        #     if (E>1).any():
-        #         print(E.max())
-        # E = np.clip(E,a_min=0,a_max=1)
-        # attributes = np.clip(attributes.numpy(),a_min=0,a_max=1)
         return K,A,E,attributes.numpy(),z_true
     
     def real_data_single_run(self,K,A,E,Y,z_true,n_iters,data):
@@ -1042,7 +1038,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
             
-        G_nx = to_networkx(data)
+        # G_nx = to_networkx(data)
+        # nx.set_edge_attributes(G_nx,E,"weight")
+        G_nx = nx.from_numpy_array(A)
         nx.set_edge_attributes(G_nx,E,"weight")
         G = ig.Graph.from_networkx(G_nx)
         partition = la.find_partition(G, la.ModularityVertexPartition)
