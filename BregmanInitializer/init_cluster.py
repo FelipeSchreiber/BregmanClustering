@@ -176,11 +176,11 @@ class BregmanInitializer():
     Y is N x d np.array
     edge_index is a tuple (indices_i, indices_j)
     """
-    def initialize(self, X, Y , edge_index,Z_init=None):
+    def initialize(self, A, X, Y ,Z_init=None):
         self.N = Y.shape[0]
-        A = None
+        self.edge_index = np.nonzero(A)
         ## CASE X is |E| x d: do nothing
-        self.edge_index = edge_index
+        # self.edge_index = edge_index
         sim_matrix = None
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
@@ -192,10 +192,10 @@ class BregmanInitializer():
             self.X = X
 
         self.sim_matrix = sim_matrix
-        self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
-                             (self.edge_index[0],self.edge_index[1])),\
-                             shape=(self.N, self.N)
-                            )
+        # self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
+        #                      (self.edge_index[0],self.edge_index[1])),\
+        #                      shape=(self.N, self.N)
+        #                     )
         self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
@@ -211,7 +211,8 @@ class BregmanInitializer():
             preds = model.fit(U).predict(U).reshape(-1, 1)
             self.graph_model_init = model
         else:
-            G_nx = nx.from_scipy_sparse_array(self.A)
+            # G_nx = nx.from_scipy_sparse_array(self.A)
+            G_nx = nx.from_numpy_array(A)
             nx.set_edge_attributes(G_nx,self.X,"weight")
             # G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
             G = ig.Graph.from_networkx(G_nx)
