@@ -179,6 +179,7 @@ class BregmanInitializer():
     def initialize(self, A, X, Y ,Z_init=None):
         self.N = Y.shape[0]
         self.edge_index = np.nonzero(A)
+        self.A = A
         ## CASE X is |E| x d: do nothing
         # self.edge_index = edge_index
         sim_matrix = None
