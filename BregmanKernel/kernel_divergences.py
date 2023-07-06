@@ -146,7 +146,9 @@ def rbf_kernel(X,M):
     return np.exp(-np.norm(X-M,dim=-1))
 
 def hamming(X,M):
-    return 1-hamming_loss(X.flatten(),M.flatten())
+    res = hamming_loss(X,M)
+    print(res)
+    return 1-res
 
 net_simmilarity_scores = {
     "jaccard":jaccard_score,
