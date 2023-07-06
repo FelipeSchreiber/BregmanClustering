@@ -29,7 +29,7 @@ SEE:
 def logistic_loss(X,M):
     # total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
     total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) ))
-    return total
+    return total.sum()
 
 #Multinomial | KL-divergence
 def KL_div(X,M):
