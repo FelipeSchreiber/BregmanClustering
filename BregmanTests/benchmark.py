@@ -165,11 +165,11 @@ class BregmanBenchmark():
         cfg_data = f"""seed = "42"                   # RNG seed, use "" for no seeding
 n = "{int(self.num_nodes)}"                   # number of vertices in graph
 t1 = "{int(t1)}"                      # power-law exponent for degree distribution
-d_min = "{int(d_min)}"                   # minimum degree
-d_max = "{int(d_max)}"                  # maximum degree
+d_min = "{int(d_min)}"                   # minimum degree ---- 2*log_2 (n)
+d_max = "{int(d_max)}"                  # maximum degree ---- 100*log_2(n)
 d_max_iter = "1000"           # maximum number of iterations for sampling degrees
 t2 = "{int(t2)}"                      # power-law exponent for cluster size distribution
-c_min = "{int(c_min)}"                  # minimum cluster size
+c_min = "{int(c_min)}"                  # minimum cluster size c_min = c_max, n/2 ... n/8
 c_max = "{int(c_max)}"                # maximum cluster size
 c_max_iter = "1000"           # maximum number of iterations for sampling cluster sizes
 # Exactly one of xi and mu must be passed as Float64. Also if xi is provided islocal must be set to false or omitted.
@@ -997,7 +997,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                 assign_labels='discretize',random_state=0).fit(H)
 
         SC2 = BregmanKernelClustering(K, 
-                edgeDistribution = "bernoulli",
+                edgeSimilarity = "hamming",
                 attributeDistribution = "bernoulli",
                 weightDistribution = "gaussian",
                 single_metric=True)
@@ -1005,7 +1005,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         SC2.fit(A,E,Y)
 
         SC3 = BregmanKernelClustering(K, 
-                edgeDistribution = "bernoulli",
+                edgeSimilarity = "hamming",
                 attributeDistribution = "bernoulli",
                 weightDistribution = "gaussian",
                 single_metric=False)

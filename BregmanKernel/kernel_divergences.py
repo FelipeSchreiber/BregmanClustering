@@ -10,6 +10,7 @@ This code is taken in part from power k means bregman
 """
 
 import numpy as np
+from sklearn.metrics import *
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -24,10 +25,10 @@ SEE:
 
 #Bernoulli | Logistic loss
 #as stated in the paper page 1709
+
 def logistic_loss(X,M):
     # total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
-    # total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) ))
-    total = np.linalg.norm((X-M).flatten(),ord=1)
+    total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) ))
     return total
 
 #Multinomial | KL-divergence
@@ -144,6 +145,13 @@ dist_to_psi_dict = {
 def rbf_kernel(X,M):
     return np.exp(-np.norm(X-M,dim=-1))
 
+def hamming(X,M):
+    return 1-hamming_loss(X,M)
+
+net_simmilarity_scores = {
+    "jaccard":jaccard_score,
+    "hamming":hamming
+}
 
 """
 psi*

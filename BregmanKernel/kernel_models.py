@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore")
 
 class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
-                 edgeDistribution = "bernoulli",
+                 edgeSimilarity = "jaccard",
                  attributeDistribution = "gaussian",
                  weightDistribution = "gaussian",
                  single_metric=False,
@@ -27,10 +27,10 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                  use_nystrom=False
                 ):
         self.n_clusters = n_clusters
-        self.edgeDistribution = edgeDistribution
+        self.edgeSimilarity = edgeSimilarity
         self.attributeDistribution = attributeDistribution
         self.weightDistribution = weightDistribution
-        self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
+        self.edge_sim = net_simmilarity_scores[self.edgeSimilarity]
         self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
         self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.single_metric = single_metric
@@ -44,9 +44,9 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
             gamma = 1.0 / att_feats
 
         def riemannian_metric(row1,row2):
-            net_d = self.edge_divergence(row1[:net_feats],row2[:net_feats])/(net_feats)
+            net_d = self.edge_sim(row1[:net_feats],row2[:net_feats])
             att_d = gamma*self.attribute_divergence(row1[-att_feats:],row2[-att_feats:])
-            distance = np.exp(-(net_d + att_d)) 
+            distance = (np.exp(-att_d)+net_d )/2
             return distance
         
         return riemannian_metric
@@ -67,9 +67,8 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
             gamma = 1.0 / net_feats
 
         def net_riemannian_metric(row1,row2):
-            net_d = gamma*self.edge_divergence(row1,row2)
-            distance = np.exp(-net_d) 
-            return distance
+            net_d = self.edge_sim(row1,row2) 
+            return net_d
         
         return net_riemannian_metric
     
