@@ -211,11 +211,11 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         G  = nx.relabel_nodes(G, mapping)
         Y = self.generate_attributes()
         labels_true = sorted[1].to_numpy()
-        if self.return_G:
-            for i in range(np.sum(self.communities_sizes)):
-                G.nodes[i]["x"] = Y[i,:].tolist()
-            return Y,labels_true,G
-        return G,com_df
+        # if self.return_G:
+        #     for i in range(np.sum(self.communities_sizes)):
+        #         G.nodes[i]["x"] = Y[i,:].tolist()
+        #     return Y,labels_true,G
+        return G,Y,labels_true
     
     def to_pyg_data(self,X,Y):
         X_sparse = torch.tensor(X).to_sparse()
