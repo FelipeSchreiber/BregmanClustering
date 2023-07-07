@@ -40,14 +40,14 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         self.use_nystrom = use_nystrom
 
     def make_single_riemannian_metric(self,att_feats,net_feats,gamma=None):
-        if gamma is None:
-            gamma = 1.0 / att_feats
+        att_sim_func = self.make_att_riemannian_metric(att_feats,gamma)
+        net_sim_func = self.make_net_riemannian_metric(net_feats)
 
         def riemannian_metric(row1,row2):
-            net_d = self.edge_sim(row1[:net_feats],row2[:net_feats])
-            att_d = gamma*self.attribute_divergence(row1[-att_feats:],row2[-att_feats:])
-            distance = (np.exp(-att_d)+net_d )/2
-            return distance
+            net_d = net_sim_func(row1[:net_feats],row2[:net_feats])
+            att_d = att_sim_func(row1[-att_feats:],row2[-att_feats:])
+            simmilarity = (net_d+att_d)/2
+            return simmilarity
         
         return riemannian_metric
     
@@ -57,14 +57,14 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
 
         def att_riemannian_metric(row1,row2):
             att_d = gamma*self.attribute_divergence(row1,row2)
-            distance = np.exp(-att_d) 
-            return distance
+            simmilarity = np.exp(-att_d) 
+            return simmilarity
         
         return att_riemannian_metric
     
     def make_net_riemannian_metric(self,net_feats,gamma=None):
-        if gamma is None:
-            gamma = 1.0 / net_feats
+        # if gamma is None:
+        #     gamma = 1.0 / net_feats
 
         def net_riemannian_metric(row1,row2):
             net_d = self.edge_sim(row1,row2) 
