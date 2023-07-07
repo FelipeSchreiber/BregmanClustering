@@ -41,7 +41,7 @@ class BregmanBenchmark():
                     attributes_distribution = "gaussian",\
                     edge_distribution = "bernoulli",\
                     weight_distribution = "exponential",\
-                    radius=None,return_G=False,reduce_by="sum",\
+                    radius=1,return_G=False,reduce_by="sum",\
                     att_centers = None, weight_centers = None, run_torch=False,\
                     divergence_precomputed=True, initializer="AIC",\
                     hard_clustering=True,preprocess=True):
