@@ -201,7 +201,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         edges.close()
         com_df = pd.read_csv('com.dat',delimiter="\t",header=None)
         counts = com_df[1].value_counts()
-        com_sizes = [counts[i] for i in range(com_df[1].max())]
+        com_sizes = [counts[i] for i in range(1,com_df[1].max())]
         self.communities_sizes = com_sizes
         mapping = {}
         sorted = com_df.sort_values(by=1)
@@ -210,7 +210,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             mapping[node] = i
         G  = nx.relabel_nodes(G, mapping)
         Y = self.generate_attributes()
-        labels_true = sorted[1].to_numpy()
+        labels_true = sorted[1].to_numpy() - 1
         # if self.return_G:
         #     for i in range(np.sum(self.communities_sizes)):
         #         G.nodes[i]["x"] = Y[i,:].tolist()
