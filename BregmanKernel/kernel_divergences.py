@@ -27,32 +27,34 @@ SEE:
 #as stated in the paper page 1709
 
 def hamming(X,M):
-    res = hamming_loss(X,M)
-    return 1-res
+    #total = hamming_loss(X,M)
+    total = np.linalg.norm(X-M,ord=1)/len(X)
+    return 1-total
 
 def logistic_loss(X,M):
     # total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
     total = np.log(1 + np.exp(- (2*X - 1) * ( np.log(M/(1-M)) ) ))
-    return total.sum()
+    return np.exp(-total.mean())
 
 #Multinomial | KL-divergence
 def KL_div(X,M):
     total = X*np.log(X/M)
-    return total.sum()
+    return np.exp(-total.mean())
 
 #Exponential | Itakura-Saito Loss
 def itakura_saito_loss(X,M):
     total = (X/M - np.log(X/M) - 1)
-    return total.sum()
+    return np.exp(-total.mean())
 
 #Poisson | Generalized I-divergence
 def generalized_I_divergence(X,M):
     total = X*np.log(X/M) + M - X
-    return total.sum()
+    return np.exp(-total.mean())
 
 #gaussian | Squared Euclidean distance
 def euclidean_distance(X,M):
-    return (0.5*(X-M)**2).sum()
+    total = (0.5*(X-M)**2)
+    return np.exp(-total.mean())
 
 dist_to_divergence_dict = {
         'gaussian': euclidean_distance,
