@@ -998,8 +998,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
     
         K = np.unique(z_true).shape[0] ##Number of clusters
         E = None ##Edge data
-        A = nx.to_numpy_array(G_nx)
-        # A = to_dense_adj(data.edge_index).numpy()[0]
+        # A = nx.to_numpy_array(G_nx)
+        A = to_dense_adj(data.edge_index).numpy()[0]
         n = A.shape[0]
         if data.edge_attr is None:
             E = A.reshape(n,n,1)
