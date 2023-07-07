@@ -201,7 +201,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         edges.close()
         com_df = pd.read_csv('com.dat',delimiter="\t",header=None)
         counts = com_df[1].value_counts()
-        com_sizes = [counts[i] for i in range(1,com_df[1].max())]
+        com_sizes = [counts[i] for i in range(1,com_df[1].max()+1)]
         self.communities_sizes = com_sizes
         self.n_clusters = len(com_sizes)
         mapping = {}
