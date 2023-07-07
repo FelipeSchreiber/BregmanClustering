@@ -1012,6 +1012,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                              weightSimilarity,\
                              attributesSimilarity):
         H = np.hstack((A,A.T))
+        
+        if (H.sum(axis=1) == 0).any():
+            raise ValueError("GOT disconnected node")
         SC = SpectralClustering(n_clusters=K,\
                                 assign_labels='discretize',random_state=0).fit(H)
 
