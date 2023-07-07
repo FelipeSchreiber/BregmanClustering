@@ -998,7 +998,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         SC2 = BregmanKernelClustering(K, 
                 edgeSimilarity = "hamming",
-                attributeDistribution = "gaussian",
+                attributeDistribution = "bernoulli",
                 weightDistribution = "gaussian",
                 single_metric=True)
         
@@ -1006,7 +1006,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         SC3 = BregmanKernelClustering(K, 
                 edgeSimilarity = "hamming",
-                attributeDistribution = "gaussian",
+                attributeDistribution = "bernoulli",
                 weightDistribution = "gaussian",
                 single_metric=False)
         
