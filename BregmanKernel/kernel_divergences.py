@@ -26,10 +26,14 @@ SEE:
 #Bernoulli | Logistic loss
 #as stated in the paper page 1709
 
-def hamming(X,M):
+def hamming_(X,M):
     #total = hamming_loss(X,M)
     total = np.linalg.norm(X-M,ord=1)/len(X)
     return 1-total
+
+def jaccard_(X,M):
+    total = np.linalg.norm(X-M,ord=1)/np.logical_or(X , M).sum()
+    return 1 - total
 
 def logistic_loss(X,M):
     # total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
@@ -62,8 +66,8 @@ dist_to_divergence_dict = {
         'multinomial':KL_div,
         'exponential': itakura_saito_loss,
         'poisson': generalized_I_divergence,
-        "jaccard":jaccard_score,
-        "hamming":hamming
+        "jaccard":jaccard_,
+        "hamming":hamming_
     }
 
 
@@ -154,8 +158,8 @@ def rbf_kernel(X,M):
     return np.exp(-np.norm(X-M,dim=-1))
 
 net_simmilarity_scores = {
-    "jaccard":jaccard_score,
-    "hamming":hamming
+    "jaccard":jaccard_,
+    "hamming":hamming_
 }
 
 """
