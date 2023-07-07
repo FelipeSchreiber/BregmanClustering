@@ -36,6 +36,8 @@ def jaccard_(X,M):
     M = M.astype(np.bool)
     intersection = np.logical_and(X, M)
     union = np.logical_or(X, M)
+    if union.sum() == 0:
+        raise ValueError("UNION EMPTY") 
     # total = np.linalg.norm(X-M,ord=1)/np.logical_or(X , M).sum()
     return intersection.sum() / float(union.sum())
 
