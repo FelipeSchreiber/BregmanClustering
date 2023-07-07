@@ -32,8 +32,12 @@ def hamming_(X,M):
     return 1-total
 
 def jaccard_(X,M):
-    total = np.linalg.norm(X-M,ord=1)/np.logical_or(X , M).sum()
-    return 1 - total
+    X = X.astype(np.bool)
+    M = M.astype(np.bool)
+    intersection = np.logical_and(X, M)
+    union = np.logical_or(X, M)
+    # total = np.linalg.norm(X-M,ord=1)/np.logical_or(X , M).sum()
+    return intersection.sum() / float(union.sum())
 
 def logistic_loss(X,M):
     # total = np.where( X == 0, -np.log( 1-M ), -np.log(M) )
