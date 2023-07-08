@@ -1006,7 +1006,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         if self.preprocess:
             attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
         
-        return K,A,E,attributes[mask].numpy(),z_true
+        return K,A,E,attributes.numpy(),z_true
     
     def real_data_single_run(self,K,A,E,Y,z_true,n_iters,data,\
                              edgeSimilarity,\
