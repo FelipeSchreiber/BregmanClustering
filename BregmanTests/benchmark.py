@@ -1002,13 +1002,13 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         # A = nx.to_numpy_array(G_nx)
         edge_index, edge_attr, mask = remove_isolated_nodes(data.edge_index)
         A = to_dense_adj(edge_index).numpy()[0]
-        
+
         n = A.shape[0]
         if data.edge_attr is None:
             E = A.reshape(n,n,1)
         else:
             E = data.edge_attr[mask].numpy()
-        return K,A,E,attributes.numpy(),z_true
+        return K,A,E,attributes[mask].numpy(),z_true
     
     def real_data_single_run(self,K,A,E,Y,z_true,n_iters,data,\
                              edgeSimilarity,\
