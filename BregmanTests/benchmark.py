@@ -989,7 +989,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         return datas,data_names
     
     def preprocess_real_data(self,data,reduction_method):
-        attributes = data.x
         E = None ##Edge data
         # A = nx.to_numpy_array(G_nx)
         edge_index, edge_attr, mask = remove_isolated_nodes(data.edge_index)
@@ -1003,6 +1002,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         # print(A.shape,E.shape,attributes[mask].numpy().shape)
         z_true = data.y[mask].numpy()
         K = np.unique(z_true).shape[0] ##Number of clusters
+        attributes = data.x[mask,:]
         if self.preprocess:
             attributes = torch.Tensor(preprocess(attributes.numpy(),z_true,method=reduction_method))
         
