@@ -1008,6 +1008,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             E = A.reshape(n,n,1)
         else:
             E = data.edge_attr[mask].numpy()
+        print(A.shape,E.shape,attributes[mask].numpy())
         return K,A,E,attributes[mask].numpy(),z_true
     
     def real_data_single_run(self,K,A,E,Y,z_true,n_iters,data,\
