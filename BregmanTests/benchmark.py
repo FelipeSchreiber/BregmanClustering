@@ -5,6 +5,7 @@ from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEffi
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
 from BregmanKernel.kernel_models import BregmanKernelClustering
+from BregmanInitializer.init_cluster import fit_leiden
 from sklearn.metrics import adjusted_rand_score
 from sklearn.datasets import make_classification
 from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
@@ -1064,9 +1065,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
         # G_nx = to_networkx(data)
         # nx.set_edge_attributes(G_nx,E,"weight")
-        G_nx = nx.from_numpy_array(A)
-        G = ig.Graph.from_networkx(G_nx)
-        partition = la.find_partition(G, la.ModularityVertexPartition)
+        preds = fit_leiden(np.nonzero(A),E,Y.shape[0])
+        # G_nx = nx.from_numpy_array(A)
+        # G = ig.Graph.from_networkx(G_nx)
+        # partition = la.find_partition(G, la.ModularityVertexPartition)
 
         y_preds = [
                 both_hard,
