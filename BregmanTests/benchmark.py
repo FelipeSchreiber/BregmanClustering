@@ -1066,11 +1066,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
             
-        leiden_labels_ = frommembershipMatriceToVector(model_hard.memberships_from_graph)
-        # leiden_labels_ = fit_leiden(edge_index,\
-        #                             E[edge_index[0],edge_index[1],:],\
-        #                             Y.shape[0]
-        #                         )
+        leiden_labels_ = model_hard.memberships_from_graph
 
         y_preds = [
                 both_hard,
