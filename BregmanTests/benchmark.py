@@ -1024,7 +1024,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                 assign_labels='discretize',random_state=0).fit(H)
 
         SC2 = BregmanKernelClustering(K, 
-                edgeSimilarity = edgeSimilarity,
+                edgeSimilarity = "jaccard",
                 weightDistribution = weightSimilarity,
                 attributeDistribution = attributesSimilarity,
                 single_metric=True)
@@ -1032,7 +1032,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         SC2.fit(A,E,Y)
 
         SC3 = BregmanKernelClustering(K, 
-                edgeSimilarity = edgeSimilarity,
+                edgeSimilarity = "hamming",
                 weightDistribution = weightSimilarity,
                 attributeDistribution = attributesSimilarity,
                 single_metric=False)
@@ -1088,8 +1088,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "kmeans",
                 "leiden",
                 "SC",
-                "SC2",
-                "SC3"
+                "SC_jaccard",
+                "SC_hamming"
             ]
 
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
