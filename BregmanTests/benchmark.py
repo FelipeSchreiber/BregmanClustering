@@ -1065,7 +1065,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
         # G_nx = to_networkx(data)
         # nx.set_edge_attributes(G_nx,E,"weight")
-        leiden_labels_ = fit_leiden(np.nonzero(A),E,Y.shape[0])
+        index = np.nonzero(A)
+        print(index.shape,E.flatten().shape)
+        leiden_labels_ = fit_leiden(index,E,Y.shape[0])
         # G_nx = nx.from_numpy_array(A)
         # G = ig.Graph.from_networkx(G_nx)
         # partition = la.find_partition(G, la.ModularityVertexPartition)
