@@ -1017,6 +1017,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         if (H.sum(axis=1) == 0).any():
             raise ValueError("GOT disconnected node")
+        
+        index = np.nonzero(A)
+        print(index.shape,E.flatten().shape)
         SC = SpectralClustering(n_clusters=K,\
                                 assign_labels='discretize',random_state=0).fit(H)
 
@@ -1065,8 +1068,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
         # G_nx = to_networkx(data)
         # nx.set_edge_attributes(G_nx,E,"weight")
-        index = np.nonzero(A)
-        print(index.shape,E.flatten().shape)
         leiden_labels_ = fit_leiden(index,E,Y.shape[0])
         # G_nx = nx.from_numpy_array(A)
         # G = ig.Graph.from_networkx(G_nx)
