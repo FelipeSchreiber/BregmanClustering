@@ -1035,7 +1035,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 edgeSimilarity = "hamming",
                 weightDistribution = weightSimilarity,
                 attributeDistribution = attributesSimilarity,
-                single_metric=False)
+                single_metric=True)
         
         SC3.fit(A,E,Y)
 
