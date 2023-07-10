@@ -1019,7 +1019,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             raise ValueError("GOT disconnected node")
         
         index = np.nonzero(A)
-        print(index[0].shape,E.flatten().shape)
+        print(index[0].shape,E.shape)
         SC = SpectralClustering(n_clusters=K,\
                                 assign_labels='discretize',random_state=0).fit(H)
 
