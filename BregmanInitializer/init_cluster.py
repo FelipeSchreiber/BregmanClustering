@@ -187,12 +187,10 @@ class BregmanInitializer():
     Y is N x d np.array
     edge_index is a tuple (indices_i, indices_j)
     """
-    def initialize(self, A, X, Y ,Z_init=None):
+    def initialize(self, X, Y, edge_index ,Z_init=None):
         self.N = Y.shape[0]
-        self.edge_index = np.nonzero(A)
-        # self.A = A
         ## CASE X is |E| x d: do nothing
-        # self.edge_index = edge_index
+        self.edge_index = edge_index
         sim_matrix = None
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
