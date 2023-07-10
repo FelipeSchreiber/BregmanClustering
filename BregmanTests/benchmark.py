@@ -1131,7 +1131,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
             for j in range(n_runs):
                 scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,\
-                                                                  n_iters,data,\
+                                                                  n_iters,\
                                                                   edgeSimilarity,\
                                                                   weightSimilarity,
                                                                   attributesSimilarity)
