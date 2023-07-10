@@ -30,7 +30,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         self.edgeSimilarity = edgeSimilarity
         self.attributeDistribution = attributeDistribution
         self.weightDistribution = weightDistribution
-        self.edge_sim = net_simmilarity_scores[self.edgeSimilarity]
+        self.edge_sim = dist_to_divergence_dict[self.edgeSimilarity]
         self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
         self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
         self.single_metric = single_metric

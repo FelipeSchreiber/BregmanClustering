@@ -1109,8 +1109,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "SC_jaccard",
                 "SC_hamming",
                 "SC_gaussian_1",
-                "SC_gaussian_2",
-
+                "SC_gaussian_2"
             ]
 
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
