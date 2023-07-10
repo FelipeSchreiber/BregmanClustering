@@ -190,7 +190,7 @@ class BregmanInitializer():
     def initialize(self, A, X, Y ,Z_init=None):
         self.N = Y.shape[0]
         self.edge_index = np.nonzero(A)
-        self.A = A
+        # self.A = A
         ## CASE X is |E| x d: do nothing
         # self.edge_index = edge_index
         sim_matrix = None
@@ -204,7 +204,7 @@ class BregmanInitializer():
             self.X = X
 
         self.sim_matrix = sim_matrix
-        self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
+        self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
                              (self.edge_index[0],self.edge_index[1])),\
                              shape=(self.N, self.N)
                             )
@@ -216,14 +216,14 @@ class BregmanInitializer():
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
 
-
+        preds = None
         if self.initializer == "AIC":
             U = self.spectralEmbedding(sim_matrix)
             model = GaussianMixture(n_components=self.n_clusters)
             preds = model.fit(U).predict(U).reshape(-1, 1)
             self.graph_model_init = model
         else:
-            # G_nx = nx.from_scipy_sparse_array(self.A)
+            print("FIT LEIDEN")
             preds = fit_leiden(self.edge_index,self.X,self.N)
             self.graph_model_init = la
 
