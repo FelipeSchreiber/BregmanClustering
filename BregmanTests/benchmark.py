@@ -1008,7 +1008,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         return K,A,E,attributes.numpy(),z_true
     
-    def real_data_single_run(self,K,A,E,Y,z_true,n_iters,data,\
+    def real_data_single_run(self,K,A,E,Y,z_true,n_iters,\
                              edgeSimilarity,\
                              weightSimilarity,\
                              attributesSimilarity):
@@ -1044,6 +1044,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         use_random_init=False,
                                         n_iters=n_iters
                             )
+        
         #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
         both_soft = model_soft.fit(A,E,Y).predict( None, None )
 
@@ -1064,7 +1065,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         # G_nx = to_networkx(data)
         # nx.set_edge_attributes(G_nx,E,"weight")
         G_nx = nx.from_numpy_array(A)
-        nx.set_edge_attributes(G_nx,E,"weight")
         G = ig.Graph.from_networkx(G_nx)
         partition = la.find_partition(G, la.ModularityVertexPartition)
 

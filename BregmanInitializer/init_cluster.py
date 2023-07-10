@@ -22,6 +22,17 @@ def fromVectorToMembershipMatrice(z,k):
 def frommembershipMatriceToVector(Z):
     return Z.argmax(axis=1)
 
+def fit_leiden(edge_index,E,N):
+    A = csr_matrix((E.flatten(),\
+                (edge_index[0],edge_index[1])),\
+                shape=(N, N)
+            )
+    G_nx = nx.from_scipy_sparse_array(A)
+    G = ig.Graph.from_networkx(G_nx)
+    partition = la.find_partition(G, la.ModularityVertexPartition)
+    preds = np.array(partition.membership).reshape(-1, 1)
+    return preds
+
 class BregmanInitializer():
     def __init__( self, n_clusters,initializer="AIC",\
                         edgeDistribution = "bernoulli",
@@ -193,10 +204,10 @@ class BregmanInitializer():
             self.X = X
 
         self.sim_matrix = sim_matrix
-        # self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
-        #                      (self.edge_index[0],self.edge_index[1])),\
-        #                      shape=(self.N, self.N)
-        #                     )
+        self.A = csr_matrix((np.ones(self.edge_index[0].shape[0]),\
+                             (self.edge_index[0],self.edge_index[1])),\
+                             shape=(self.N, self.N)
+                            )
         self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
@@ -213,12 +224,7 @@ class BregmanInitializer():
             self.graph_model_init = model
         else:
             # G_nx = nx.from_scipy_sparse_array(self.A)
-            G_nx = nx.from_numpy_array(A)
-            nx.set_edge_attributes(G_nx,self.X,"weight")
-            # G = ig.Graph(len(G_nx), list(zip(*list(zip(*nx.to_edgelist(G_nx)))[:2])))
-            G = ig.Graph.from_networkx(G_nx)
-            partition = la.find_partition(G, la.ModularityVertexPartition)
-            preds = np.array(partition.membership).reshape(-1, 1)
+            preds = fit_leiden(self.edge_index,self.X,self.N)
             self.graph_model_init = la
 
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
