@@ -6,7 +6,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.cluster import KMeans
 from sklearn.manifold import SpectralEmbedding
 from sklearn.preprocessing import OneHotEncoder
-from scipy.sparse import csr_matrix, csc_matrix 
+from scipy.sparse import csr_matrix, csc_matrix, csr_array 
 from sklearn.cluster import SpectralClustering
 from sklearn.metrics import accuracy_score
 from sklearn.base import BaseEstimator, ClusterMixin
@@ -23,7 +23,7 @@ def frommembershipMatriceToVector(Z):
     return Z.argmax(axis=1)
 
 def fit_leiden(edge_index,E,N):
-    A = csr_matrix((E.flatten(),\
+    A = csr_array((E.flatten(),\
                 (edge_index[0],edge_index[1])),\
                 shape=(N, N)
             )
