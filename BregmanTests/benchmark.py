@@ -1039,6 +1039,22 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         SC3.fit(A,E,Y)
 
+        SC4 = BregmanKernelClustering(K, 
+                edgeSimilarity = "gaussian",
+                weightDistribution = weightSimilarity,
+                attributeDistribution = "gaussian",
+                single_metric=True)
+        
+        SC4.fit(A,E,Y)
+
+        SC5 = BregmanKernelClustering(K, 
+                edgeSimilarity = "gaussian",
+                weightDistribution = weightSimilarity,
+                attributeDistribution = "gaussian",
+                single_metric=False)
+        
+        SC5.fit(A,E,Y)
+
         both_soft = None
         model_soft = softBreg(n_clusters=K,\
                                         attributeDistribution=self.attributes_distribution_name,\
@@ -1077,7 +1093,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 leiden_labels_.flatten(),
                 SC.labels_,
                 SC2.labels_,
-                SC3.labels_
+                SC3.labels_,
+                SC4.labels_,
+                SC5.labels_
             ]
 
         algo_names = [
@@ -1089,7 +1107,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "leiden",
                 "SC",
                 "SC_jaccard",
-                "SC_hamming"
+                "SC_hamming",
+                "SC_gaussian_1",
+                "SC_gaussian_2",
+
             ]
 
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
