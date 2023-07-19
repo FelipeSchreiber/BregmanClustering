@@ -191,7 +191,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         with open('my_config.toml', 'w') as f:
             f.write(cfg_data)
         
-    def generate_ABCD_benchmark(self,d_min=5,d_max=50,c_min=50,c_max=1000,t1=3,t2=2):
+    def generate_ABCD_benchmark(self,d_min=5,d_max=50,c_min=50,c_max=1000,t1=3,t2=2,num_nodes=100):
+        self.num_nodes = num_nodes
         self.gen_config_file(d_min=d_min,d_max=d_max,c_min=c_min,c_max=c_max,t1=t1,t2=t2)
         jl_path = find_jl()
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_installer}"])
@@ -918,13 +919,12 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         margin = int(0.01*size)
         G,Y,labels_true = self.generate_ABCD_benchmark(d_min=d_min,d_max=d_max,\
                                                        c_min=size-margin,\
-                                                       c_max=size+margin)
+                                                       c_max=size+margin,num_nodes=n)
 
         A = nx.adjacency_matrix(G)
         rows,cols = A.nonzero()
         E = A[rows,cols].reshape(-1,1)
         K = np.unique(labels_true).shape[0]        
-        N = A.shape[0]
         both_soft = None
         model_soft = softBreg(n_clusters=K,\
                                         attributeDistribution=self.attributes_distribution_name,\
@@ -934,9 +934,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         use_random_init=False,
                                         n_iters=n_iters
                             )
-        Z_init = csr_array((np.ones(N),\
-                (N,labels_true)),\
-                shape=(N, K)
+        Z_init = csr_array((np.ones(n),\
+                (n,labels_true)),\
+                shape=(n, K)
             )        
         both_soft = model_soft.fit(A,E,Y,Z_init).predict( None, None )
 
