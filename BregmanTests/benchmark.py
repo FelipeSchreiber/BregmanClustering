@@ -933,7 +933,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         n_iters=n_iters
                             )
         
-        both_soft = model_soft.fit(A,E,Y).predict( None, None )
+        both_soft = model_soft.fit(A,E,Y,labels_true).predict( None, None )
 
         algo_names = ["soft"]
         y_preds = [both_soft]
