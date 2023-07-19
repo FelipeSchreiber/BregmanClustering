@@ -1165,7 +1165,12 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         """
         self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
-        X_ = X[self.edge_index[0],self.edge_index[1],:]
+        X_ = None
+        ## CASE X is N x N x 1: pass to |E| x 1 
+        if X.shape[0] == X.shape[1]:
+            X_ = X[self.edge_index[0],self.edge_index[1],:]
+        else:           
+            X_ = X
         self.node_indices = np.arange(self.N)
         if Z_init is None:
             self.initialize( A, X_, Y)
