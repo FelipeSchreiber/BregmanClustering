@@ -952,7 +952,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         return U
     
     def computeAttributeMeans( self, Y, Z ):
-        print(Y.shape,Z.shape, np.dot(Z.T, Y).shape)
+        print(Y.shape,Z.shape, (Z.T @ Y).shape)
         attribute_means = np.dot(Z.T, Y)/Z.sum(axis=0) 
         return attribute_means
     
