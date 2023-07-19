@@ -924,7 +924,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         A = nx.adjacency_matrix(G)
         rows,cols = A.nonzero()
         E = A[rows,cols].reshape(-1,1)
-        K = np.unique(labels_true).shape[0]        
+        K = np.unique(labels_true).shape[0]   
+        print(K)     
         both_soft = None
         model_soft = hardBreg(n_clusters=K,\
                                         attributeDistribution=self.attributes_distribution_name,\
@@ -937,7 +938,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         Z_init = csr_array((np.ones(n),\
                 (np.arange(n),labels_true)),\
                 shape=(n, K)
-            )        
+            )   
+        print(Z_init.shape)     
         both_soft = model_soft.fit(A,E,Y,Z_init).predict( None, None )
 
         algo_names = ["soft"]
