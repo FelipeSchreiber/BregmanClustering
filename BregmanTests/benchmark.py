@@ -935,7 +935,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         n_iters=n_iters
                             )
         Z_init = csr_array((np.ones(n),\
-                (n,labels_true)),\
+                (np.arange(n),labels_true)),\
                 shape=(n, K)
             )        
         both_soft = model_soft.fit(A,E,Y,Z_init).predict( None, None )
