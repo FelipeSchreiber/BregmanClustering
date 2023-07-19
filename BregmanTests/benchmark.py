@@ -940,7 +940,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 shape=(n, K)
             )   
         print(Z_init.shape)     
-        both_soft = model_soft.fit(A,E,Y,Z_init).predict( None, None )
+        both_soft = model_soft.fit(A,E,Y,labels_true).predict( None, None )
 
         algo_names = ["soft"]
         y_preds = [both_soft]
