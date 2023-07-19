@@ -5,6 +5,7 @@ from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEffi
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
 from BregmanKernel.kernel_models import BregmanKernelClustering
+from scipy.sparse import csr_matrix, csc_matrix, csr_array 
 from BregmanInitializer.init_cluster import fit_leiden
 from sklearn.metrics import adjusted_rand_score
 from sklearn.datasets import make_classification
