@@ -206,17 +206,13 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         self.communities_sizes = com_sizes
         self.n_clusters = len(com_sizes)
         mapping = {}
-        sorted = com_df.sort_values(by=1)
+        sorted = com_df.sort_values(by=1)##sort by labels
         # sorted[2] = np.arange(df.shape[0])
         for i,node in enumerate(sorted[0]):
             mapping[node] = i
         G  = nx.relabel_nodes(G, mapping)
         Y = self.generate_attributes()
         labels_true = sorted[1].to_numpy() - 1
-        # if self.return_G:
-        #     for i in range(np.sum(self.communities_sizes)):
-        #         G.nodes[i]["x"] = Y[i,:].tolist()
-        #     return Y,labels_true,G
         return G,Y,labels_true
     
     def to_pyg_data(self,X,Y):
@@ -913,64 +909,37 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         return stats
     
-    def run_ABCD_benchmark(self,plot_class_dist=False):
-        G,df = self.generate_ABCD_benchmark()
-        K = df[1].max()
-        w = df[1].value_counts()/df.shape[0]
-        Y, _ = make_classification(
-                    n_features=5,\
-                    n_redundant=0,\
-                    n_repeated=0,\
-                    n_informative=5,\
-                    random_state=1,\
-                    n_clusters_per_class=1,\
-                    n_classes = K,
-                    n_samples=df.shape[0],
-                    weights = w
-                )
-        scores_agg_datasets = {}
-        dict_ = get_metrics_pred(np.random.randint(0,2,4),np.random.randint(0,2,4))
-        metric_names = []
-        # for key in dict_:
-        #     metric_names.append(key)
-        #     scores_agg_datasets[key] = []        
-        #     scores_agg_datasets[key+"_std"] = []
-        # print(metric_names)
-        # scores_agg_datasets["algorithm"] = []
-        # scores_agg_datasets["dataset"] = []
+    def run_ABCD_benchmark(self,n=100000,n_clusters = 4,n_iters=30):
+        size = n//n_clusters
+        self.num_nodes = n
+        d_min = int(2*np.log2(n))
+        d_max = int(100*np.log2(n))
+        margin = int(0.01*size)
+        G,Y,labels_true = self.generate_ABCD_benchmark(d_min=d_min,d_max=d_max,\
+                                                       c_min=size-margin,\
+                                                       c_max=size+margin)
 
-        # for data,data_name in zip(datas,data_names):
-        #     print("\nCURRENT DATASET: ",data_name)
+        A = nx.adjacency_matrix(G)
+        rows,cols = A.nonzero()
+        E = A[rows,cols].reshape(-1,1)
+        K = np.unique(labels_true).shape[0]        
+        both_soft = None
+        model_soft = softBreg(n_clusters=K,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        initializer=self.initializer,
+                                        use_random_init=False,
+                                        n_iters=n_iters
+                            )
+        
+        both_soft = model_soft.fit(A,E,Y).predict( None, None )
 
-        #     K,A,E,Y,z_true = 
-            
-        #     if plot_class_dist:
-        #         plot_class_dist_(z_true,data_name)
-            
-        #     metrics_per_run = {}
-        #     algo_names = None
-        #     for metric in metric_names:
-        #         metrics_per_run[metric] = np.zeros((7,n_runs))
-        #     # print("INPUTS: ",A.shape,E.shape,Y.shape)
-            
-        #     for j in range(n_runs):
-        #         scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,n_iters,data)
-        #         for metric_name in metric_names:
-        #             metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
-            
-        #     scores_agg_datasets["algorithm"].extend(algo_names)
-        #     for metric in metric_names:
-        #         scores_agg_datasets[metric].extend(list(metrics_per_run[metric].mean(axis=1)))
-        #         scores_agg_datasets[metric+"_std"].extend(list(metrics_per_run[metric].std(axis=1)))
-        #     scores_agg_datasets["dataset"].extend([data_name]*len(algo_names))
-            
-        #     A = None
-        #     E = None
-        #     Y = None
-        #     z_true = None
-        #     torch.cuda.empty_cache()
-        # return scores_agg_datasets
-
+        algo_names = ["soft"]
+        y_preds = [both_soft]
+        scores_all = get_metrics_all_preds(labels_true, y_preds, algo_names)
+        return scores_all,algo_names
+    
     def get_real_data(self):
         data_dir = "../../RealDataSets/"
         data_sets = ["CiteSeer","Cora"]
