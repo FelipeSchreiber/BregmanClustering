@@ -926,7 +926,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         E = A[rows,cols].reshape(-1,1)
         K = np.unique(labels_true).shape[0]        
         both_soft = None
-        model_soft = softBreg(n_clusters=K,\
+        model_soft = hardBreg(n_clusters=K,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
                                         weightDistribution=self.weight_distribution_name,\
