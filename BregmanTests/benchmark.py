@@ -923,6 +923,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         rows,cols = A.nonzero()
         E = A[rows,cols].reshape(-1,1)
         K = np.unique(labels_true).shape[0]        
+        N = A.shape[0]
         both_soft = None
         model_soft = softBreg(n_clusters=K,\
                                         attributeDistribution=self.attributes_distribution_name,\
@@ -932,8 +933,11 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         use_random_init=False,
                                         n_iters=n_iters
                             )
-        
-        both_soft = model_soft.fit(A,E,Y,fromVectorToMembershipMatrice(labels_true,K)).predict( None, None )
+        Z_init = csr_array((np.ones(N),\
+                (N,labels_true)),\
+                shape=(N, K)
+            )        
+        both_soft = model_soft.fit(A,E,Y,Z_init).predict( None, None )
 
         algo_names = ["soft"]
         y_preds = [both_soft]
