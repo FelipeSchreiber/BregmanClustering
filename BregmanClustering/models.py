@@ -956,7 +956,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         return attribute_means
     
     def computeEdgeMeans( self, A, Z ):
-        normalisation = np.linalg.pinv ( Z.T @ Z )
+        normalisation = sp.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     
     def computeWeightMeans( self, A, X_, Z):
