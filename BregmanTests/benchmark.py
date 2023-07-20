@@ -923,11 +923,11 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                                        c_max=size+margin,num_nodes=n)
 
         # A = nx.adjacency_matrix(G)
+        A = nx.to_numpy_array(G,dtype=np.float16)
         E = None
         rows,cols = A.nonzero()
         E = A[rows,cols].reshape(-1,1)
         K = np.unique(labels_true).shape[0]   
-        A = nx.to_numpy_array(G,dtype=np.float16)
         print(K)     
         both_soft = None
         model_soft = hardBreg(n_clusters=K,\
