@@ -956,24 +956,24 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         return attribute_means
     
     def computeEdgeMeans( self, A, Z ):
-        normalisation = sp.sparse.linalg.inv ( Z.T @ Z )
+        normalisation = np.linalg.pinv ( Z.T @ Z )
         return normalisation @ Z.T @ A @ Z @ normalisation
     
     def computeWeightMeans( self, A, X_, Z):
-        weights = sp.tensordot(Z, Z, axes=((), ()))
+        weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
         desired output:
         weights[q,l,i,j] = tau[i,q]*tau[j,l]
         """
-        weights = sp.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
+        weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
         """
         X is a |E| x d tensor
         weights is a k x k x |E|
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        weight_means = sp.tensordot( weights,\
+        weight_means = np.tensordot( weights,\
                                     X_,\
                                     axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
         
