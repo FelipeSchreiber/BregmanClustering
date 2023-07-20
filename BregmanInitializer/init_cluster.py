@@ -28,8 +28,12 @@ def fit_leiden(edge_index,E,N,A=None):
                     (edge_index[0],edge_index[1])),\
                     shape=(N, N)
                 )
-    G_nx = nx.from_scipy_sparse_array(A)
-    G = ig.Graph.from_networkx(G_nx)
+    # G_nx = nx.from_scipy_sparse_array(A)
+    # G = ig.Graph.from_networkx(nx.from_scipy_sparse_array(A))
+    # sources, targets = edge_index
+    # edgelist = zip(sources.tolist(), targets.tolist())
+    G = ig.Graph(zip(edge_index[0].tolist(), edge_index[1].tolist()), 
+                     edge_attrs={'weight': E.tolist()})
     partition = la.find_partition(G, la.ModularityVertexPartition)
     preds = np.array(partition.membership).reshape(-1, 1)
     return preds
