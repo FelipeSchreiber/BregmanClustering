@@ -100,7 +100,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         self.N = A.shape[0]
         self.edge_index = np.nonzero(A)
         self.model = None
-        X_ = X[self.edge_index[0],self.edge_index[1],:]
+        # X_ = X[self.edge_index[0],self.edge_index[1],:]
         H = np.hstack((A,A.T))
         H_and_att = np.hstack((H,Y))
         metric = self.make_single_riemannian_metric(Y.shape[1],H.shape[1],gamma=None)            
