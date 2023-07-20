@@ -195,8 +195,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         self.num_nodes = num_nodes
         self.gen_config_file(d_min=d_min,d_max=d_max,c_min=c_min,c_max=c_max,t1=t1,t2=t2)
         jl_path = find_jl()
+        cur_path = os.getcwd()
         subprocess.call([f"{jl_path}",f"{path_to_ABCD_installer}"])
-        subprocess.call([f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml"])
+        subprocess.call([f"{jl_path}",f"{path_to_ABCD_sampler}",f"{cur_path}/my_config.toml"])
         # print(f"{jl_path}",f"{path_to_ABCD_sampler}","my_config.toml")
         #X = np.array(pd.read_csv('deg.dat',header=None)[0])
         edges = open('edge.dat', "r")
