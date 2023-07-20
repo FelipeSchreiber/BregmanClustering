@@ -923,9 +923,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                                        c_max=size+margin,num_nodes=n)
 
         # A = nx.adjacency_matrix(G)
-        # rows,cols = A.nonzero()
-        # E = A[rows,cols].reshape(-1,1)
         E = None
+        rows,cols = A.nonzero()
+        E = A[rows,cols].reshape(-1,1)
         K = np.unique(labels_true).shape[0]   
         A = nx.to_numpy_array(G,dtype=np.float16)
         print(K)     
@@ -945,6 +945,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         #     )   
         # Z_init = fromVectorToMembershipMatrice(labels_true,K)
         # print(Z_init.shape)     
+        both_soft = model_soft.fit(A,E,Y).predict( None, None )
         SC5 = BregmanKernelClustering(K, 
                 edgeSimilarity = "gaussian",
                 weightDistribution = "gaussian",
@@ -955,7 +956,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         SC5.fit(A,E,Y)
 
         algo_names = ["soft"]
-        y_preds = [SC5.labels_]
+        y_preds = [both_soft]
         scores_all = get_metrics_all_preds(labels_true, y_preds, algo_names)
         return scores_all,algo_names
     
