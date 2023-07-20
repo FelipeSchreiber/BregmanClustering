@@ -936,6 +936,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         use_random_init=False,
                                         n_iters=n_iters
                             )
+        n = A.shape[0]
         Z_init = csr_array((np.ones(n),\
                 (np.arange(n),labels_true)),\
                 shape=(n, K)
