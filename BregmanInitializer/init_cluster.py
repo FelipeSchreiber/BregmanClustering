@@ -22,11 +22,12 @@ def fromVectorToMembershipMatrice(z,k):
 def frommembershipMatriceToVector(Z):
     return Z.argmax(axis=1)
 
-def fit_leiden(edge_index,E,N):
-    A = csr_array((E.flatten(),\
-                (edge_index[0],edge_index[1])),\
-                shape=(N, N)
-            )
+def fit_leiden(edge_index,E,N,A=None):
+    if A is None:
+        A = csr_array((E.flatten(),\
+                    (edge_index[0],edge_index[1])),\
+                    shape=(N, N)
+                )
     G_nx = nx.from_scipy_sparse_array(A)
     G = ig.Graph.from_networkx(G_nx)
     partition = la.find_partition(G, la.ModularityVertexPartition)
@@ -226,7 +227,7 @@ class BregmanInitializer():
             self.graph_model_init = model
         else:
             print("FIT LEIDEN")
-            preds = fit_leiden(self.edge_index,self.X,self.N)
+            preds = fit_leiden(self.edge_index,self.X,self.N,self.A)
             self.graph_model_init = la
 
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
