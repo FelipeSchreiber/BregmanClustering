@@ -36,6 +36,7 @@ def fit_leiden(edge_index,E,N,A=None):
                      edge_attrs={'weight': E.flatten().tolist()})
     partition = la.find_partition(G, la.ModularityVertexPartition)
     preds = np.array(partition.membership).reshape(-1, 1)
+    print("OK")
     return preds
 
 class BregmanInitializer():
