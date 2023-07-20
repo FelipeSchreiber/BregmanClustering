@@ -941,12 +941,19 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         #         (np.arange(n),labels_true)),\
         #         shape=(n, K)
         #     )   
-        Z_init = fromVectorToMembershipMatrice(labels_true,K)
-        print(Z_init.shape)     
-        both_soft = model_soft.fit(A,E,Y,Z_init).predict( None, None )
+        # Z_init = fromVectorToMembershipMatrice(labels_true,K)
+        # print(Z_init.shape)     
+        SC5 = BregmanKernelClustering(K, 
+                edgeSimilarity = "gaussian",
+                weightDistribution = "gaussian",
+                attributeDistribution = "gaussian",
+                single_metric=False,
+                n_components=16,use_nystrom=True)
+        
+        SC5.fit(A,E,Y)
 
         algo_names = ["soft"]
-        y_preds = [both_soft]
+        y_preds = [SC5.labels_]
         scores_all = get_metrics_all_preds(labels_true, y_preds, algo_names)
         return scores_all,algo_names
     
