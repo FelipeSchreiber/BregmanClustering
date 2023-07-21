@@ -930,14 +930,14 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         K = np.unique(labels_true).shape[0]   
         print(K)     
         both_soft = None
-        model_soft = hardBreg(n_clusters=K,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name,\
-                                        initializer=self.initializer,
-                                        use_random_init=False,
-                                        n_iters=n_iters
-                            )
+        # model_soft = hardBreg(n_clusters=K,\
+        #                                 attributeDistribution=self.attributes_distribution_name,\
+        #                                 edgeDistribution=self.edge_distribution_name,\
+        #                                 weightDistribution=self.weight_distribution_name,\
+        #                                 initializer=self.initializer,
+        #                                 use_random_init=False,
+        #                                 n_iters=n_iters
+        #                     )
         n = A.shape[0]
         # Z_init = csr_array((np.ones(n),\
         #         (np.arange(n),labels_true)),\
@@ -947,16 +947,16 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         # print(Z_init.shape)
         # preds = fit_leiden((rows,cols),E,n)
         # both_soft = preds.flatten()  
-        both_soft = model_soft.fit(A,E,Y).predict( None, None )
-        # SC5 = BregmanKernelClustering(K, 
-        #         edgeSimilarity = "gaussian",
-        #         weightDistribution = "gaussian",
-        #         attributeDistribution = "gaussian",
-        #         single_metric=False,
-        #         n_components=16,use_nystrom=True)
+        # both_soft = model_soft.fit(A,E,Y).predict( None, None )
+        SC5 = BregmanKernelClustering(K, 
+                edgeSimilarity = "gaussian",
+                weightDistribution = "gaussian",
+                attributeDistribution = "gaussian",
+                single_metric=False,
+                n_components=int(np.log2(n)),use_nystrom=True)
         
-        # SC5.fit(A,E,Y)
-
+        SC5.fit(A,E,Y)
+        both_soft = SC5.labels_
         algo_names = ["soft"]
         y_preds = [both_soft]
         scores_all = get_metrics_all_preds(labels_true, y_preds, algo_names)
