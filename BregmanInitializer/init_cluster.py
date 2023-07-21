@@ -225,7 +225,7 @@ class BregmanInitializer():
             print("FIT LEIDEN")
             preds = fit_leiden(self.edge_index,self.X)
             self.graph_model_init = la
-
+        print("DONE \n")
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
         
