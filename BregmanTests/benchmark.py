@@ -953,7 +953,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 weightDistribution = "gaussian",
                 attributeDistribution = "gaussian",
                 single_metric=False,
-                n_components=int(np.log2(n)),use_nystrom=True)
+                n_components=int(2*np.log2(n)),use_nystrom=True)
         
         SC5.fit(A,E,Y)
         both_soft = SC5.labels_
