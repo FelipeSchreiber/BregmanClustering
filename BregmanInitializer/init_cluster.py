@@ -188,7 +188,19 @@ class BregmanInitializer():
         self.N = Y.shape[0]
         ## CASE X is |E| x d: do nothing
         self.edge_index = edge_index
+        preds = None
+        if self.initializer == "AIC":
+            U = self.spectralEmbedding(sim_matrix)
+            model = GaussianMixture(n_components=self.n_clusters)
+            preds = model.fit(U).predict(U).reshape(-1, 1)
+            self.graph_model_init = model
+        else:
+            print("FIT LEIDEN")
+            preds = fit_leiden(self.edge_index,self.X)
+            self.graph_model_init = la
+        
         sim_matrix = None
+        
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
             self.X = X[self.edge_index[0],self.edge_index[1],:]
@@ -215,16 +227,6 @@ class BregmanInitializer():
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
 
-        preds = None
-        if self.initializer == "AIC":
-            U = self.spectralEmbedding(sim_matrix)
-            model = GaussianMixture(n_components=self.n_clusters)
-            preds = model.fit(U).predict(U).reshape(-1, 1)
-            self.graph_model_init = model
-        else:
-            print("FIT LEIDEN")
-            preds = fit_leiden(self.edge_index,self.X)
-            self.graph_model_init = la
         print("DONE \n")
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
