@@ -932,9 +932,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         print(K)     
         both_soft = None
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
-                                    edgeDistribution = self.edgeDistribution,
-                                    attributeDistribution = self.attributeDistribution,
-                                    weightDistribution = self.weightDistribution)
+                                    edgeDistribution = self.edge_distribution_name,
+                                    attributeDistribution = self.attributes_distribution_name,
+                                    weightDistribution = self.weight_distribution_name)
         model.initialize( E, Y , (rows,cols))
         both_soft =  model.predicted_memberships
         n = A.shape[0]
