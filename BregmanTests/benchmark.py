@@ -952,7 +952,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 edgeSimilarity = "gaussian",
                 weightDistribution = "gaussian",
                 attributeDistribution = "gaussian",
-                single_metric=False,
+                single_metric=True,
                 n_components=int(2*np.log2(n)),use_nystrom=True)
         
         SC5.fit(A,E,Y)
