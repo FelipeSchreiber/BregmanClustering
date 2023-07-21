@@ -129,7 +129,10 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                 net_metric = self.edge_sim
                 att_transformed = self.spectralEmbedding(Y,att_metric)
                 # att_transformed /= np.sqrt((att_transformed**2).sum(axis=1))[:, np.newaxis]
-                net_transformed = self.spectralEmbedding(H,net_metric)
+                #net_transformed = self.spectralEmbedding(H,net_metric)
+                net_transformed = SpectralEmbedding(n_components=self.n_clusters,\
+								affinity="precomputed")\
+								.fit_transform(A)
                 # net_transformed /= np.sqrt((net_transformed**2).sum(axis=1))[:, np.newaxis]
                 data_transformed = np.hstack([net_transformed,att_transformed])
                 data_transformed = MinMaxScaler().fit_transform(data_transformed)
