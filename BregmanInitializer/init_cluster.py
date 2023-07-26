@@ -191,14 +191,7 @@ class BregmanInitializer():
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
             self.X = X[self.edge_index[0],self.edge_index[1],:]
-            sim_matrix = np.squeeze(X)
         else:   
-            #sim_matrix = np.zeros((self.N,self.N))
-            #sim_matrix[self.edge_index[0],self.edge_index[1]] = np.squeeze(X)
-            sim_matrix = csr_array((X.flatten(),\
-                (edge_index[0],edge_index[1])),\
-                shape=(self.N, self.N)
-            )        
             self.X = X
 
         preds = None
@@ -213,7 +206,6 @@ class BregmanInitializer():
             self.graph_model_init = la
         
         # self.sim_matrix = sim_matrix
-        print("CSR ARRAY")
         # self.Y = Y
         print("FIT GMM")
         model = GaussianMixture(n_components=self.n_clusters)
@@ -237,6 +229,14 @@ class BregmanInitializer():
             self.predicted_memberships = ohe.transform(preds)
         
         elif self.initializer == "AIC":
+            ## CASE X is N x N x 1: pass to |E| x 1 
+            if X.shape[0] == X.shape[1]:
+                sim_matrix = np.squeeze(X)
+            else:   
+                sim_matrix = csr_array((X.flatten(),\
+                    (edge_index[0],edge_index[1])),\
+                    shape=(self.N, self.N)
+                )        
             self.AIC_initializer(sim_matrix,Y)
         
         ## Chernoff divergence
