@@ -91,9 +91,26 @@ class BregmanInitializer():
         attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeEdgeMeans( self, Z ):
-        normalisation = np.linalg.pinv(Z.T@Z)
-        return normalisation @ Z.T @ self.A @ Z @ normalisation
+    # def computeEdgeMeans( self, Z ):
+    #     normalisation = np.linalg.pinv(Z.T@Z)
+    #     return normalisation @ Z.T @ self.A @ Z @ normalisation
+
+    def computeEdgeMeans(self,tau):
+        weights = np.tensordot(tau, tau, axes=((), ()))
+        """
+        weights[i,q,j,l] = tau[i,q]*tau[j,l]
+        desired output:
+        weights[q,l,i,j] = tau[i,q]*tau[j,l]
+        """
+        weights = np.transpose(weights,(1,3,0,2))
+        """
+        weights is a k x k x N x N tensor
+        desired output: 
+        out[q,l] = sum_e weights[q,l,e]
+        """
+        edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
+            weights.sum(axis=(-1,-2))
+        return edge_means 
     
     def computeWeightMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
@@ -217,10 +234,10 @@ class BregmanInitializer():
         print("DONE \n")
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
-        self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
-                             (self.edge_index[0],self.edge_index[1])),\
-                             shape=(self.N, self.N)
-                            )
+        # self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
+        #                      (self.edge_index[0],self.edge_index[1])),\
+        #                      shape=(self.N, self.N)
+        #                     )
         # self.assignInitialLabels()
         if self.initializer == 'random':
             preds =  np.random.randint( 0, self.n_clusters, size = self.X.shape[0] )
