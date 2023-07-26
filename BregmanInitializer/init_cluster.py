@@ -91,10 +91,9 @@ class BregmanInitializer():
         attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeEdgeMeans( self, A, Z ):
+    def computeEdgeMeans( self, Z ):
         normalisation = np.linalg.pinv(Z.T@Z)
-        M = Z.T@A@Z
-        return normalisation @ M @ normalisation
+        return normalisation @ Z.T @ self.A @ Z @ normalisation
     
     def computeWeightMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
@@ -139,7 +138,7 @@ class BregmanInitializer():
             return renyi_div
 
     def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeEdgeMeans( self.A , Z )
+        graph_means = self.computeEdgeMeans( Z )
         edge_means = self.computeWeightMeans(X,Z)
         pi = Z.mean(axis=0)
             
