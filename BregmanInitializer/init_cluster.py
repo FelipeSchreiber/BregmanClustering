@@ -218,7 +218,7 @@ class BregmanInitializer():
                              (self.edge_index[0],self.edge_index[1])),\
                              shape=(self.N, self.N)
                             )
-        self.Y = Y
+        # self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
