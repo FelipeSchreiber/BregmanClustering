@@ -913,7 +913,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
             new_memberships = self.assignments_joblib( A, X_, Y )
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
-            self.edge_means = self.computeEdgeMeans( A, new_memberships )
+            self.edge_means = self.computeEdgeMeans( new_memberships )
             self.weight_means = self.computeWeightMeans(X_, new_memberships)
             self.precompute_edge_divergences()    
             iteration += 1
