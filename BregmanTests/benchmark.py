@@ -931,13 +931,22 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         K = np.unique(labels_true).shape[0]   
         print(K)     
         both_soft = None
-        ######### Bregman Initializer #############
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
                                     edgeDistribution = self.edge_distribution_name,
                                     attributeDistribution = self.attributes_distribution_name,
                                     weightDistribution = self.weight_distribution_name)
         model.initialize( E, Y , (rows,cols))
-        both_hard = model.predicted_memberships
+        both_soft =  model.predicted_memberships
+        n = A.shape[0]
+        # Z_init = csr_array((np.ones(n),\
+        #         (np.arange(n),labels_true)),\
+        #         shape=(n, K)
+        #     )   
+        # Z_init = fromVectorToMembershipMatrice(labels_true,K)
+        # print(Z_init.shape)
+        # preds = fit_leiden((rows,cols),E,n)
+        # both_soft = preds.flatten()  
+        # both_soft = model_soft.fit(A,E,Y).predict( None, None )
         # SC5 = BregmanKernelClustering(K, 
         #         edgeSimilarity = "jaccard",
         #         weightDistribution = "gaussian",
@@ -947,20 +956,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         # SC5.fit(A,E,Y)
         # both_soft = SC5.labels_
-
-        # model_hard = hardBreg(n_clusters=K,\
-        #                                 attributeDistribution=self.attributes_distribution_name,\
-        #                                 edgeDistribution=self.edge_distribution_name,\
-        #                                 weightDistribution=self.weight_distribution_name,\
-        #                                 initializer=self.initializer,
-        #                                 use_random_init=False,
-        #                                 n_iters=n_iters
-        #                     )
-        # Z_init = fromVectorToMembershipMatrice(labels_true,K)
-        # both_hard = model_hard.fit(A,E,Y,Z_init).predict( None, None )
-        
         algo_names = ["soft"]
-        y_preds = [both_hard]
+        y_preds = [both_soft]
         scores_all = get_metrics_all_preds(labels_true, y_preds, algo_names)
         return scores_all,algo_names
     
