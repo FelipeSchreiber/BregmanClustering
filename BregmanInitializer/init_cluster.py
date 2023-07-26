@@ -213,7 +213,7 @@ class BregmanInitializer():
             preds = fit_leiden(self.edge_index,self.X)
             self.graph_model_init = la
         
-        self.sim_matrix = sim_matrix
+        # self.sim_matrix = sim_matrix
         self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
                              (self.edge_index[0],self.edge_index[1])),\
                              shape=(self.N, self.N)
@@ -238,7 +238,7 @@ class BregmanInitializer():
             self.predicted_memberships = ohe.transform(preds)
         
         elif self.initializer == "AIC":
-            self.AIC_initializer(self.sim_matrix,Y)
+            self.AIC_initializer(sim_matrix,Y)
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
