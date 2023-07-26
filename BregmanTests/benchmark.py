@@ -923,8 +923,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                                        c_min=size-margin,\
                                                        c_max=size+margin,num_nodes=n)
 
-        # A = nx.adjacency_matrix(G)
-        A = nx.to_numpy_array(G,dtype=np.float16)
+        A = nx.adjacency_matrix(G)
+        # A = nx.to_numpy_array(G,dtype=np.float16)
         E = None
         rows,cols = A.nonzero()
         E = A[rows,cols].reshape(-1,1)
