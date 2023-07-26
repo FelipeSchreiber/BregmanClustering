@@ -870,7 +870,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         all_indices[v_idx] = True
         return all_indices
     
-    def fit( self, A, X, Y, Z_init=None):
+    def fit( self, edge_index, X, Y, Z_init=None):
         """
         Training step.
         Parameters
@@ -886,8 +886,8 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         TYPE
             Trained model.
         """
-        self.N = A.shape[0]
-        self.edge_index = np.nonzero(A)
+        self.N = Y.shape[0]
+        self.edge_index = edge_index
         X_ = None
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
@@ -895,7 +895,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         else:           
             X_ = X
         if Z_init is None:
-            self.initialize( A, X_, Y)
+            self.initialize( self.edge_index, X_, Y)
             self.assignInitialLabels( X_, Y )
         else:
             self.predicted_memberships = Z_init
@@ -922,13 +922,13 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
             self.predicted_memberships = new_memberships
         return self
     
-    def initialize( self, A, X, Y ):
+    def initialize( self, edge_index, X, Y ):
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
                                     edgeDistribution = self.edgeDistribution,
                                     attributeDistribution = self.attributeDistribution,
                                     weightDistribution = self.weightDistribution)
         if self.edge_index is None:
-            self.edge_index = np.nonzero(A)
+            self.edge_index = edge_index
         Z_init = None
         if self.use_random_init == True:
             Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
@@ -1170,7 +1170,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         all_indices[v_idx] = True
         return all_indices
     
-    def fit( self, A, X, Y, Z_init=None):
+    def fit( self, edge_index, X, Y, Z_init=None):
         """
         Training step.
         Parameters
@@ -1186,8 +1186,8 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         TYPE
             Trained model.
         """
-        self.N = A.shape[0]
-        self.edge_index = np.nonzero(A)
+        self.N = Y.shape[0]
+        self.edge_index = edge_index
         X_ = None
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
@@ -1196,7 +1196,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             X_ = X
         self.node_indices = np.arange(self.N)
         if Z_init is None:
-            self.initialize( A, X_, Y)
+            self.initialize( edge_index, X_, Y)
             self.assignInitialLabels( X_, Y )
         else:
             self.memberships_from_graph = self.memberships_from_attributes \
@@ -1222,13 +1222,13 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             iteration += 1 
         return self
     
-    def initialize( self, A, X_, Y ):
+    def initialize( self, edge_index, X_, Y ):
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
                                     edgeDistribution = self.edgeDistribution,
                                     attributeDistribution = self.attributeDistribution,
                                     weightDistribution = self.weightDistribution)
         if self.edge_index is None:
-            self.edge_index = np.nonzero(A)
+            self.edge_index = edge_index
         Z_init = None
         if self.use_random_init == True:
             Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),

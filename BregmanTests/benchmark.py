@@ -473,6 +473,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 if binary:
                     X = A
                 z_pred_both = None
+                edge_index = np.nonzero(A)
                 model = self.model_(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
@@ -484,7 +485,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 if self.torch_model:
                     z_pred_both = model.fit(A,X,Y).predict(None,None)
                 else:
-                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y)
+                    z_pred_both = model.fit(edge_index,X.reshape(n,n,-1),Y).predict( X, Y)
                 aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_both_std.append( np.std( aris_both ) )
