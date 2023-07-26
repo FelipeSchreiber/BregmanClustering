@@ -74,9 +74,9 @@ class BregmanInitializer():
             #print( 'Initialisation chosen from the attributes' )
         return self
     
-    def chernoff_initializer(self,X,Y):
+    def chernoff_initializer(self,edge_index,X,Y):
         n = Y.shape[0]
-        if self.graphChernoffDivergence( X, self.memberships_from_graph ) > \
+        if self.graphChernoffDivergence( edge_index, X, self.memberships_from_graph ) > \
                 self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
             self.predicted_memberships = self.memberships_from_graph
             self.graph_init = True
@@ -95,7 +95,7 @@ class BregmanInitializer():
     #     normalisation = np.linalg.pinv(Z.T@Z)
     #     return normalisation @ Z.T @ self.A @ Z @ normalisation
 
-    def computeEdgeMeans(self,tau):
+    def computeEdgeMeans(self,edge_index,tau):
         weights = np.tensordot(tau, tau, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -108,7 +108,7 @@ class BregmanInitializer():
         desired output: 
         out[q,l] = sum_e weights[q,l,e]
         """
-        edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
+        edge_means = weights[:,:,edge_index[0],edge_index[1]].sum(axis=-1)/\
             weights.sum(axis=(-1,-2))
         return edge_means 
     
@@ -154,8 +154,8 @@ class BregmanInitializer():
                 return total
             return renyi_div
 
-    def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeEdgeMeans( Z )
+    def graphChernoffDivergence( self, edge_index, X, Z ):
+        graph_means = self.computeEdgeMeans( edge_index, Z )
         edge_means = self.computeWeightMeans(X,Z)
         pi = Z.mean(axis=0)
             
@@ -181,7 +181,7 @@ class BregmanInitializer():
 
         return res
     
-    def assignInitialLabels( self ):
+    def assignInitialLabels( self , edge_index):
         if self.initializer == 'random':
             preds =  np.random.randint( 0, self.n_clusters, size = self.X.shape[0] )
             preds = preds.reshape(-1, 1)
@@ -193,7 +193,7 @@ class BregmanInitializer():
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
-            self.chernoff_initializer(self.X,self.Y)
+            self.chernoff_initializer(edge_index, self.X,self.Y)
 
     """
     X is N x N x 1 np.array or |E| x 1
@@ -203,11 +203,11 @@ class BregmanInitializer():
     def initialize(self, X, Y, edge_index ,Z_init=None):
         self.N = Y.shape[0]
         ## CASE X is |E| x d: do nothing
-        self.edge_index = edge_index
+        # self.edge_index = edge_index
         sim_matrix = None
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
-            self.X = X[self.edge_index[0],self.edge_index[1],:]
+            self.X = X[edge_index[0],edge_index[1],:]
         else:   
             self.X = X
 
@@ -219,7 +219,7 @@ class BregmanInitializer():
             self.graph_model_init = model
         else:
             print("FIT LEIDEN")
-            preds = fit_leiden(self.edge_index,self.X)
+            preds = fit_leiden(edge_index,self.X)
             self.graph_model_init = la
         
         # self.sim_matrix = sim_matrix
@@ -258,4 +258,4 @@ class BregmanInitializer():
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
-            self.chernoff_initializer(self.X,Y)
+            self.chernoff_initializer(edge_index,self.X,Y)
