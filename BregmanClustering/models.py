@@ -904,8 +904,8 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         self.Z = np.memmap(Zpath, dtype=int, shape=self.N, mode='w+')
         #init_labels = self.predicted_memberships
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-        self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
-        self.weight_means = self.computeWeightMeans(A, X_, self.predicted_memberships)
+        self.edge_means = self.computeEdgeMeans(self.predicted_memberships)
+        self.weight_means = self.computeWeightMeans(X_, self.predicted_memberships)
         self.precompute_edge_divergences()
         convergence = True
         iteration = 0
@@ -1005,7 +1005,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         return graphLikelihood + attributeLikelihood
     
     def likelihoodGraph(self, X, Z):
-        graph_mean = self.computeEdgeMeans(X,Z)
+        graph_mean = self.computeEdgeMeans(Z)
         return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def likelihoodAttributes( self, Y, Z):
