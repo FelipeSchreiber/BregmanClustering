@@ -91,10 +91,28 @@ class BregmanInitializer():
         attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeEdgeMeans( self, A, Z ):
-        normalisation = np.linalg.pinv(Z.T@Z)
-        M = Z.T@A@Z
-        return normalisation @ M @ normalisation
+    # def computeEdgeMeans( self, A, Z ):
+    #     normalisation = np.linalg.pinv(Z.T@Z)
+    #     M = Z.T@A@Z
+    #     return normalisation @ M @ normalisation
+
+    def computeEdgeMeans(self,tau):
+        weights = np.tensordot(tau, tau, axes=((), ()))
+        """
+        weights[i,q,j,l] = tau[i,q]*tau[j,l]
+        desired output:
+        weights[q,l,i,j] = tau[i,q]*tau[j,l]
+        """
+        weights = np.transpose(weights,(1,3,0,2))
+        """
+        weights is a k x k x N x N tensor
+        desired output: 
+        out[q,l] = sum_e weights[q,l,e]
+        """
+        edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
+            weights.sum(axis=(-1,-2))
+        
+        return edge_means 
     
     def computeWeightMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
@@ -139,7 +157,7 @@ class BregmanInitializer():
             return renyi_div
 
     def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeEdgeMeans( self.A , Z )
+        graph_means = self.computeEdgeMeans( Z )
         edge_means = self.computeWeightMeans(X,Z)
         pi = Z.mean(axis=0)
             
@@ -191,7 +209,7 @@ class BregmanInitializer():
         sim_matrix = None
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
-            self.X = X[self.edge_index[0],self.edge_index[1],:]
+            X = X[self.edge_index[0],self.edge_index[1],:]
             sim_matrix = np.squeeze(X)
         else:   
             #sim_matrix = np.zeros((self.N,self.N))
@@ -214,10 +232,6 @@ class BregmanInitializer():
             self.graph_model_init = la
         
         self.sim_matrix = sim_matrix
-        self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
-                             (self.edge_index[0],self.edge_index[1])),\
-                             shape=(self.N, self.N)
-                            )
         self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
