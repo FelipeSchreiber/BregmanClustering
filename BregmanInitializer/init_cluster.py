@@ -222,7 +222,7 @@ class BregmanInitializer():
             preds = fit_leiden(edge_index,X)
             self.graph_model_init = la
         
-        ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=True).fit(preds)
+        ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
         print("SHAPE: ",self.memberships_from_graph.shape)
         # self.sim_matrix = sim_matrix
@@ -231,7 +231,7 @@ class BregmanInitializer():
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
-        ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=True).fit(preds)
+        ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
         print("DONE \n")
