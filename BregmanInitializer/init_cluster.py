@@ -224,6 +224,7 @@ class BregmanInitializer():
         
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=True).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
+        print("SHAPE: ",self.memberships_from_graph.shape)
         # self.sim_matrix = sim_matrix
         # self.Y = Y
         print("FIT GMM")
