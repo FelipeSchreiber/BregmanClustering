@@ -93,8 +93,7 @@ class BregmanInitializer():
     
     def computeEdgeMeans( self, A, Z ):
         normalisation = np.linalg.pinv(Z.T@Z)
-        M = Z.T@A@Z
-        return normalisation @ M @ normalisation
+        return normalisation @ Z.T @ A @ Z @ normalisation
     
     def computeWeightMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
