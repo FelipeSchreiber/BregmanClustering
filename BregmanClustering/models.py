@@ -1251,6 +1251,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
 								.fit_transform(X)
         return U
     
+    
     def computeAttributeMeans( self, Y, Z ):
         nk = Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps
         attribute_means = np.dot(Z.T, Y) / nk[:, np.newaxis]
