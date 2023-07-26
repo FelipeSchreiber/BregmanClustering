@@ -214,12 +214,12 @@ class BregmanInitializer():
         
         print("done")
         self.sim_matrix = sim_matrix
-        # self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
-        #                      (self.edge_index[0],self.edge_index[1])),\
-        #                      shape=(self.N, self.N)
-        #                     )
+        self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
+                             (self.edge_index[0],self.edge_index[1])),\
+                             shape=(self.N, self.N)
+                            )
         print("done")
-        self.Y = Y
+        # self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
