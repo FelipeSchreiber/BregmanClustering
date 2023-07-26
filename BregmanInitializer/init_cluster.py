@@ -205,43 +205,49 @@ class BregmanInitializer():
     def initialize(self, X, Y, edge_index ,Z_init=None):
         self.N = Y.shape[0]
         ## CASE X is |E| x d: do nothing
-        self.edge_index = edge_index
         sim_matrix = None
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
-            X = X[self.edge_index[0],self.edge_index[1],:]
-            sim_matrix = np.squeeze(X)
-        else:   
-            #sim_matrix = np.zeros((self.N,self.N))
-            #sim_matrix[self.edge_index[0],self.edge_index[1]] = np.squeeze(X)
-            sim_matrix = csr_array((X.flatten(),\
-                (edge_index[0],edge_index[1])),\
-                shape=(self.N, self.N)
-            )        
-            self.X = X
+            X = X[edge_index[0],edge_index[1],:]
 
+        ### Fit GMM in attributes
         preds = None
-        if self.initializer == "AIC":
-            U = self.spectralEmbedding(sim_matrix)
-            model = GaussianMixture(n_components=self.n_clusters)
-            preds = model.fit(U).predict(U).reshape(-1, 1)
-            self.graph_model_init = model
-        else:
-            print("FIT LEIDEN")
-            preds = fit_leiden(self.edge_index,self.X)
-            self.graph_model_init = la
-        
-        self.sim_matrix = sim_matrix
-        self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
-
-        print("DONE \n")
-        ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
-        self.memberships_from_graph = ohe.transform(preds)
         
-        self.assignInitialLabels()
+        ### Fit leiden or SpectralClustering
+        if self.initializer == "AIC":
+            sim_matrix = csr_array((X.flatten(),\
+                (edge_index[0],edge_index[1])),\
+                shape=(self.N, self.N)
+            )  
+            U = self.spectralEmbedding(sim_matrix)
+            model = GaussianMixture(n_components=self.n_clusters)
+            preds = model.fit(U).predict(U).reshape(-1, 1)
+            self.graph_model_init = model
+            ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
+            self.memberships_from_graph = ohe.transform(preds)
+            self.AIC_initializer(sim_matrix,Y)
+
+        else:
+            print("FIT LEIDEN")
+            preds = fit_leiden(edge_index,X)
+            self.graph_model_init = la
+            ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
+            self.memberships_from_graph = ohe.transform(preds)
+        print("DONE \n")
+
+        # self.assignInitialLabels()
+        if self.initializer == 'random':
+            preds =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
+            preds = preds.reshape(-1, 1)
+            ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
+            self.predicted_memberships = ohe.transform(preds)
+        
+        ## Chernoff divergence
+        elif self.initializer == "chernoff":
+            self.chernoff_initializer(X,Y)
