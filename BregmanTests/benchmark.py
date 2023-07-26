@@ -937,14 +937,14 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         #                             attributeDistribution = self.attributes_distribution_name,
         #                             weightDistribution = self.weight_distribution_name)
         # model.initialize( E, Y , (rows,cols))
-        SC5 = BregmanKernelClustering(K, 
-                edgeSimilarity = "jaccard",
-                weightDistribution = "gaussian",
-                attributeDistribution = "gaussian",
-                single_metric=False,
-                n_components=int(2*np.log2(n)),use_nystrom=True)
+        # SC5 = BregmanKernelClustering(K, 
+        #         edgeSimilarity = "jaccard",
+        #         weightDistribution = "gaussian",
+        #         attributeDistribution = "gaussian",
+        #         single_metric=False,
+        #         n_components=int(2*np.log2(n)),use_nystrom=True)
         
-        SC5.fit(A,E,Y)
+        # SC5.fit(A,E,Y)
         # both_soft = SC5.labels_
 
         model_hard = hardBreg(n_clusters=K,\
@@ -955,7 +955,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         use_random_init=False,
                                         n_iters=n_iters
                             )
-        Z_init = fromVectorToMembershipMatrice(SC5.labels_,K)
+        Z_init = fromVectorToMembershipMatrice(labels_true,K)
         both_hard = model_hard.fit(A,E,Y,Z_init).predict( None, None )
         
         algo_names = ["soft"]
