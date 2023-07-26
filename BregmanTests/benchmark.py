@@ -1057,7 +1057,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                             )
         
         #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
-        both_soft = model_soft.fit(A,E,Y).predict( None, None )
+        both_soft = model_soft.fit(edge_index,E,Y).predict( None, None )
 
         both_hard = None
         model_hard = hardBreg(n_clusters=K,\
@@ -1069,7 +1069,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         n_iters=n_iters
                             )
         #Z_init = fromVectorToMembershipMatrice(SC2.labels_,K)
-        both_hard = model_hard.fit(A,E,Y).predict( None, None )
+        both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
 
         kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
             
