@@ -201,7 +201,7 @@ class BregmanInitializer():
     edge_index is a tuple (indices_i, indices_j)
     """
     def initialize(self, X, Y, edge_index ,Z_init=None):
-        self.N = Y.shape[0]
+        self.N = X.shape[0]
         ## CASE X is |E| x d: do nothing
         # self.edge_index = edge_index
         sim_matrix = None
