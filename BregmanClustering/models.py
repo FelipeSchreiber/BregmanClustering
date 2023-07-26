@@ -904,7 +904,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         self.Z = np.memmap(Zpath, dtype=int, shape=self.N, mode='w+')
         #init_labels = self.predicted_memberships
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-        self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
+        self.edge_means = self.computeEdgeMeans(self.predicted_memberships)
         self.weight_means = self.computeWeightMeans(A, X_, self.predicted_memberships)
         self.precompute_edge_divergences()
         convergence = True
@@ -913,7 +913,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
             new_memberships = self.assignments_joblib( A, X_, Y )
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
-            self.edge_means = self.computeEdgeMeans( A, new_memberships )
+            self.edge_means = self.computeEdgeMeans(new_memberships)
             self.weight_means = self.computeWeightMeans(A, X_, new_memberships)
             self.precompute_edge_divergences()    
             iteration += 1
@@ -955,9 +955,29 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         attribute_means = (Z.T @ Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeEdgeMeans( self, A, Z ):
-        normalisation = np.linalg.pinv ( Z.T @ Z )
-        return normalisation @ Z.T @ A @ Z @ normalisation
+    # def computeEdgeMeans( self, A, Z ):
+    #     normalisation = np.linalg.pinv ( Z.T @ Z )
+    #     return normalisation @ Z.T @ A @ Z @ normalisation
+
+    def computeEdgeMeans(self,tau):
+        weights = np.tensordot(tau, tau, axes=((), ()))
+        """
+        weights[i,q,j,l] = tau[i,q]*tau[j,l]
+        desired output:
+        weights[q,l,i,j] = tau[i,q]*tau[j,l]
+        """
+        weights = np.transpose(weights,(1,3,0,2))
+        """
+        weights is a k x k x N x N tensor
+        desired output: 
+        out[q,l] = sum_e weights[q,l,e]
+        """
+        edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
+            weights.sum(axis=(-1,-2))
+
+        # if (np.isnan(edge_means).any()):
+        #     raise ValueError ("edge means contains Nan")
+        return edge_means 
     
     def computeWeightMeans( self, A, X_, Z):
         weights = np.tensordot(Z, Z, axes=((), ()))
@@ -989,7 +1009,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         return graphLikelihood + attributeLikelihood
     
     def likelihoodGraph(self, X, Z):
-        graph_mean = self.computeEdgeMeans(X,Z)
+        graph_mean = self.computeEdgeMeans(Z)
         return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
     
     def likelihoodAttributes( self, Y, Z):
@@ -1089,424 +1109,6 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         """
         return frommembershipMatriceToVector( self.predicted_memberships )
     
-class BregmanNodeEdgeAttributeGraphClusteringSimulatedAnnealing( BaseEstimator, ClusterMixin ):
-    def __init__( self, n_clusters, 
-                 edgeDistribution = "bernoulli",
-                 attributeDistribution = "gaussian",
-                 weightDistribution = "gaussian",
-                 initializer = 'chernoff', 
-                 graph_initializer = "spectralClustering", attribute_initializer = 'GMM', 
-                 n_iters = 25, init_iters=100,
-                 reduce_by=None,
-                 divergence_precomputed=True,
-                 use_random_init=False):
-        """
-        Bregman Hard Clustering Algorithm for partitioning graph with node attributes
-        Parameters
-        ----------
-        n_clusters : INT
-            Number of clustes.
-        edge_divergence, attribute_divergence : function
-            Pairwise divergence function. The default is euclidean_distance.
-        n_iters : INT, optional
-            Number of clustering iterations. The default is 25.
-        graph_initialize, attribute_initializer : STR, optional
-            Specifies if the centroids are initialized at random "rand", K-Means++ "kmeans++", or a pretrained K-Means model "pretrained". The default is "rand".
-        init_iters : INT, optional
-            Number of iterations for K-Means++. The default is 100.
-        Returns
-        -------
-        None.
-        """
-        self.n_clusters = n_clusters
-        self.n_iters = n_iters
-        self.initializer = initializer
-        self.graph_initializer = graph_initializer
-        self.attribute_initializer = attribute_initializer
-        self.init_iters = init_iters
-        ## Variable that stores which initialization was chosen
-        self.graph_init = False
-        self.edgeDistribution = edgeDistribution
-        self.attributeDistribution = attributeDistribution
-        self.weightDistribution = weightDistribution
-        self.edge_divergence = dist_to_divergence_dict[self.edgeDistribution]
-        self.weight_divergence = dist_to_divergence_dict[self.weightDistribution]
-        self.attribute_divergence = dist_to_divergence_dict[self.attributeDistribution]
-        self.edge_index = None 
-        self.use_random_init = use_random_init
-        self.n_jobs = effective_n_jobs(-1)
-
-    def precompute_edge_divergences(self):
-        self.precomputed_edge_div = pairwise_distances(np.array([0,1]).reshape(-1,1),\
-                                             self.edge_means.reshape(-1,1),\
-                                             metric=self.edge_divergence)\
-                                            .reshape(
-                                                        (2,\
-                                                        self.n_clusters,self.n_clusters
-                                                        )
-                                                    )    
-    def index_to_mask(self,v_idx):
-        all_indices = np.zeros(self.N, dtype=bool)
-        all_indices[v_idx] = True
-        return all_indices
-    
-    def gen_candidate(self,curr):
-        leave_basis = np.random.choice(self.N)
-        curr[leave_basis,:] = 0
-        enter_basis = np.random.choice(self.n_clusters,1)
-        curr[leave_basis,enter_basis] = 1
-        return curr
-    
-    def powerLaw(self,T,i):
-        return T*(0.99**i)
-    
-    def computeTotalDiv(self,node,X_,Z,H):
-        L = np.zeros( self.n_clusters )
-        edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
-        v_idx_in = self.edge_index[0][edge_indices_in]
-        
-        edge_indices_out = np.argwhere(self.edge_index[0] == node).flatten()
-        v_idx_out = self.edge_index[1][edge_indices_out]
-        
-        mask_in = self.index_to_mask(v_idx_in)
-        mask_out = self.index_to_mask(v_idx_out)
-        
-        v_idx_in_comp = np.where(~mask_in)
-        v_idx_out_comp = np.where(~mask_out)
-
-        for q in range( self.n_clusters ):
-            z_t = Z.argmax(axis=1)
-            z_t[node] = q
-            E = self.weight_means
-            """
-            X has shape n x n x d
-            E has shape k x k x d
-            
-            the edge divergence computes the difference between node i (from community q) edges and the means
-            given node j belongs to community l:
-            
-            sum_j phi_edge(e_ij, E[q,l,:])  
-            """
-            att_div = H[node,q]
-            edge_div = self.precomputed_edge_div[1,z_t[v_idx_in],q].sum()\
-                    + self.precomputed_edge_div[1,q,z_t[v_idx_out]].sum()\
-                    + self.precomputed_edge_div[0,z_t[v_idx_in_comp],q].sum()\
-                    + self.precomputed_edge_div[0,q,z_t[v_idx_out_comp]].sum()\
-                    - 2*self.precomputed_edge_div[0,q,q]
-
-            ## compute weight divergence
-            weight_div = 0
-            contains_nan = False
-            E_ = E[q,z_t[v_idx_out],:]
-            if np.isnan(E_).any():
-                weight_div = np.inf
-                contains_nan = True
-            not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
-            E_without_nan = E_[not_nan_idx,:]
-            if (len(v_idx_out) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
-                weight_div += np.sum( paired_distances(X_[edge_indices_out,:],\
-                                                            E_without_nan,\
-                                                            metric=self.weight_divergence))
-                
-                if (not np.array_equal(E_without_nan.shape,X_[edge_indices_out].shape)):
-                    raise ValueError ("ERROR mishape")
-                
-            ## same as before, but now for edges coming in node
-            E_ = E[z_t[v_idx_in],q,:]
-            if np.isnan(E_).any():
-                weight_div = np.inf
-                contains_nan = True
-            not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
-            E_without_nan = E_[not_nan_idx,:]
-            if (len(v_idx_in) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
-                weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
-                                                            E_without_nan,\
-                                                            metric=self.weight_divergence))
-                
-                if (not np.array_equal(E_without_nan.shape,X_[edge_indices_in].shape)):
-                    raise ValueError ("ERROR mishape")
-            
-            L[ q ] = att_div + weight_div + edge_div
-        if (np.isnan(L).any()):
-            raise ValueError ("L contains Nan")
-        return L
-
-    def objective(self,X_,Y,Z): 
-        H = pairwise_distances(Y,\
-                               self.attribute_means,\
-                                metric=self.attribute_divergence)
-        total = 0
-        for node in range(self.N):
-            divs = self.computeTotalDiv(node,X_,Z,H)
-            total += divs.min()
-        return total
-    
-    def fit_SA(self,A,X,Y,Z_init=None):
-        # generate an initial point
-        self.N = A.shape[0]
-        self.edge_index = np.nonzero(A)
-        X_ = None
-        ## CASE X is N x N x 1: pass to |E| x 1 
-        if X.shape[0] == X.shape[1]:
-            X_ = X[self.edge_index[0],self.edge_index[1],:]
-        else:           
-            X_ = X
-        if Z_init is None:
-            self.initialize( A, X_, Y)
-            self.assignInitialLabels( X_, Y )
-        else:
-            self.predicted_memberships = Z_init
-
-        values = []
-        # evaluate the initial point
-        best_eval = self.objective(X,)
-        # current working solution
-        curr, curr_eval = best, best_eval
-        # run the algorithm
-        mask = curr.copy()
-        for i in tqdm(range(self.n_iters)):
-            # take a step
-            candidate = self.generate_candidate(nodes,curr,mask,constraint,method)
-            # evaluate candidate point
-            candidate_eval = objective(X.copy(),candidate)
-            # check for new best solution
-            if candidate_eval < best_eval:
-                # store new best point
-                best, best_eval = candidate, candidate_eval
-                # report progress
-                values.append(best_eval)
-                #print('>%d f(%s) = %.5f' % (i, best, best_eval))
-            # difference between candidate and current point evaluation
-            diff = candidate_eval - curr_eval
-            # calculate temperature for current epoch
-            t = update_estrategy(temp,i)
-            # calculate metropolis acceptance criterion
-            metropolis = exp(-diff / t)
-            # check if we should keep the new point
-            if diff < 0 or rand() < metropolis:
-                # store the new current point
-                curr, curr_eval = candidate, candidate_eval
-        return [best, best_eval, values]
-
-    def fit( self, A, X, Y, Z_init=None):
-        """
-        Training step.
-        Parameters
-        ----------
-        Y : ARRAY
-            Input data matrix (n, m) of n samples and m features.
-        X : ARRAY
-            Input (n,n,d) tensor with edges. If a edge doesnt exist, is filled with NAN 
-        A : ARRAY
-            Input (n,n) matrix encoding the adjacency matrix
-        Returns
-        -------
-        TYPE
-            Trained model.
-        """
-        self.N = A.shape[0]
-        self.edge_index = np.nonzero(A)
-        X_ = None
-        ## CASE X is N x N x 1: pass to |E| x 1 
-        if X.shape[0] == X.shape[1]:
-            X_ = X[self.edge_index[0],self.edge_index[1],:]
-        else:           
-            X_ = X
-        if Z_init is None:
-            self.initialize( A, X_, Y)
-            self.assignInitialLabels( X_, Y )
-        else:
-            self.predicted_memberships = Z_init
-        path = tempfile.mkdtemp()
-        Zpath = os.path.join(path,'z.mmap')
-        self.Z = np.memmap(Zpath, dtype=int, shape=self.N, mode='w+')
-        #init_labels = self.predicted_memberships
-        self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
-        self.edge_means = self.computeEdgeMeans(A,self.predicted_memberships)
-        self.weight_means = self.computeWeightMeans(A, X_, self.predicted_memberships)
-        self.precompute_edge_divergences()
-        convergence = True
-        iteration = 0
-        while convergence:
-            new_memberships = self.assignments_joblib( A, X_, Y )
-
-            self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
-            self.edge_means = self.computeEdgeMeans( A, new_memberships )
-            self.weight_means = self.computeWeightMeans(A, X_, new_memberships)
-            self.precompute_edge_divergences()    
-            iteration += 1
-            if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
-                convergence = False
-            self.predicted_memberships = new_memberships
-        return self
-    
-    def initialize( self, A, X, Y ):
-        model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
-                                    edgeDistribution = self.edgeDistribution,
-                                    attributeDistribution = self.attributeDistribution,
-                                    weightDistribution = self.weightDistribution)
-        if self.edge_index is None:
-            self.edge_index = np.nonzero(A)
-        Z_init = None
-        if self.use_random_init == True:
-            Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
-                                                                        self.n_clusters)
-        model.initialize( X, Y , self.edge_index, Z_init=Z_init)
-        # model.initialize(  A, X, Y, Z_init=Z_init)
-        self.predicted_memberships = model.predicted_memberships
-        self.memberships_from_graph = frommembershipMatriceToVector(model.memberships_from_graph)
-        self.memberships_from_attributes = frommembershipMatriceToVector(model.memberships_from_attributes)
-        self.graph_init = model.graph_init
-
-    def assignInitialLabels( self, X, Y ):
-        return self
-        
-    def spectralEmbedding(self, X ):
-        if (X<0).any():
-            X = pairwise_kernels(X,metric='rbf')
-        U = SpectralEmbedding(n_components=self.n_clusters,\
-								affinity="precomputed")\
-								.fit_transform(X)
-        return U
-    
-    def computeAttributeMeans( self, Y, Z ):
-        attribute_means = (Z.T @ Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
-        return attribute_means
-    
-    def computeEdgeMeans( self, A, Z ):
-        normalisation = np.linalg.pinv ( Z.T @ Z )
-        return normalisation @ Z.T @ A @ Z @ normalisation
-    
-    def computeWeightMeans( self, A, X_, Z):
-        weights = np.tensordot(Z, Z, axes=((), ()))
-        """
-        weights[i,q,j,l] = tau[i,q]*tau[j,l]
-        desired output:
-        weights[q,l,i,j] = tau[i,q]*tau[j,l]
-        """
-        weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
-        """
-        X is a |E| x d tensor
-        weights is a k x k x |E|
-        desired output: 
-        out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
-        """
-        weight_means = np.tensordot( weights,\
-                                    X_,\
-                                    axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
-        
-        if (self.edge_means==0).any():
-            null_model = X_.mean(axis=0)
-            undefined_idx = np.where(self.edge_means==0)
-            weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
-        return weight_means
-    
-    def likelihood( self, X, Y, Z ):
-        graphLikelihood = self.likelihoodGraph(X,Z)
-        attributeLikelihood = self.likelihoodAttributes(Y,Z)
-        return graphLikelihood + attributeLikelihood
-    
-    def likelihoodGraph(self, X, Z):
-        graph_mean = self.computeEdgeMeans(X,Z)
-        return 1/2 * np.sum( self.edge_divergence( X, Z @ graph_mean @ Z.T ) )
-    
-    def likelihoodAttributes( self, Y, Z):
-        M = self.computeAttributeMeans(Y,Z)
-        total = np.sum( paired_distances(Y,Z@M) )
-        return total 
-    
-    def assignments( self, A, X_, Y ):
-        z = np.zeros( Y.shape[ 0 ], dtype = int )
-        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
-        for node in range( len( z ) ):
-            z[ node ] = self.singleNodeAssignment( A, X_, H, node )
-        return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
-
-    def assignments_joblib(self,A,X_,Y):
-        H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
-        Parallel(backend="threading",n_jobs=self.n_jobs)\
-            (delayed(singleAssignmentContainer)(self,A,X_, H, ranges)\
-              for ranges in gen_even_slices(self.N,self.n_jobs) )        
-        return fromVectorToMembershipMatrice( self.Z, n_clusters = self.n_clusters )
-
-    def singleNodeAssignment( self, A, X_, H, node ):
-        L = np.zeros( self.n_clusters )
-        edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
-        v_idx_in = self.edge_index[0][edge_indices_in]
-        
-        edge_indices_out = np.argwhere(self.edge_index[0] == node).flatten()
-        v_idx_out = self.edge_index[1][edge_indices_out]
-        
-        mask_in = self.index_to_mask(v_idx_in)
-        mask_out = self.index_to_mask(v_idx_out)
-        
-        v_idx_in_comp = np.where(~mask_in)
-        v_idx_out_comp = np.where(~mask_out)
-
-        for q in range( self.n_clusters ):
-            z_t = self.predicted_memberships.argmax(axis=1)
-            z_t[node] = q
-            E = self.weight_means
-            """
-            X has shape |E| x d
-            E has shape k x k x d
-            
-            the edge divergence computes the difference between node i (from community q) edges and the means
-            given node j belongs to community l:
-            
-            sum_j phi_edge(e_ij, E[q,l,:])  
-            """
-            att_div = H[node,q]
-            edge_div = self.precomputed_edge_div[1,z_t[v_idx_in],q].sum()\
-                    + self.precomputed_edge_div[1,q,z_t[v_idx_out]].sum()\
-                    + self.precomputed_edge_div[0,z_t[v_idx_in_comp],q].sum()\
-                    + self.precomputed_edge_div[0,q,z_t[v_idx_out_comp]].sum()\
-                    - 2*self.precomputed_edge_div[0,q,q]
-
-            ## compute weight divergence
-            weight_div = 0
-            contains_nan = False
-            E_ = E[q,z_t[v_idx_out],:]
-            if np.isnan(E_).any():
-                weight_div = np.inf
-                contains_nan = True
-            not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
-            E_without_nan = E_[not_nan_idx,:]
-            if (len(v_idx_out) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
-                weight_div += np.sum( paired_distances(X_[edge_indices_out,:],\
-                                                            E_without_nan,\
-                                                            metric=self.weight_divergence))
-                
-            ## same as before, but now for edges coming in node
-            E_ = E[z_t[v_idx_in],q,:]
-            if np.isnan(E_).any():
-                weight_div = np.inf
-                contains_nan = True
-            not_nan_idx = np.argwhere(~np.isnan(E_).any(axis=1)).flatten()
-            E_without_nan = E_[not_nan_idx,:]
-            if (len(v_idx_in) > 0) and (len(not_nan_idx) > 0) and (not contains_nan):
-                weight_div += np.sum( paired_distances(X_[edge_indices_in,:],\
-                                                            E_without_nan,\
-                                                            metric=self.weight_divergence))
-            L[ q ] = att_div + (weight_div + edge_div)
-        return np.argmin( L )
-    
-    def predict(self, X, Y):
-        """
-        Prediction step.
-        Parameters
-        ----------
-        X : ARRAY
-            Input data matrix (n, n) of the node interactions
-        Y : ARRAY
-            Input data matrix (n, m) of the attributes of the n nodes (each attribute has m features).
-        Returns
-        -------
-        z: Array
-            Assigned cluster for each data point (n, )
-        """
-        return frommembershipMatriceToVector( self.predicted_memberships )
-
 class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin ):
     def __init__( self, n_clusters, 
                  edgeDistribution = "bernoulli",
