@@ -214,10 +214,6 @@ class BregmanInitializer():
         
         # self.sim_matrix = sim_matrix
         print("CSR ARRAY")
-        self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
-                             (self.edge_index[0],self.edge_index[1])),\
-                             shape=(self.N, self.N)
-                            )
         # self.Y = Y
         print("FIT GMM")
         model = GaussianMixture(n_components=self.n_clusters)
@@ -226,11 +222,13 @@ class BregmanInitializer():
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
-
         print("DONE \n")
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
-        
+        self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
+                             (self.edge_index[0],self.edge_index[1])),\
+                             shape=(self.N, self.N)
+                            )
         # self.assignInitialLabels()
         if self.initializer == 'random':
             preds =  np.random.randint( 0, self.n_clusters, size = self.X.shape[0] )
