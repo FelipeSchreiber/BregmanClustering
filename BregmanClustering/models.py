@@ -28,9 +28,9 @@ from BregmanTests.utils import gen_even_slices
 import warnings
 warnings.filterwarnings("ignore")
 
-def singleAssignmentContainer(self,A,X_, H, nodes):
+def singleAssignmentContainer(self,X_, H, nodes):
     for node in nodes:
-        self.Z[ node ] = self.singleNodeAssignment( A, X_, H, node )
+        self.Z[ node ] = self.singleNodeAssignment( X_, H, node )
 
 def singlecomputeTotalDivContainer(self,X, H, nodes):
     for node in nodes:
@@ -910,7 +910,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         convergence = True
         iteration = 0
         while convergence:
-            new_memberships = self.assignments_joblib( A, X_, Y )
+            new_memberships = self.assignments_joblib( X_, Y )
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
             self.edge_means = self.computeEdgeMeans(new_memberships)
@@ -1015,21 +1015,21 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         total = np.sum( paired_distances(Y,Z@M) )
         return total 
     
-    def assignments( self, A, X_, Y ):
+    def assignments( self, X_, Y ):
         z = np.zeros( Y.shape[ 0 ], dtype = int )
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         for node in range( len( z ) ):
-            z[ node ] = self.singleNodeAssignment( A, X_, H, node )
+            z[ node ] = self.singleNodeAssignment( X_, H, node )
         return fromVectorToMembershipMatrice( z, n_clusters = self.n_clusters )
 
-    def assignments_joblib(self,A,X_,Y):
+    def assignments_joblib(self, X_,Y):
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
         Parallel(backend="threading",n_jobs=self.n_jobs)\
-            (delayed(singleAssignmentContainer)(self,A,X_, H, ranges)\
+            (delayed(singleAssignmentContainer)(self, X_, H, ranges)\
               for ranges in gen_even_slices(self.N,self.n_jobs) )        
         return fromVectorToMembershipMatrice( self.Z, n_clusters = self.n_clusters )
 
-    def singleNodeAssignment( self, A, X_, H, node ):
+    def singleNodeAssignment( self, X_, H, node ):
         L = np.zeros( self.n_clusters )
         edge_indices_in = np.argwhere(self.edge_index[1] == node).flatten()
         v_idx_in = self.edge_index[0][edge_indices_in]
