@@ -217,7 +217,12 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         G  = nx.relabel_nodes(G, mapping)
         Y = self.generate_attributes()
         labels_true = sorted[1].to_numpy() - 1
-        return G,Y,labels_true
+        A = nx.adjacency_matrix(G)
+        # A = nx.to_numpy_array(G,dtype=np.float16)
+        E = None
+        rows,cols = A.nonzero()
+        E = A[rows,cols].reshape(-1,1)
+        return (rows,cols),E,Y,labels_true
     
     def to_pyg_data(self,X,Y):
         X_sparse = torch.tensor(X).to_sparse()
@@ -920,15 +925,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         d_min = int(2*np.log2(n))
         d_max = int(100*np.log2(n))
         margin = int(0.01*size)
-        G,Y,labels_true = self.generate_ABCD_benchmark(d_min=d_min,d_max=d_max,\
+        edge_index,E,Y,labels_true = self.generate_ABCD_benchmark(d_min=d_min,d_max=d_max,\
                                                        c_min=size-margin,\
                                                        c_max=size+margin,num_nodes=n)
 
-        # A = nx.adjacency_matrix(G)
-        A = nx.to_numpy_array(G,dtype=np.float16)
-        E = None
-        rows,cols = A.nonzero()
-        E = A[rows,cols].reshape(-1,1)
         K = np.unique(labels_true).shape[0]   
         print(K)     
         both_soft = None
@@ -936,9 +936,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                     edgeDistribution = self.edge_distribution_name,
                                     attributeDistribution = self.attributes_distribution_name,
                                     weightDistribution = self.weight_distribution_name)
-        model.initialize( E, Y , (rows,cols))
+        model.initialize( E, Y , edge_index)
         both_soft =  model.predicted_memberships
-        n = A.shape[0]
+        n = Y.shape[0]
         # Z_init = csr_array((np.ones(n),\
         #         (np.arange(n),labels_true)),\
         #         shape=(n, K)
