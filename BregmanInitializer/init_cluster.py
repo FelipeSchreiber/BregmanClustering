@@ -74,10 +74,10 @@ class BregmanInitializer():
             #print( 'Initialisation chosen from the attributes' )
         return self
     
-    def chernoff_initializer(self):
-        n = self.Y.shape[0]
-        if self.graphChernoffDivergence( self.X, self.memberships_from_graph ) > \
-                self.attributeChernoffDivergence( self.Y, self.memberships_from_attributes ) / n:
+    def chernoff_initializer(self,X,Y):
+        n = Y.shape[0]
+        if self.graphChernoffDivergence( X, self.memberships_from_graph ) > \
+                self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
             self.predicted_memberships = self.memberships_from_graph
             self.graph_init = True
             print( 'Initialisation chosen from the graph')
@@ -91,11 +91,12 @@ class BregmanInitializer():
         attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeEdgeMeans( self, Z ):
+    def computeEdgeMeans( self, A, Z ):
         normalisation = np.linalg.pinv(Z.T@Z)
-        return normalisation @ Z.T @ self.A @ Z @ normalisation
+        M = Z.T@A@Z
+        return normalisation @ M @ normalisation
     
-    def computeWeightMeans( self, Z ):
+    def computeWeightMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -109,7 +110,7 @@ class BregmanInitializer():
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        edges_means = np.tensordot( weights, self.X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
+        edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
         return edges_means 
     
     def J(self,θ_1,θ_2,t):
@@ -138,8 +139,8 @@ class BregmanInitializer():
             return renyi_div
 
     def graphChernoffDivergence( self, X, Z ):
-        graph_means = self.computeEdgeMeans( Z )
-        edge_means = self.computeWeightMeans( Z )
+        graph_means = self.computeEdgeMeans( self.A , Z )
+        edge_means = self.computeWeightMeans(X,Z)
         pi = Z.mean(axis=0)
             
         if self.edgeDistribution == 'bernoulli':
@@ -176,7 +177,7 @@ class BregmanInitializer():
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
-            self.chernoff_initializer()
+            self.chernoff_initializer(self.X,self.Y)
 
     """
     X is N x N x 1 np.array or |E| x 1
@@ -212,20 +213,19 @@ class BregmanInitializer():
             preds = fit_leiden(self.edge_index,self.X)
             self.graph_model_init = la
         
-        print("done")
         self.sim_matrix = sim_matrix
         self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
                              (self.edge_index[0],self.edge_index[1])),\
                              shape=(self.N, self.N)
                             )
-        print("done")
+        self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
         preds = preds.reshape(-1, 1)
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
-        
+
         print("DONE \n")
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
