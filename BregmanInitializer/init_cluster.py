@@ -74,10 +74,10 @@ class BregmanInitializer():
             #print( 'Initialisation chosen from the attributes' )
         return self
     
-    def chernoff_initializer(self,X,Y):
-        n = Y.shape[0]
-        if self.graphChernoffDivergence( X, self.memberships_from_graph ) > \
-                self.attributeChernoffDivergence( Y, self.memberships_from_attributes ) / n:
+    def chernoff_initializer(self):
+        n = self.Y.shape[0]
+        if self.graphChernoffDivergence( self.X, self.memberships_from_graph ) > \
+                self.attributeChernoffDivergence( self.Y, self.memberships_from_attributes ) / n:
             self.predicted_memberships = self.memberships_from_graph
             self.graph_init = True
             print( 'Initialisation chosen from the graph')
@@ -93,9 +93,9 @@ class BregmanInitializer():
     
     def computeEdgeMeans( self, Z ):
         normalisation = np.linalg.pinv(Z.T@Z)
-        return normalisation @ Z.T @ self.sim_matrix @ Z @ normalisation
+        return normalisation @ Z.T @ self.A @ Z @ normalisation
     
-    def computeWeightMeans( self, X, Z ):
+    def computeWeightMeans( self, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -109,7 +109,7 @@ class BregmanInitializer():
         desired output: 
         out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
         """
-        edges_means = np.tensordot( weights, X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
+        edges_means = np.tensordot( weights, self.X, axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis])
         return edges_means 
     
     def J(self,θ_1,θ_2,t):
@@ -139,7 +139,7 @@ class BregmanInitializer():
 
     def graphChernoffDivergence( self, X, Z ):
         graph_means = self.computeEdgeMeans( Z )
-        edge_means = self.computeWeightMeans(X,Z)
+        edge_means = self.computeWeightMeans( Z )
         pi = Z.mean(axis=0)
             
         if self.edgeDistribution == 'bernoulli':
@@ -176,7 +176,7 @@ class BregmanInitializer():
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
-            self.chernoff_initializer(self.X,self.Y)
+            self.chernoff_initializer()
 
     """
     X is N x N x 1 np.array or |E| x 1
