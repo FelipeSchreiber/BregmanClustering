@@ -895,7 +895,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         else:           
             X_ = X
         if Z_init is None:
-            self.initialize( A, X_, Y)
+            self.initialize( X_, Y, self.edge_index)
             self.assignInitialLabels( X_, Y )
         else:
             self.predicted_memberships = Z_init
