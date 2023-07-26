@@ -207,9 +207,9 @@ class BregmanInitializer():
         sim_matrix = None
         ## CASE X is N x N x 1: pass to |E| x 1 
         if X.shape[0] == X.shape[1]:
-            self.X = X[edge_index[0],edge_index[1],:]
-        else:   
-            self.X = X
+            X = X[edge_index[0],edge_index[1],:]
+        # else:   
+        #     self.X = X
 
         preds = None
         if self.initializer == "AIC":
@@ -219,7 +219,7 @@ class BregmanInitializer():
             self.graph_model_init = model
         else:
             print("FIT LEIDEN")
-            preds = fit_leiden(edge_index,self.X)
+            preds = fit_leiden(edge_index,X)
             self.graph_model_init = la
         
         # self.sim_matrix = sim_matrix
@@ -240,7 +240,7 @@ class BregmanInitializer():
         #                     )
         # self.assignInitialLabels()
         if self.initializer == 'random':
-            preds =  np.random.randint( 0, self.n_clusters, size = self.X.shape[0] )
+            preds =  np.random.randint( 0, self.n_clusters, size = self.N )
             preds = preds.reshape(-1, 1)
             ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
             self.predicted_memberships = ohe.transform(preds)
@@ -258,4 +258,4 @@ class BregmanInitializer():
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
-            self.chernoff_initializer(edge_index,self.X,Y)
+            self.chernoff_initializer(edge_index,X,Y)
