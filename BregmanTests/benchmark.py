@@ -222,6 +222,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         E = None
         rows,cols = A.nonzero()
         E = A[rows,cols].reshape(-1,1)
+        A = None
+        G = None
         return (rows,cols),E,Y,labels_true
     
     def to_pyg_data(self,X,Y):
