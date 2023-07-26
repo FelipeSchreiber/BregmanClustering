@@ -934,13 +934,13 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         K = np.unique(labels_true).shape[0]   
         print(K)     
         both_soft = None
-        model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
-                                    edgeDistribution = self.edge_distribution_name,
-                                    attributeDistribution = self.attributes_distribution_name,
-                                    weightDistribution = self.weight_distribution_name)
-        model.initialize( E, Y , edge_index)
-        both_soft =  model.predicted_memberships
-        n = Y.shape[0]
+        # model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
+        #                             edgeDistribution = self.edge_distribution_name,
+        #                             attributeDistribution = self.attributes_distribution_name,
+        #                             weightDistribution = self.weight_distribution_name)
+        # model.initialize( E, Y , edge_index)
+        # both_soft =  model.predicted_memberships
+        # n = Y.shape[0]
         # Z_init = csr_array((np.ones(n),\
         #         (np.arange(n),labels_true)),\
         #         shape=(n, K)
@@ -959,6 +959,17 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         # SC5.fit(A,E,Y)
         # both_soft = SC5.labels_
+
+        model_hard = hardBreg(n_clusters=K,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        initializer=self.initializer,
+                                        use_random_init=False,
+                                        n_iters=n_iters
+                            )
+        Z_init = fromVectorToMembershipMatrice(labels_true,K)
+        both_soft = model_hard.fit(edge_index,E,Y,Z_init).predict( None, None )
         algo_names = ["soft"]
         y_preds = [both_soft]
         scores_all = get_metrics_all_preds(labels_true, y_preds, algo_names)
