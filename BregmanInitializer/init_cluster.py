@@ -225,7 +225,7 @@ class BregmanInitializer():
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_attributes = ohe.transform(preds)
         self.attribute_model_init = model
-        self.Y = Y
+        
         print("DONE \n")
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
