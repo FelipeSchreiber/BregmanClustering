@@ -905,7 +905,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         #init_labels = self.predicted_memberships
         self.attribute_means = self.computeAttributeMeans(Y,self.predicted_memberships)
         self.edge_means = self.computeEdgeMeans(self.predicted_memberships)
-        self.weight_means = self.computeWeightMeans(A, X_, self.predicted_memberships)
+        self.weight_means = self.computeWeightMeans( X_, self.predicted_memberships)
         self.precompute_edge_divergences()
         convergence = True
         iteration = 0
@@ -914,7 +914,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
             self.edge_means = self.computeEdgeMeans(new_memberships)
-            self.weight_means = self.computeWeightMeans(A, X_, new_memberships)
+            self.weight_means = self.computeWeightMeans( X_, new_memberships)
             self.precompute_edge_divergences()    
             iteration += 1
             if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
@@ -977,7 +977,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         
         return edge_means 
     
-    def computeWeightMeans( self, A, X_, Z):
+    def computeWeightMeans( self,X_, Z):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
