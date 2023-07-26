@@ -93,7 +93,7 @@ class BregmanInitializer():
     
     def computeEdgeMeans( self, Z ):
         normalisation = np.linalg.pinv(Z.T@Z)
-        return normalisation @ Z.T @ self.A @ Z @ normalisation
+        return normalisation @ Z.T @ self.sim_matrix @ Z @ normalisation
     
     def computeWeightMeans( self, X, Z ):
         weights = np.tensordot(Z, Z, axes=((), ()))
@@ -213,10 +213,10 @@ class BregmanInitializer():
             self.graph_model_init = la
         
         self.sim_matrix = sim_matrix
-        self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
-                             (self.edge_index[0],self.edge_index[1])),\
-                             shape=(self.N, self.N)
-                            )
+        # self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
+        #                      (self.edge_index[0],self.edge_index[1])),\
+        #                      shape=(self.N, self.N)
+        #                     )
         self.Y = Y
         model = GaussianMixture(n_components=self.n_clusters)
         preds = model.fit( Y ).predict( Y )
