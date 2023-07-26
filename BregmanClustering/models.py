@@ -974,9 +974,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         """
         edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
             weights.sum(axis=(-1,-2))
-
-        # if (np.isnan(edge_means).any()):
-        #     raise ValueError ("edge means contains Nan")
+        
         return edge_means 
     
     def computeWeightMeans( self, A, X_, Z):
