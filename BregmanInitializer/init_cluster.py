@@ -204,6 +204,7 @@ class BregmanInitializer():
     """
     def initialize(self, X, Y, edge_index ,Z_init=None):
         self.N = Y.shape[0]
+        self.edge_index = edge_index
         ## CASE X is |E| x d: do nothing
         sim_matrix = None
         ## CASE X is N x N x 1: pass to |E| x 1 
