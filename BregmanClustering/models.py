@@ -914,7 +914,7 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
 
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
             self.edge_means = self.computeEdgeMeans( A, new_memberships )
-            self.weight_means = self.computeWeightMeans(A, X_, new_memberships)
+            self.weight_means = self.computeWeightMeans(X_, new_memberships)
             self.precompute_edge_divergences()    
             iteration += 1
             if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
@@ -955,11 +955,27 @@ class BregmanNodeEdgeAttributeGraphClusteringEfficient( BaseEstimator, ClusterMi
         attribute_means = (Z.T @ Y)/(Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps)[:, np.newaxis]
         return attribute_means
     
-    def computeEdgeMeans( self, A, Z ):
-        normalisation = np.linalg.pinv ( Z.T @ Z )
-        return normalisation @ Z.T @ A @ Z @ normalisation
+    # def computeEdgeMeans( self, A, Z ):
+    #     normalisation = np.linalg.pinv ( Z.T @ Z )
+    #     return normalisation @ Z.T @ A @ Z @ normalisation
+    def computeEdgeMeans(self,tau):
+        weights = np.tensordot(tau, tau, axes=((), ()))
+        """
+        weights[i,q,j,l] = tau[i,q]*tau[j,l]
+        desired output:
+        weights[q,l,i,j] = tau[i,q]*tau[j,l]
+        """
+        weights = np.transpose(weights,(1,3,0,2))
+        """
+        weights is a k x k x N x N tensor
+        desired output: 
+        out[q,l] = sum_e weights[q,l,e]
+        """
+        edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
+            weights.sum(axis=(-1,-2))
+        return edge_means 
     
-    def computeWeightMeans( self, A, X_, Z):
+    def computeWeightMeans( self, X_, Z):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
         weights[i,q,j,l] = tau[i,q]*tau[j,l]
@@ -1259,9 +1275,6 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         """
         edge_means = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
             weights.sum(axis=(-1,-2))
-
-        # if (np.isnan(edge_means).any()):
-        #     raise ValueError ("edge means contains Nan")
         return edge_means 
     
     def computeWeightMeans( self, X_, Z):
