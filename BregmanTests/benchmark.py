@@ -937,7 +937,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                     weightDistribution = self.weight_distribution_name)
         model.initialize( E, Y , (rows,cols))
         both_soft =  model.predicted_memberships
-        n = A.shape[0]
+        # n = A.shape[0]
         # Z_init = csr_array((np.ones(n),\
         #         (np.arange(n),labels_true)),\
         #         shape=(n, K)

@@ -225,10 +225,10 @@ class BregmanInitializer():
         print("DONE \n")
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
-        self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
-                             (self.edge_index[0],self.edge_index[1])),\
-                             shape=(self.N, self.N)
-                            )
+        # self.A = csr_array((np.ones(self.edge_index[0].shape[0]),\
+        #                      (self.edge_index[0],self.edge_index[1])),\
+        #                      shape=(self.N, self.N)
+        #                     )
         # self.assignInitialLabels()
         if self.initializer == 'random':
             preds =  np.random.randint( 0, self.n_clusters, size = self.X.shape[0] )
