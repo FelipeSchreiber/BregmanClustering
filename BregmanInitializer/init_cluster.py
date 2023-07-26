@@ -230,4 +230,16 @@ class BregmanInitializer():
         ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
         self.memberships_from_graph = ohe.transform(preds)
         
-        self.assignInitialLabels()
+        # self.assignInitialLabels()
+        if self.initializer == 'random':
+            preds =  np.random.randint( 0, self.n_clusters, size = self.X.shape[0] )
+            preds = preds.reshape(-1, 1)
+            ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
+            self.predicted_memberships = ohe.transform(preds)
+        
+        elif self.initializer == "AIC":
+            self.AIC_initializer(self.sim_matrix,Y)
+        
+        ## Chernoff divergence
+        elif self.initializer == "chernoff":
+            self.chernoff_initializer(self.X,Y)
