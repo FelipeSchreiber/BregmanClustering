@@ -1266,10 +1266,10 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
         return edge_means
     
     def computeWeightMeans( self,X_, Z):
-        weight_means = np.zeros((self.n_clusters,self.n_clusters))
+        weight_means = np.zeros((self.n_clusters,self.n_clusters,X_.shape[1]))
         C = Z.argmax(axis=1).astype(int)
         for iter_,(i,j) in enumerate(zip(self.edge_index[0],self.edge_index[1])):
-            weight_means[C[i],C[j]] += X_[iter_,0] 
+            weight_means[C[i],C[j],:] += X_[iter_,:] 
         weight_means /= self.num_edges
         if (self.edge_means==0).any():
             null_model = X_.mean(axis=0)
