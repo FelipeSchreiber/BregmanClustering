@@ -1,8 +1,8 @@
 import numpy as np
 import networkx as nx
 from BregmanTests.distributions import *
-from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as hardBreg
-# from BregmanClustering.models import BregmanClusteringMemEfficient as hardBreg
+# from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as hardBreg
+from BregmanClustering.models import BregmanClusteringMemEfficient as hardBreg
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
 from BregmanKernel.kernel_models import BregmanKernelClustering
