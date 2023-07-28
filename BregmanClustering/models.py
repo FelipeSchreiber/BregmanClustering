@@ -1271,7 +1271,7 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
         C = Z.argmax(axis=1).astype(int)
         for iter_,(i,j) in enumerate(zip(self.edge_index[0],self.edge_index[1])):
             weight_means[C[i],C[j],:] += X_[iter_,:] 
-        weight_means /= (self.num_edges[:,:,np.newaxis] + 1e-4)
+        weight_means /= self.num_edges[:,:,np.newaxis]
         if (self.edge_means==0).any():
             null_model = X_.mean(axis=0)
             undefined_idx = np.where(self.edge_means==0)
