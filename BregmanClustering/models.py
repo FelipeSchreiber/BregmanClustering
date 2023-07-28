@@ -1261,9 +1261,12 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
             edge_means[C[i],C[j]] += 1
         self.num_edges = edge_means 
         m = Z.sum(axis=0)
-        D = np.outer(m, m)
-        D[D == 0] = 1e-4
+        D = np.outer(m, m) 
         edge_means /= D
+        if np.isnan(edge_means).any():
+            print("NAN")
+            print(edge_means,D)
+            raise ValueError("NANANA")
         return np.clip(edge_means,a_min=0,a_max=1)
     
     def computeWeightMeans( self,X_, Z):
