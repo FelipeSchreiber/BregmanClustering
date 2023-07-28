@@ -1266,38 +1266,38 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
         edge_means[np.isnan(edge_means)] = 0
         return np.clip(edge_means,a_min=0,a_max=1)
     
-    # def computeWeightMeans( self,X_, Z):
-    #     weight_means = np.zeros((self.n_clusters,self.n_clusters,X_.shape[1]))
-    #     C = Z.argmax(axis=1).astype(int)
-    #     for iter_,(i,j) in enumerate(zip(self.edge_index[0],self.edge_index[1])):
-    #         weight_means[C[i],C[j],:] += X_[iter_,:] 
-    #     weight_means /= self.num_edges[:,:,np.newaxis]
-    #     if (self.edge_means==0).any():
-    #         null_model = X_.mean(axis=0)
-    #         undefined_idx = np.where(self.edge_means==0)
-    #         weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
-    #     return weight_means
-    
-    def computeWeightMeans( self, X_, Z):
-        weights = np.tensordot(Z, Z, axes=((), ()))
-        """
-        weights[i,q,j,l] = tau[i,q]*tau[j,l]
-        desired output:
-        weights[q,l,i,j] = tau[i,q]*tau[j,l]
-        """
-        weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
-        """
-        X is a |E| x d tensor
-        weights is a k x k x |E|
-        desired output: 
-        out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
-        """
-        weight_means = np.tensordot( weights,\
-                                    X_,\
-                                    axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
-        # if (np.isnan(weight_means).any()):
-        #     print("W means contains Nan")
+    def computeWeightMeans( self,X_, Z):
+        weight_means = np.zeros((self.n_clusters,self.n_clusters,X_.shape[1]))
+        C = Z.argmax(axis=1).astype(int)
+        for iter_,(i,j) in enumerate(zip(self.edge_index[0],self.edge_index[1])):
+            weight_means[C[i],C[j],:] += X_[iter_,:] 
+        weight_means /= (self.num_edges[:,:,np.newaxis] + 1e-4)
+        if (self.edge_means==0).any():
+            null_model = X_.mean(axis=0)
+            undefined_idx = np.where(self.edge_means==0)
+            weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
         return weight_means
+    
+    # def computeWeightMeans( self, X_, Z):
+    #     weights = np.tensordot(Z, Z, axes=((), ()))
+    #     """
+    #     weights[i,q,j,l] = tau[i,q]*tau[j,l]
+    #     desired output:
+    #     weights[q,l,i,j] = tau[i,q]*tau[j,l]
+    #     """
+    #     weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
+    #     """
+    #     X is a |E| x d tensor
+    #     weights is a k x k x |E|
+    #     desired output: 
+    #     out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
+    #     """
+    #     weight_means = np.tensordot( weights,\
+    #                                 X_,\
+    #                                 axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
+    #     # if (np.isnan(weight_means).any()):
+    #     #     print("W means contains Nan")
+    #     return weight_means
     
     def likelihood( self, X, Y, Z ):
         graphLikelihood = self.likelihoodGraph(X,Z)
