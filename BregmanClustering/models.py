@@ -1261,25 +1261,8 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
             edge_means[C[i],C[j]] += 1
         self.num_edges = edge_means 
         m = Z.sum(axis=0)
-        D = np.outer(m, m) 
-        edge_means /= D
-        if (m == 0).any():
-            weights = np.tensordot(Z, Z, axes=((), ()))
-            """
-            weights[i,q,j,l] = tau[i,q]*tau[j,l]
-            desired output:
-            weights[q,l,i,j] = tau[i,q]*tau[j,l]
-            """
-            weights = np.transpose(weights,(1,3,0,2))
-            """
-            weights is a k x k x N x N tensor
-            desired output: 
-            out[q,l] = sum_e weights[q,l,e]
-            """
-            edge_means_2 = weights[:,:,self.edge_index[0],self.edge_index[1]].sum(axis=-1)/\
-                weights.sum(axis=(-1,-2))
-            print(edge_means,"\n",edge_means_2)    
-            raise ValueError("GOT M ZERO")
+        D = np.outer(m, m) + 1e-4
+        edge_means /= D 
         edge_means[np.isnan(edge_means)] = 0
         return np.clip(edge_means,a_min=0,a_max=1)
     
