@@ -1263,7 +1263,7 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
         m = Z.sum(axis=0)
         D = np.outer(m, m)
         edge_means /= D
-        return edge_means
+        return np.clip(edge_means,a_min=0,a_max=1)
     
     def computeWeightMeans( self,X_, Z):
         weight_means = np.zeros((self.n_clusters,self.n_clusters,X_.shape[1]))
