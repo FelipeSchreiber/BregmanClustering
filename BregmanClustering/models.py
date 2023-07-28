@@ -1278,27 +1278,6 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
             weight_means[undefined_idx[0],undefined_idx[1],:] = null_model
         return weight_means
     
-    # def computeWeightMeans( self, X_, Z):
-    #     weights = np.tensordot(Z, Z, axes=((), ()))
-    #     """
-    #     weights[i,q,j,l] = tau[i,q]*tau[j,l]
-    #     desired output:
-    #     weights[q,l,i,j] = tau[i,q]*tau[j,l]
-    #     """
-    #     weights = np.transpose(weights,(1,3,0,2))[:,:,self.edge_index[0],self.edge_index[1]]
-    #     """
-    #     X is a |E| x d tensor
-    #     weights is a k x k x |E|
-    #     desired output: 
-    #     out[q,l,d] = sum_e X[e,d] * weights[q,l,e]
-    #     """
-    #     weight_means = np.tensordot( weights,\
-    #                                 X_,\
-    #                                 axes=[(2),(0)] )/(np.sum(weights,axis=-1)[:,:,np.newaxis]) 
-    #     # if (np.isnan(weight_means).any()):
-    #     #     print("W means contains Nan")
-    #     return weight_means
-    
     def likelihood( self, X, Y, Z ):
         graphLikelihood = self.likelihoodGraph(X,Z)
         attributeLikelihood = self.likelihoodAttributes(Y,Z)
