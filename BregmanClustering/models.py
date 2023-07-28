@@ -1259,7 +1259,7 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
         C = Z.argmax(axis=1).astype(int)
         for i,j in zip(self.edge_index[0],self.edge_index[1]):
             edge_means[C[i],C[j]] += 1
-        self.num_edges = edge_means 
+        self.num_edges = edge_means.copy()  
         m = Z.sum(axis=0)
         D = np.outer(m, m)
         edge_means /= D 
