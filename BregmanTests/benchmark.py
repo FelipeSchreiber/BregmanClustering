@@ -971,7 +971,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                             )
         Z_init = fromVectorToMembershipMatrice(labels_true,K)
         both_soft = model_hard.fit(edge_index,E,Y,Z_init).predict( None, None )
-        algo_names = ["soft"]
+        algo_names = ["hardBreg"]
         y_preds = [both_soft]
         scores_all = get_metrics_all_preds(labels_true, y_preds, algo_names)
         return scores_all,algo_names
