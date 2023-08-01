@@ -259,7 +259,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             for _ in range( n_average ):
                 ( X, Y, z_true, G) = self.generate_benchmark_joint()
                 edge_index = X.nonzero()
-                X = X.reshape(n,n,-1)
                 model_hard = hardBreg(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
@@ -268,14 +267,14 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         use_random_init=False,
                                         n_iters=n_iters
                 )
-                E = X[edge_index[0],edge_index[1],:]
+                # E = X[edge_index[0],edge_index[1],:]
                 start_time = time.time()
-                both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
+                both_hard = model_hard.fit(edge_index,X.reshape(n,n,-1),Y).predict( None, None )
                 end_time = time.time()
                 measures.append(end_time - start_time)
             measurements["Time(s)"].append(np.mean(measures))
             measurements["std"].append(np.std(measures))
-            measurements["N"].append(np.sum(self.communities_sizes))
+            measurements["N"].append(n)
         return measurements
     
     def run_test(self,n_average=10,cluster_sizes=[100],\
