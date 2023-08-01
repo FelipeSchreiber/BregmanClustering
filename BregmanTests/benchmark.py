@@ -15,6 +15,7 @@ from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
 from torch_geometric.data import Data
 from torch_geometric.utils import *
 from torch_geometric.datasets import Planetoid,WebKB
+import time
 import pandas as pd
 import torch 
 import subprocess
@@ -233,6 +234,47 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     edge_index=X_sparse.indices(),
                     edge_attr=X_sparse.values())
         return graph_data
+    
+    def run_scale_test(self,n_average=5,dataset_ranges=[1,5],\
+                 b=5,\
+                 a = 8 ,\
+                 r = 1,\
+                 n_iters=25):
+        
+        self.n_clusters = n_clusters = 3
+        self.probability_matrix=p
+        self.att_variance = 1
+        self.weight_variance = 1
+        self.radius = r
+        self.return_G=False
+        measurements = {"Time(s)":[], "std":[], "N":[]}
+        for n in np.logspace(dataset_ranges[0],dataset_ranges[1], num=5):
+            pout = b * np.log( n ) / n
+            pin = a * np.log( n ) / n
+            p = (pin - pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
+            sizes = n//n_clusters
+            self.communities_sizes = [sizes]*n_clusters 
+            measures = []
+            for _ in range( n_average ):
+                ( X, Y, z_true, G) = self.generate_benchmark_joint()
+                edge_index = X.nonzero()
+                model_hard = hardBreg(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        initializer=self.initializer,
+                                        use_random_init=False,
+                                        n_iters=n_iters
+                )
+                E = X[edge_index[0],edge_index[1],:]
+                start_time = time.time()
+                both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
+                end_time = time.time()
+                measures.append(end_time - start_time)
+            measurements["Time(s)"].append(np.mean(measures))
+            measurements["std"].append(np.std(measures))
+            measurements["N"].append(np.sum(self.communities_sizes))
+        return measurements
     
     def run_test(self,n_average=10,cluster_sizes=[100],\
                  b=5,\
@@ -718,7 +760,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             stats["ARI"].append(aris_both_mean[-1])
        
         return stats
-    
+
     def run_2_5(self,n_average=10,cluster_sizes=[100],\
                  w_averages = [ 1, 2, 3, 4, 5],\
                  att_averages = [ 1, 2, 3, 4, 5],\
