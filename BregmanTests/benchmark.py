@@ -235,7 +235,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     edge_attr=X_sparse.values())
         return graph_data
     
-    def run_scale_test(self,n_average=5,dataset_ranges=[1,5],\
+    def run_scale_test(self,n_average=5,dataset_ranges=[2,5],\
                  b=5,\
                  a = 8 ,\
                  r = 1,\
@@ -257,8 +257,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             measures = []
             for _ in range( n_average ):
                 ( X, Y, z_true, G) = self.generate_benchmark_joint()
-                print(X.shape)
                 edge_index = X.nonzero()
+                X = X.reshape(n,n,-1)
                 model_hard = hardBreg(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
@@ -267,10 +267,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         use_random_init=False,
                                         n_iters=n_iters
                 )
-                # E = X[edge_index[0],edge_index[1],:]
-                print(X.shape)
+                E = X[edge_index[0],edge_index[1],:]
                 start_time = time.time()
-                both_hard = model_hard.fit(edge_index,X,Y).predict( None, None )
+                both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
                 end_time = time.time()
                 measures.append(end_time - start_time)
             measurements["Time(s)"].append(np.mean(measures))
