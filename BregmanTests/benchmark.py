@@ -266,9 +266,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         use_random_init=False,
                                         n_iters=n_iters
                 )
-                E = X[edge_index[0],edge_index[1],:]
+                # E = X[edge_index[0],edge_index[1],:]
                 start_time = time.time()
-                both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
+                both_hard = model_hard.fit(edge_index,X,Y).predict( None, None )
                 end_time = time.time()
                 measures.append(end_time - start_time)
             measurements["Time(s)"].append(np.mean(measures))
