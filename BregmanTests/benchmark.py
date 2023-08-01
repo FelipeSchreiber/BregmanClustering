@@ -257,6 +257,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             measures = []
             for _ in range( n_average ):
                 ( X, Y, z_true, G) = self.generate_benchmark_joint()
+                print(X.shape)
                 edge_index = X.nonzero()
                 model_hard = hardBreg(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
