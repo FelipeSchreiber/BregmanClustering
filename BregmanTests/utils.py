@@ -296,7 +296,7 @@ def get_metrics_pred(y_true,y_pred):
     nmi = normalized_mutual_info_score( y_true , y_best )
     ami = adjusted_mutual_info_score( y_true , y_best )
     true_mat = fromVectorToMembershipMatrice(y_true,K)
-    best_mat = fromVectorToMembershipMatrice(y_true,K)
+    best_mat = fromVectorToMembershipMatrice(y_best,K)
     a_mat = cdist(true_mat,true_mat,metric=np.dot)
     b_mat = cdist(best_mat,best_mat,metric=np.dot)
     a_vec = a_mat[np.triu_indices(n)]
