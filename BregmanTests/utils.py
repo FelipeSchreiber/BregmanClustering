@@ -2,12 +2,17 @@ from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
+from BregmanInitializer.init_cluster import frommembershipMatriceToVector, fromVectorToMembershipMatrice
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.pairwise import pairwise_kernels, rbf_kernel, euclidean_distances
 from sklearn.manifold import SpectralEmbedding
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.metrics import hamming_loss
+from scipy.spatial import distance
+from scipy.spatial.distance import cdist
+from scipy import stats
+distance.sokalsneath([1, 0, 0], [0, 1, 0])
 import umap
 import itertools
 from sklearn.metrics import *
@@ -287,10 +292,21 @@ def best_perm_of_func(y_true,y_pred,f=accuracy_score):
 def get_metrics_pred(y_true,y_pred):
     # acc,y_best = best_perm_of_func(y_true,y_pred,f=accuracy_score)
     y_best = y_pred
+    K = np.max(y_true)+1
+    n = len(y_best)
     ari = adjusted_rand_score( y_true , y_best )
     nmi = normalized_mutual_info_score( y_true , y_best )
+    ami = adjusted_mutual_info_score( y_true , y_best )
+    true_mat = fromVectorToMembershipMatrice(y_true,K)
+    best_mat = fromVectorToMembershipMatrice(y_true,K)
+    a_mat = cdist(true_mat,true_mat,metric=np.dot)
+    b_mat = cdist(best_mat,best_mat,metric=np.dot)
+    a_vec = a_mat[np.triu_indices(n)]
+    b_vec = b_mat[np.triu_indices(n)]
+    ses = cdist(a_vec, b_vec, 'sokalsneath')
+    CC = stats.pearsonr(a_vec, b_vec).statistic
     # f1 = f1_score( y_true , y_best , average='macro'),"ACC":acc,"F1":f1
-    return {"NMI":nmi,"ARI":ari}
+    return {"NMI":nmi,"ARI":ari, "AMI":ami,"S&S":ses, "CC":CC}
 
 def get_metrics_all_preds(y_true, y_preds, algo_names):
     results = {}
