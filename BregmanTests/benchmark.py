@@ -242,7 +242,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                  n_iters=25):
         
         self.n_clusters = n_clusters = 3
-        self.probability_matrix=p
         self.att_variance = 1
         self.weight_variance = 1
         self.radius = r
@@ -253,6 +252,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             pin = a * np.log( n ) / n
             p = (pin - pout) * np.eye( n_clusters ) + pout * np.ones( (n_clusters, n_clusters) )
             sizes = n//n_clusters
+            self.probability_matrix=p
             self.communities_sizes = [sizes]*n_clusters 
             measures = []
             for _ in range( n_average ):
