@@ -9,10 +9,8 @@ from sklearn.manifold import SpectralEmbedding
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.metrics import hamming_loss
-from scipy.spatial import distance
-from scipy.spatial.distance import cdist
+from scipy.spatial.distance import sokalsneath, cdist
 from scipy import stats
-distance.sokalsneath([1, 0, 0], [0, 1, 0])
 import umap
 import itertools
 from sklearn.metrics import *
@@ -303,7 +301,7 @@ def get_metrics_pred(y_true,y_pred):
     b_mat = cdist(best_mat,best_mat,metric=np.dot)
     a_vec = a_mat[np.triu_indices(n)]
     b_vec = b_mat[np.triu_indices(n)]
-    ses = cdist(a_vec, b_vec, 'sokalsneath')
+    ses = sokalsneath(a_vec, b_vec)
     CC = stats.pearsonr(a_vec, b_vec).statistic
     # f1 = f1_score( y_true , y_best , average='macro'),"ACC":acc,"F1":f1
     return {"NMI":nmi,"ARI":ari, "AMI":ami,"S&S":ses, "CC":CC}
