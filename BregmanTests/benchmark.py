@@ -267,6 +267,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         n_iters=n_iters
                 )
                 # E = X[edge_index[0],edge_index[1],:]
+                print(X.shape)
                 start_time = time.time()
                 both_hard = model_hard.fit(edge_index,X,Y).predict( None, None )
                 end_time = time.time()
