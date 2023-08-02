@@ -291,8 +291,6 @@ def best_perm_of_func(y_true,y_pred,f=accuracy_score):
 def get_metrics_pred(y_true,y_pred):
     # acc,y_best = best_perm_of_func(y_true,y_pred,f=accuracy_score)
     y_best = y_pred
-    K = np.max(y_true)+1
-    n = len(y_best)
     ari = adjusted_rand_score( y_true , y_best )
     nmi = normalized_mutual_info_score( y_true , y_best )
     ami = adjusted_mutual_info_score( y_true , y_best )
@@ -300,14 +298,6 @@ def get_metrics_pred(y_true,y_pred):
     pearson = NamedIndices["CC"]
     ses = sokalsneath_.score(y_true.tolist(),y_best.tolist())
     CC = pearson.score(y_true.tolist(), y_best.tolist())
-    # true_mat = fromVectorToMembershipMatrice(y_true,K)
-    # best_mat = fromVectorToMembershipMatrice(y_best,K)
-    # a_mat = true_mat@true_mat.T
-    # b_mat = best_mat@best_mat.T
-    # a_vec = a_mat[np.triu_indices(n)]
-    # b_vec = b_mat[np.triu_indices(n)]
-    # ses = sokalsneath(a_vec, b_vec)
-    # CC = stats.pearsonr(a_vec, b_vec).statistic
     # f1 = f1_score( y_true , y_best , average='macro'),"ACC":acc,"F1":f1
     return {"NMI":nmi,"ARI":ari, "AMI":ami,"S&S":ses, "CC":CC}
 
