@@ -2,6 +2,7 @@ from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
+from validation_indices import NamedIndices
 from BregmanInitializer.init_cluster import frommembershipMatriceToVector, fromVectorToMembershipMatrice
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.pairwise import pairwise_kernels, rbf_kernel, euclidean_distances
@@ -295,14 +296,18 @@ def get_metrics_pred(y_true,y_pred):
     ari = adjusted_rand_score( y_true , y_best )
     nmi = normalized_mutual_info_score( y_true , y_best )
     ami = adjusted_mutual_info_score( y_true , y_best )
-    true_mat = fromVectorToMembershipMatrice(y_true,K)
-    best_mat = fromVectorToMembershipMatrice(y_best,K)
-    a_mat = true_mat@true_mat.T
-    b_mat = best_mat@best_mat.T
-    a_vec = a_mat[np.triu_indices(n)]
-    b_vec = b_mat[np.triu_indices(n)]
-    ses = sokalsneath(a_vec, b_vec)
-    CC = stats.pearsonr(a_vec, b_vec).statistic
+    sokalsneath_ = NamedIndices["S&S1"]
+    pearson = NamedIndices["CC"]
+    ses = sokalsneath_.score(y_true,y_best)
+    CC = pearson.score(y_true, y_best)
+    # true_mat = fromVectorToMembershipMatrice(y_true,K)
+    # best_mat = fromVectorToMembershipMatrice(y_best,K)
+    # a_mat = true_mat@true_mat.T
+    # b_mat = best_mat@best_mat.T
+    # a_vec = a_mat[np.triu_indices(n)]
+    # b_vec = b_mat[np.triu_indices(n)]
+    # ses = sokalsneath(a_vec, b_vec)
+    # CC = stats.pearsonr(a_vec, b_vec).statistic
     # f1 = f1_score( y_true , y_best , average='macro'),"ACC":acc,"F1":f1
     return {"NMI":nmi,"ARI":ari, "AMI":ami,"S&S":ses, "CC":CC}
 
