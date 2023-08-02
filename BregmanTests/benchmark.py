@@ -379,7 +379,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
                         np.save(g, csbm.convertZ(z_init)+1)
 
-                    z_pred_both = model.fit(A,X.reshape(n,n,-1),Y).predict( X, Y )
+                    z_pred_both = model.fit(edge_index,E,Y).predict( X, Y )
                     z_pred_graph = chernoff_graph_labels
                     z_pred_attributes = chernoff_att_labels
                     
