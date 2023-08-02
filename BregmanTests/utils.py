@@ -298,8 +298,8 @@ def get_metrics_pred(y_true,y_pred):
     ami = adjusted_mutual_info_score( y_true , y_best )
     sokalsneath_ = NamedIndices["S&S1"]
     pearson = NamedIndices["CC"]
-    ses = sokalsneath_.score(y_true,y_best)
-    CC = pearson.score(y_true, y_best)
+    ses = sokalsneath_.score(y_true.tolist(),y_best.tolist())
+    CC = pearson.score(y_true.tolist(), y_best.tolist())
     # true_mat = fromVectorToMembershipMatrice(y_true,K)
     # best_mat = fromVectorToMembershipMatrice(y_best,K)
     # a_mat = true_mat@true_mat.T
