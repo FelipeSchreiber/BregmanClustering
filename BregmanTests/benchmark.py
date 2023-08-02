@@ -1,6 +1,14 @@
 import numpy as np
 import networkx as nx
-from BregmanTests.cfg import *
+from BregmanTests.distributions import *
+# from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as hardBreg
+from BregmanClustering.models import BregmanClusteringMemEfficient as hardBreg
+from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
+from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
+from BregmanKernel.kernel_models import BregmanKernelClustering
+from BregmanInitializer.init_cluster import *
+from scipy.sparse import csr_matrix, csc_matrix, csr_array 
+from BregmanInitializer.init_cluster import fit_leiden
 from sklearn.metrics import adjusted_rand_score
 from sklearn.datasets import make_classification
 from torch_geometric.utils import to_networkx,to_dense_adj,from_networkx
@@ -23,15 +31,6 @@ if (not other_algos_installed) and (not os.path.isfile("other_algos_installed.tx
     install_env()
     with open("other_algos_installed.txt", 'w') as f:
         f.write('OK')
-from BregmanTests.distributions import *
-# from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringEfficient as hardBreg
-from BregmanClustering.models import BregmanClusteringMemEfficient as hardBreg
-from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
-from BregmanClusteringTorch.torch_models import torchWrapper as torchBreg
-from BregmanKernel.kernel_models import BregmanKernelClustering
-from BregmanInitializer.init_cluster import *
-from scipy.sparse import csr_matrix, csc_matrix, csr_array 
-from BregmanInitializer.init_cluster import fit_leiden
 from CSBM.Python import functions as csbm
 from itertools import product
 from sklearn.cluster import KMeans,SpectralClustering
