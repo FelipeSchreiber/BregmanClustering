@@ -349,9 +349,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     self.weight_variance = 1
                     self.radius = r
                     self.return_G=False
-                    ( X, Y, z_true, G) = self.generate_benchmark_joint()
-                    
+                    ( X, Y, z_true, G) = self.generate_benchmark_joint()                    
                     A = (X != 0).astype(int)
+                    edge_index = X.nonzero()
+                    E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
                     model = self.model_(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
@@ -363,8 +364,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     if binary:
                         X = A
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
-                    model.initialize(A,X.reshape(n,n,-1),Y)
-                    model.assignInitialLabels(A, Y)
+                    model.initialize(edge_index,E,Y)
+                    model.assignInitialLabels(None, None)
                     z_init = deepcopy(model.predicted_memberships)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
@@ -383,20 +384,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     z_pred_attributes = chernoff_att_labels
                     
                     # this code is for initialization comparison
-                    ### > Start
-                    # if chernoff_init_graph == model.AIC_initializer(X,Y).graph_init:
-                    #     total += 1
                     
-                    # ## Warm start
-                    # if model.graph_init:
-                    #     model.fit( X, Y, chernoff_graph_labels)
-                    # else:
-                    #     model.fit(X, Y, chernoff_att_labels)
-                    ### > end
-                    
-                    IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)
-                    # IR_LS_pred = iter_csbm2(X,Y,z_init,n_clusters)
-                        
+                    IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)                        
                     subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
                                     f'{path_}att_{trial}.npy',\
                                     f'{path_}net_{trial}.npy',\
@@ -408,32 +397,18 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
                     aris_attSBM.append( adjusted_rand_score( z_true, attSBMPred ) )
                     aris_IR_sLS.append( adjusted_rand_score( z_true, IR_sLS_pred ) )
-                    #aris_IR_LS.append( adjusted_rand_score( z_true, IR_LS_pred ) )
-                    
-                    # if chernoff_init_graph:
-                    #   z_pred_att_init = model.fit(A,A.reshape(n,n,1),Y,chernoff_att_labels).predict( X, Y )
-                    #   ari_att_init = adjusted_rand_score( z_true, z_pred_att_init)
-                    #   aris_oracle.append( max(aris_both[-1], ari_att_init))
-                    # elif not chernoff_init_graph:
-                    #   z_pred_graph_init = model.fit(A,A.reshape(n,n,1),Y,chernoff_graph_labels).predict( X, Y )
-                    #   ari_graph_init = adjusted_rand_score( z_true, z_pred_graph_init)
-                    #   aris_oracle.append( max(aris_both[-1], ari_graph_init))
                         
                 aris_attributes_mean.append( np.mean( aris_attributes ) )
                 aris_graph_mean.append( np.mean( aris_graph ) )
                 aris_both_mean.append( np.mean( aris_both ) )
                 aris_attSBM_mean.append( np.mean( aris_attSBM ) )
                 aris_IR_sLS_mean.append( np.mean( aris_IR_sLS ) )
-                #aris_IR_LS_mean.append( np.mean( aris_IR_LS ) )
-                #aris_oracle_mean.append( np.mean( aris_oracle) )
                 
                 aris_attributes_std.append( np.std( aris_attributes ) )
                 aris_graph_std.append( np.std( aris_graph ) )
                 aris_both_std.append( np.std( aris_both ) )
                 aris_attSBM_std.append( np.std( aris_attSBM ) )
                 aris_IR_sLS_std.append( np.std( aris_IR_sLS ) )
-                # aris_IR_LS_std.append( np.std( aris_IR_LS ) )
-                # aris_oracle_std.append( np.std( aris_oracle) )
                 
                 stats["varying"].append(varying)
                 stats["a"].append(a)
