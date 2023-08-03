@@ -352,8 +352,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     ( X, Y, z_true, G) = self.generate_benchmark_joint()                    
                     A = (X != 0).astype(int)
                     edge_index = X.nonzero()
-                    print("UNIQUE",np.unique(X).shape[0])
-                    E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
                     model = self.model_(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
@@ -364,6 +362,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         initializer=self.initializer)
                     if binary:
                         X = A
+                    E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(edge_index,E,Y)
                     model.assignInitialLabels(None, None)
