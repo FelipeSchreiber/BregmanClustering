@@ -492,15 +492,15 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             self.probability_matrix = p
             self.radius = r
             aris_both = [ ]
-
-            for _ in range( n_average ):
-                ( X, Y, z_true, G) = benchmark_instance() 
+            ( X, Y, z_true, G) = benchmark_instance() 
                     
-                A = (X != 0).astype(int)
-                if binary:
-                    X = A
-                z_pred_both = None
-                edge_index = np.nonzero(A)
+            A = (X != 0).astype(int)
+            if binary:
+                X = A
+            z_pred_both = None
+            edge_index = np.nonzero(A)
+            for _ in range( n_average ):
+
                 model = self.model_(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
