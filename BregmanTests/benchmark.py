@@ -341,17 +341,17 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 if not os.path.exists(path_):
                     os.makedirs(path_)
 
+                self.probability_matrix=p
+                self.communities_sizes=cluster_sizes
+                self.att_variance = 1
+                self.weight_variance = 1
+                self.radius = r
+                self.return_G=False
+                ( X, Y, z_true, G) = self.generate_benchmark_joint()                    
+                A = (X != 0).astype(int)
+                edge_index = X.nonzero()
                 total = 0
                 for trial in range( n_average ):
-                    self.probability_matrix=p
-                    self.communities_sizes=cluster_sizes
-                    self.att_variance = 1
-                    self.weight_variance = 1
-                    self.radius = r
-                    self.return_G=False
-                    ( X, Y, z_true, G) = self.generate_benchmark_joint()                    
-                    A = (X != 0).astype(int)
-                    edge_index = X.nonzero()
                     model = self.model_(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
                                         edgeDistribution=self.edge_distribution_name,\
