@@ -352,7 +352,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     ( X, Y, z_true, G) = self.generate_benchmark_joint()                    
                     A = (X != 0).astype(int)
                     edge_index = X.nonzero()
-                    print(np.unique(X))
+                    print("UNIQUE",np.unique(X).shape[0])
                     E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
                     model = self.model_(n_clusters=n_clusters,\
                                         attributeDistribution=self.attributes_distribution_name,\
