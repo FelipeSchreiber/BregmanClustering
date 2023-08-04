@@ -367,6 +367,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     model.initialize(edge_index,E,Y)
                     model.assignInitialLabels(None, None)
                     z_init = deepcopy(model.predicted_memberships)
+                    print("Classes: ",np.unique(z_init))
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
                     chernoff_att_labels = model.memberships_from_attributes
