@@ -5,6 +5,7 @@ args = commandArgs(trailingOnly=TRUE)
 # Create a file
 file.create("predict.npy")
 np <- import("numpy")
+print(args)
 # data reading
 att <- np$load(args[1])
 net <- np$load(args[2])

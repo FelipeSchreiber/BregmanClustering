@@ -235,12 +235,12 @@ class BregmanInitializer():
             self.AIC_initializer(sim_matrix,Y)
 
         else:
-            print("FIT LEIDEN")
+            # print("FIT LEIDEN")
             preds = fit_leiden(edge_index,X)
             self.graph_model_init = la
             ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
             self.memberships_from_graph = ohe.transform(preds)
-        print("DONE \n")
+        # print("DONE \n")
 
         # self.assignInitialLabels()
         if self.initializer == 'random':
