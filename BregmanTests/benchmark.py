@@ -378,20 +378,20 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                         np.save(g, A)
                     with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
                         np.save(g, csbm.convertZ(z_init)+1)
-
-                    z_pred_both = model.fit(edge_index,E,Y).predict( X, Y )
-                    z_pred_graph = chernoff_graph_labels
-                    z_pred_attributes = chernoff_att_labels
-                    
-                    # this code is for initialization comparison
                     
                     IR_sLS_pred = csbm.iter_csbm(X,Y,z_init,n_clusters)                        
+                
                     subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
                                     f'{path_}att_{trial}.npy',\
                                     f'{path_}net_{trial}.npy',\
                                     f'{path_}z_init_{trial}.npy'])
                     attSBMPred = np.load("predict.npy")
 
+                    z_pred_both = model.fit(edge_index,E,Y).predict( X, Y )
+                    z_pred_graph = chernoff_graph_labels
+                    z_pred_attributes = chernoff_att_labels
+                    
+                
                     aris_attributes.append( adjusted_rand_score( z_true, z_pred_attributes ) )
                     aris_graph.append( adjusted_rand_score( z_true, z_pred_graph ) )
                     aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
