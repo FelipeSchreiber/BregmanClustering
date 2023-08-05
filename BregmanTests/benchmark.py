@@ -365,8 +365,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     
-                    # model.initialize(edge_index,E,Y)
-                    # model.assignInitialLabels(None, None)
+                    model.initialize(edge_index,E,Y)
+                    model.assignInitialLabels(None, None)
                     # z_init = deepcopy(model.predicted_memberships)
                     
                     SC5 = BregmanKernelClustering(n_clusters, 
