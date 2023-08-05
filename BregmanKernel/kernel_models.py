@@ -132,7 +132,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                 net_transformed = self.spectralEmbedding(H,net_metric)
                 # net_transformed /= np.sqrt((net_transformed**2).sum(axis=1))[:, np.newaxis]
                 data_transformed = np.hstack([net_transformed,att_transformed])
-                data_transformed = MinMaxScaler().fit_transform(data_transformed)
+                # data_transformed = MinMaxScaler().fit_transform(data_transformed)
                 self.model = KMeans(n_clusters=self.n_clusters,\
                                 random_state=0,\
                                 n_init="auto")\

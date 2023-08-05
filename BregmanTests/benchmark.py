@@ -364,9 +364,20 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                         X = A
                     E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
-                    model.initialize(edge_index,E,Y)
-                    model.assignInitialLabels(None, None)
-                    z_init = deepcopy(model.predicted_memberships)
+                    
+                    # model.initialize(edge_index,E,Y)
+                    # model.assignInitialLabels(None, None)
+                    # z_init = deepcopy(model.predicted_memberships)
+                    
+                    SC5 = BregmanKernelClustering(n_clusters, 
+                        edgeSimilarity = "gaussian",
+                        weightDistribution = "gaussian",
+                        attributeDistribution = "gaussian",
+                        single_metric=False)
+        
+                    SC5.fit(A,E,Y)
+
+                    z_init = fromVectorToMembershipMatrice(SC5.labels_,n_clusters)
                     print("Classes: ",z_init.shape)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
@@ -388,7 +399,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                     f'{path_}z_init_{trial}.npy'])
                     attSBMPred = np.load("predict.npy")
 
-                    z_pred_both = model.fit(edge_index,E,Y).predict( X, Y )
+                    z_pred_both = model.fit(edge_index,E,Y,z_init).predict( X, Y )
                     z_pred_graph = chernoff_graph_labels
                     z_pred_attributes = chernoff_att_labels
                     
