@@ -232,6 +232,7 @@ class BregmanInitializer():
             self.graph_model_init = model
             ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
             self.memberships_from_graph = ohe.transform(preds)
+            print("Memberships from graph: ",self.memberships_from_graph.shape)
             self.AIC_initializer(sim_matrix,Y)
 
         else:
@@ -240,6 +241,7 @@ class BregmanInitializer():
             self.graph_model_init = la
             ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
             self.memberships_from_graph = ohe.transform(preds)
+            print("Memberships from graph: ",self.memberships_from_graph.shape)
         # print("DONE \n")
 
         # self.assignInitialLabels()

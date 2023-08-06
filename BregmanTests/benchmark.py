@@ -290,6 +290,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         stats = {"varying":[],"a":[],"r":[],"ARI":[],"ARI_std":[],"algorithm":[]}
         n = np.sum(cluster_sizes)
         n_clusters = len(cluster_sizes)
+        print("n_clusters: ",n_clusters)
         self.n_clusters = n_clusters
         pout = b * np.log( n ) / n
         for varying in ["graph","attributes"]:
