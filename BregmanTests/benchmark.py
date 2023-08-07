@@ -368,17 +368,17 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     
                     model.initialize(edge_index,E,Y)
                     model.assignInitialLabels(None, None)
-                    # z_init = deepcopy(model.predicted_memberships)
+                    z_init = deepcopy(model.predicted_memberships)
                     
-                    SC5 = BregmanKernelClustering(n_clusters, 
-                        edgeSimilarity = "gaussian",
-                        weightDistribution = "gaussian",
-                        attributeDistribution = "gaussian",
-                        single_metric=False)
+                    # SC5 = BregmanKernelClustering(n_clusters, 
+                    #     edgeSimilarity = "gaussian",
+                    #     weightDistribution = "gaussian",
+                    #     attributeDistribution = "gaussian",
+                    #     single_metric=False)
         
-                    SC5.fit(A,E,Y)
+                    # SC5.fit(A,E,Y)
 
-                    z_init = fromVectorToMembershipMatrice(SC5.labels_,n_clusters)
+                    # z_init = fromVectorToMembershipMatrice(SC5.labels_,n_clusters)
                     print("Classes: ",z_init.shape)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
