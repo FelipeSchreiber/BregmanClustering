@@ -106,7 +106,7 @@ class BregmanBenchmark():
                 np.linspace(self.min_, self.max_, num=int(self.n_clusters*(self.n_clusters+1)/2))
             self.weight_centers = self.weight_centers + self.weight_centers.T - np.diag(np.diag(self.weight_centers))
         params = self.get_w_params(self.weight_centers,self.weight_variance,self.n_clusters)
-        print("\nSBM: ",self.probability_matrix)
+        # print("\nSBM: ",self.probability_matrix)
         ## get weights
         for e in G.edges:
             i,j = e
@@ -121,7 +121,7 @@ class BregmanBenchmark():
         for i in range(self.n_clusters):
             centers.append([self.radius*np.cos(2*np.pi*i/self.n_clusters),\
                           self.radius*np.sin(2*np.pi*i/self.n_clusters)])
-        print("\nDistribution Centers: ",centers)
+        # print("\nDistribution Centers: ",centers)
         return np.array(centers)
     
     def generate_attributes(self):
