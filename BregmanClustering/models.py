@@ -1221,7 +1221,7 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
             self.predicted_memberships = new_memberships
         return self
     
-    def initialize( self, edge_index, X, Y ):
+    def initialize( self, edge_index, E, Y ):
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
                                     edgeDistribution = self.edgeDistribution,
                                     attributeDistribution = self.attributeDistribution,
@@ -1232,7 +1232,7 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
         if self.use_random_init == True:
             Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
                                                                         self.n_clusters)
-        model.initialize( X, Y , self.edge_index, Z_init=Z_init)
+        model.initialize( edge_index, E, Y, Z_init=Z_init)
         # model.initialize(  A, X, Y, Z_init=Z_init)
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = frommembershipMatriceToVector(model.memberships_from_graph)
@@ -1533,8 +1533,6 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
     def computeAttributeMeans( self, Y, Z ):
         nk = Z.sum(axis=0) + 10 * np.finfo(Z.dtype).eps
         attribute_means = np.dot(Z.T, Y) / nk[:, np.newaxis]
-        # attribute_means = np.dot(Z.T, Y)/(Z.sum(axis=0))[:, np.newaxis]
-        #+ 10 * np.finfo(Z.dtype).eps
         if (np.isnan(attribute_means).any()):
             if (Z == 0).any():
                 print( "Z == 0")

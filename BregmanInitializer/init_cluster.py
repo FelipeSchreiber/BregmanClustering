@@ -182,35 +182,17 @@ class BregmanInitializer():
                     res = - minDiv['fun']
 
         return res
-    
-    def assignInitialLabels( self ):
-        if self.initializer == 'random':
-            preds =  np.random.randint( 0, self.n_clusters, size = self.X.shape[0] )
-            preds = preds.reshape(-1, 1)
-            ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
-            self.predicted_memberships = ohe.transform(preds)
-        
-        elif self.initializer == "AIC":
-            self.AIC_initializer(self.sim_matrix,self.Y)
-        
-        ## Chernoff divergence
-        elif self.initializer == "chernoff":
-            self.chernoff_initializer(self.X,self.Y)
 
     """
     X is N x N x 1 np.array or |E| x 1
     Y is N x d np.array
     edge_index is a tuple (indices_i, indices_j)
     """
-    def initialize(self, X, Y, edge_index ,Z_init=None):
+    def initialize(self, edge_index , E, Y):
         self.N = Y.shape[0]
         self.edge_index = edge_index
         ## CASE X is |E| x d: do nothing
         sim_matrix = None
-        ## CASE X is N x N x 1: pass to |E| x 1 
-        if X.shape[0] == X.shape[1]:
-            X = X[edge_index[0],edge_index[1],:]
-
         ### Fit GMM in attributes
         preds = None
         model = GaussianMixture(n_components=self.n_clusters)
@@ -222,7 +204,7 @@ class BregmanInitializer():
         
         ### Fit leiden or SpectralClustering
         if self.initializer == "AIC":
-            sim_matrix = csr_array((X.flatten(),\
+            sim_matrix = csr_array((E.flatten(),\
                 (edge_index[0],edge_index[1])),\
                 shape=(self.N, self.N)
             )  
@@ -236,21 +218,18 @@ class BregmanInitializer():
             self.AIC_initializer(sim_matrix,Y)
 
         else:
-            # print("FIT LEIDEN")
-            preds = fit_leiden(edge_index,X)
-            self.graph_model_init = la
-            ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
+            preds = fit_leiden(edge_index,E)
+            ohe = OneHotEncoder(max_categories=self.n_clusters,\
+                                 sparse_output=False).fit(preds)
             self.memberships_from_graph = ohe.transform(preds)
             print("Memberships from graph: ",self.memberships_from_graph.shape, self.n_clusters)
-        # print("DONE \n")
 
-        # self.assignInitialLabels()
         if self.initializer == 'random':
-            preds =  np.random.randint( 0, self.n_clusters, size = X.shape[0] )
+            preds =  np.random.randint( 0, self.n_clusters, size = E.shape[0] )
             preds = preds.reshape(-1, 1)
             ohe = OneHotEncoder(max_categories=self.n_clusters, sparse_output=False).fit(preds)
             self.predicted_memberships = ohe.transform(preds)
         
         ## Chernoff divergence
         elif self.initializer == "chernoff":
-            self.chernoff_initializer(X,Y)
+            self.chernoff_initializer(E,Y)

@@ -123,14 +123,10 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                                     assign_labels='discretize',random_state=0).fit(H_and_att)
 
             else:
-                # att_metric = self.make_att_riemannian_metric(Y.shape[1])
-                # net_metric = self.make_net_riemannian_metric(H.shape[1])
                 att_metric = self.attribute_divergence
                 net_metric = self.edge_sim
                 att_transformed = self.spectralEmbedding(Y,att_metric)
-                # att_transformed /= np.sqrt((att_transformed**2).sum(axis=1))[:, np.newaxis]
                 net_transformed = self.spectralEmbedding(H,net_metric)
-                # net_transformed /= np.sqrt((net_transformed**2).sum(axis=1))[:, np.newaxis]
                 data_transformed = np.hstack([net_transformed,att_transformed])
                 # data_transformed = MinMaxScaler().fit_transform(data_transformed)
                 self.model = KMeans(n_clusters=self.n_clusters,\
