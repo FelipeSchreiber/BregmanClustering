@@ -143,10 +143,8 @@ dist_to_psi_dict = {
         'poisson': psi_poisson 
     }
 
-
 def rbf_kernel(X,M):
     return np.exp(-np.norm(X-M,dim=-1))
-
 
 """
 psi*
