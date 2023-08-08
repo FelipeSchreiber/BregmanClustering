@@ -1232,7 +1232,7 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
         if self.use_random_init == True:
             Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
                                                                         self.n_clusters)
-        model.initialize( edge_index, E, Y, Z_init=Z_init)
+        model.initialize( edge_index, E, Y)
         # model.initialize(  A, X, Y, Z_init=Z_init)
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = frommembershipMatriceToVector(model.memberships_from_graph)
