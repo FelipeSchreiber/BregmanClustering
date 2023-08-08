@@ -219,6 +219,7 @@ class BregmanInitializer():
 
         else:
             preds = fit_leiden(edge_index,E)
+            print(len(np.unique(preds)))
             ohe = OneHotEncoder(max_categories=self.n_clusters,\
                                  sparse_output=False).fit(preds)
             self.memberships_from_graph = ohe.transform(preds)
