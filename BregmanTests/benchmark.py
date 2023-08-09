@@ -365,12 +365,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                         X = A
                     E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
-                    z_init = fit_leiden(edge_index,E)
-                    print(len(np.unique(z_init)))
                     model.initialize(edge_index,E,Y)
                     model.assignInitialLabels(None, None)
                     z_init = deepcopy(model.predicted_memberships)
-                    print("Classes: ",z_init.shape)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
                     chernoff_att_labels = model.memberships_from_attributes
@@ -419,7 +416,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 stats["r"].append(r)
                 stats["ARI"].append(aris_both_mean[-1])
                 stats["ARI_std"].append(aris_both_std[-1])
-                stats["algorithm"].append("ours")
+                stats["algorithm"].append("Algo1")
 
                 stats["varying"].append(varying)
                 stats["a"].append(a)
