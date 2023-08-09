@@ -293,7 +293,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         print("n_clusters: ",n_clusters)
         self.n_clusters = n_clusters
         pout = b * np.log( n ) / n
-        for varying in ["graph","attributes"]:
+        for varying in ["attributes","graph"]:
         # varying = 'attributes'
         # #varying = 'graph'
 
