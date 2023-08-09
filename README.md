@@ -10,7 +10,7 @@ Usage example:
 from BregmanClustering.models import BregmanClusteringMemEfficient as hardBreg
 from BregmanClustering.models import BregmanNodeEdgeAttributeGraphClusteringSoft as softBreg
 
-""" Generate a benchmark with c=3 communities, each one with n=100 nodes, each one with attributes in R^d draw from specified distribution.
+""" Generate a benchmark with c=3 communities, each one with n=300 nodes, each one with attributes in R^d draw from specified distribution.
 Edge weights can also be generate from a specified distribution, but only for 1-D. Requires a SBM probability matrix which describes the probability
 connectivity between each community."""
 
