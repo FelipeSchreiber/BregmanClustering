@@ -1049,7 +1049,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                 assign_labels='discretize',random_state=0).fit(H)
 
         SC2 = BregmanKernelClustering(K, 
-                edgeSimilarity = "jaccard",
+                edgeSimilarity = edgeSimilarity,
                 weightDistribution = weightSimilarity,
                 attributeDistribution = attributesSimilarity,
                 single_metric=True)
