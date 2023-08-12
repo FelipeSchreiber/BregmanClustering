@@ -1500,7 +1500,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             iteration += 1 
         return self
     
-    def initialize( self, edge_index, X_, Y ):
+    def initialize( self, edge_index, E, Y ):
         model = BregmanInitializer(self.n_clusters,initializer=self.initializer,
                                     edgeDistribution = self.edgeDistribution,
                                     attributeDistribution = self.attributeDistribution,
@@ -1511,8 +1511,7 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         if self.use_random_init == True:
             Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
                                                                         self.n_clusters)
-        model.initialize( X_, Y , self.edge_index, Z_init=Z_init)
-        # model.initialize(  A, X_, Y, Z_init=Z_init)
+        model.initialize( edge_index, E, Y)
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = frommembershipMatriceToVector(model.memberships_from_graph)
         self.memberships_from_attributes = frommembershipMatriceToVector(model.memberships_from_attributes)
