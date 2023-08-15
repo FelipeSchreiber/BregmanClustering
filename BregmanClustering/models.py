@@ -1304,7 +1304,7 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
 
     def assignments_joblib(self, X_,Y):
         H = pairwise_distances(Y,self.attribute_means,metric=self.attribute_divergence)
-        Parallel(backend="threading",n_jobs=self.n_jobs)\
+        Parallel(backend="loky",n_jobs=self.n_jobs)\
             (delayed(singleAssignmentContainer)(self, X_, H, ranges)\
               for ranges in gen_even_slices(self.N,self.n_jobs) )        
         return fromVectorToMembershipMatrice( self.Z, n_clusters = self.n_clusters )
