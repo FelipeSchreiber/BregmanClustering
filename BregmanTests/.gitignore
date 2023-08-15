@@ -1,3 +1,8 @@
 AttributedSBM/
 CSBM/
+ABCDGraphGenerator.jl/
 .ipynb_checkpoints/
+data/
+*.jpeg
+*.npy
+*.txt
