@@ -1216,7 +1216,9 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
             self.weight_means = self.computeWeightMeans( X_, new_memberships)
             self.precompute_edge_divergences()    
             iteration += 1
-            if accuracy_score( frommembershipMatriceToVector(new_memberships), frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02 or iteration >= self.n_iters:
+            if accuracy_score( frommembershipMatriceToVector(new_memberships),\
+                               frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02\
+                                or iteration >= self.n_iters:
                 convergence = False
             self.predicted_memberships = new_memberships
         return self
@@ -1489,15 +1491,21 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         old_log_prob = np.inf
         while not convergence:
             Z_new = self.E_projection(X_, Y)
-            new_log_prob = self.logprob(X_,Y)
             self.M_projection( X_,Y,Z_new)
-            convergence = self.stop_criterion(X_,Y,\
-                                              self.predicted_memberships,Z_new,\
-                                                old_log_prob,new_log_prob,\
-                                                iteration)
+            # new_log_prob = self.logprob(X_,Y)
+            # convergence = self.stop_criterion(X_,Y,\
+            #                                   self.predicted_memberships,Z_new,\
+            #                                     old_log_prob,new_log_prob,\
+            #                                     iteration)
+            # self.predicted_memberships = Z_new
+            # old_log_prob = new_log_prob
+            # iteration += 1 
+            if accuracy_score( frommembershipMatriceToVector(Z_new),\
+                               frommembershipMatriceToVector(self.predicted_memberships) ) < 0.02\
+                                or iteration >= self.n_iters:
+                convergence = False
+            iteration += 1
             self.predicted_memberships = Z_new
-            old_log_prob = new_log_prob
-            iteration += 1 
         return self
     
     def initialize( self, edge_index, E, Y ):
