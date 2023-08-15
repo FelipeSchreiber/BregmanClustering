@@ -11,7 +11,7 @@ if (not other_algos_installed) and (not os.path.isfile("other_algos_installed.tx
         f.write('OK')
 # import subprocess
 # subprocess.call(["git","clone","https://github.com/MartijnGosgens/validation_indices"])
-from validation_indices import NamedIndices
+from ..validation_indices import NamedIndices
 from BregmanInitializer.init_cluster import frommembershipMatriceToVector, fromVectorToMembershipMatrice
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.pairwise import pairwise_kernels, rbf_kernel, euclidean_distances
