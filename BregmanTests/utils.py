@@ -2,9 +2,9 @@ from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
-import subprocess
-subprocess.call(["git","clone","https://github.com/MartijnGosgens/validation_indices"])
-from validation_indices import NamedIndices
+# import subprocess
+# subprocess.call(["git","clone","https://github.com/MartijnGosgens/validation_indices"])
+from .validation_indices import NamedIndices
 from BregmanInitializer.init_cluster import frommembershipMatriceToVector, fromVectorToMembershipMatrice
 from sklearn.mixture import GaussianMixture
 from sklearn.metrics.pairwise import pairwise_kernels, rbf_kernel, euclidean_distances

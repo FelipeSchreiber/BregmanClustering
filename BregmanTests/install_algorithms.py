@@ -43,6 +43,7 @@ def main():
         if platform == "win32":
             subprocess.call(["git","clone","https://github.com/glmbraun/CSBM/"])
             subprocess.call(["git","clone","https://github.com/stanleyn/AttributedSBM.git"])
+            subprocess.call(["git","clone","https://github.com/MartijnGosgens/validation_indices"])
         else:
             subprocess.run(["sh",f"{bash_path}"])
         modify_csbm("./CSBM/Python/functions.py")
