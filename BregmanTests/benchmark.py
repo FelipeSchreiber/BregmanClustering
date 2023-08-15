@@ -24,13 +24,13 @@ from .cfg import *
 import os
 from .utils import *
 from copy import deepcopy
-if (not other_algos_installed) and (not os.path.isfile("other_algos_installed.txt")):
-    from .install_algorithms import main as install_env
-    ## Optional: set repository for CRAN
-    CRAN_repo = "https://cran.fiocruz.br/"
-    install_env()
-    with open("other_algos_installed.txt", 'w') as f:
-        f.write('OK')
+# if (not other_algos_installed) and (not os.path.isfile("other_algos_installed.txt")):
+#     from .install_algorithms import main as install_env
+#     ## Optional: set repository for CRAN
+#     CRAN_repo = "https://cran.fiocruz.br/"
+#     install_env()
+#     with open("other_algos_installed.txt", 'w') as f:
+#         f.write('OK')
 from CSBM.Python import functions as csbm
 from itertools import product
 from sklearn.cluster import KMeans,SpectralClustering
