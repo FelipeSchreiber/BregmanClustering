@@ -1054,6 +1054,14 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         SC2.fit(A,E,Y)
 
+        SC3 = BregmanKernelClustering(K, 
+                edgeSimilarity = "jaccard",
+                weightDistribution = "gaussian",
+                attributeDistribution = "gaussian",
+                single_metric=False)
+        
+        SC3.fit(A,E,Y)
+
         SC4 = BregmanKernelClustering(K, 
                 edgeSimilarity = "raw",
                 weightDistribution = "gaussian",
@@ -1129,6 +1137,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 kmeans.labels_,
                 SC.labels_,
                 SC2.labels_,
+                SC3.labels_,
                 SC4.labels_,
                 SC5.labels_,
                 # IR_sLS_pred,
@@ -1145,9 +1154,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "GMM(init)",
                 "kmeans",
                 "SC",
-                "SC_jaccard",
-                "SC_gaussian_1",
-                "SC_gaussian_2",
+                "SC_jaccard_1",
+                "SC_jaccard_2",
+                "SC_raw_1",
+                "SC_raw_2",
                 # "IR_sLS",
                 "attSBM"
             ]
@@ -1184,7 +1194,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             metrics_per_run = {}
             algo_names = None
             for metric in metric_names:
-                metrics_per_run[metric] = np.zeros((12,n_runs))
+                metrics_per_run[metric] = np.zeros((13,n_runs))
             # print("INPUTS: ",A.shape,E.shape,Y.shape)
             
             for j in range(n_runs):
