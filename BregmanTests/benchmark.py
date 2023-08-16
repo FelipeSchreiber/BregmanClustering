@@ -1132,6 +1132,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 both_hard_sc,
                 both_soft,
                 both_soft_sc,
+                attSBMPred,
                 memberships_from_graph,
                 memberships_from_attributes,
                 kmeans.labels_,
@@ -1141,8 +1142,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 SC4.labels_,
                 SC5.labels_,
                 # IR_sLS_pred,
-                attSBMPred
-
             ]
 
         algo_names = [
@@ -1150,6 +1149,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "both_hard+SC",
                 "both_soft",
                 "both_soft+SC",
+                "attSBM",
                 "leiden(init)",
                 "GMM(init)",
                 "kmeans",
@@ -1159,7 +1159,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 "SC_raw_1",
                 "SC_raw_2",
                 # "IR_sLS",
-                "attSBM"
             ]
 
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
@@ -1184,8 +1183,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
-            if data_name in ["CiteSeer","Cora"]:
-                continue
+            # if data_name in ["CiteSeer","Cora"]:
+            #     continue
             K,A,E,Y,z_true = self.preprocess_real_data(data,reduction_method)
             
             if plot_class_dist:
