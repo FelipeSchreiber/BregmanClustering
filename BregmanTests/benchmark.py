@@ -1065,16 +1065,16 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         # SC3.fit(A,E,Y)
 
-        # SC4 = BregmanKernelClustering(K, 
-        #         edgeSimilarity = "gaussian",
-        #         weightDistribution = weightSimilarity,
-        #         attributeDistribution = "gaussian",
-        #         single_metric=True)
+        SC4 = BregmanKernelClustering(K, 
+                edgeSimilarity = "raw",
+                weightDistribution = weightSimilarity,
+                attributeDistribution = "gaussian",
+                single_metric=True)
         
-        # SC4.fit(A,E,Y)
+        SC4.fit(A,E,Y)
 
         SC5 = BregmanKernelClustering(K, 
-                edgeSimilarity = "jaccard",
+                edgeSimilarity = "raw",
                 weightDistribution = weightSimilarity,
                 attributeDistribution = "gaussian",
                 single_metric=False,
@@ -1187,8 +1187,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
-            # if data_name in ["CiteSeer","Cora"]:
-            #     continue
+            if data_name in ["CiteSeer","Cora"]:
+                continue
             K,A,E,Y,z_true = self.preprocess_real_data(data,reduction_method)
             
             if plot_class_dist:
