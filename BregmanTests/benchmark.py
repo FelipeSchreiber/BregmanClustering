@@ -1074,7 +1074,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         # SC4.fit(A,E,Y)
 
         SC5 = BregmanKernelClustering(K, 
-                edgeSimilarity = "raw",
+                edgeSimilarity = "jaccard",
                 weightDistribution = weightSimilarity,
                 attributeDistribution = "gaussian",
                 single_metric=False,
@@ -1127,7 +1127,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                     f'{path_}net_{trial}.npy',\
                                     f'{path_}z_init_{trial}.npy'])
         attSBMPred = np.load("predict.npy")
-        print(np.unique(attSBMPred))
+        # print(np.unique(attSBMPred))
+        attSBMPred -= 1
         y_preds = [
                 # both_hard,
                 # both_hard_sc,
