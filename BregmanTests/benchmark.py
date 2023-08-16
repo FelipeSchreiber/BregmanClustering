@@ -1115,7 +1115,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         with open(f'{path_}net_{trial}.npy', 'wb') as g:
             np.save(g, A)
         with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
-            np.save(g, csbm.convertZ(z_init)+1)
+            np.save(g, SC5.labels_+1)
                     
         IR_sLS_pred = csbm.iter_csbm(A,Y,z_init,K)                        
                 
