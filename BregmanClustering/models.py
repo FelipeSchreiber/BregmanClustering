@@ -1209,8 +1209,8 @@ class BregmanClusteringMemEfficient( BaseEstimator, ClusterMixin ):
         convergence = True
         iteration = 0
         while convergence:
-            # new_memberships = self.assignments_joblib( X_, Y )
-            new_memberships = self.assignments( X_, Y )
+            new_memberships = self.assignments_joblib( X_, Y )
+            # new_memberships = self.assignments( X_, Y )
             self.attribute_means = self.computeAttributeMeans( Y, new_memberships )
             self.edge_means = self.computeEdgeMeans(new_memberships)
             self.weight_means = self.computeWeightMeans( X_, new_memberships)
