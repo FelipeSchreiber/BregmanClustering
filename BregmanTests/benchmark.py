@@ -1110,7 +1110,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         # both_soft_sc = model_soft.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
         # kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
         trial = 0
-        path_ = path_to_data+f"real_data"
+        path_ = path_to_data+f"real_data/"
         if not os.path.exists(path_):
             os.makedirs(path_)
         with open(f'{path_}att_{trial}.npy', 'wb') as g:
@@ -1120,7 +1120,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
             np.save(g, SC5.labels_+1)
                     
-        # IR_sLS_pred = csbm.iter_csbm(A,Y,z_init,K)                        
+        IR_sLS_pred = csbm.iter_csbm(A,Y,z_init,K)                        
                 
         subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
                                     f'{path_}att_{trial}.npy',\
@@ -1140,7 +1140,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 # SC2.labels_,
                 # SC4.labels_,
                 SC5.labels_,
-                # IR_sLS_pred,
+                IR_sLS_pred,
                 attSBMPred
 
             ]
@@ -1157,7 +1157,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 # "SC_jaccard",
                 # "SC_gaussian_1",
                 "SC_gaussian_2",
-                # "IR_sLS",
+                "IR_sLS",
                 "attSBM"
             ]
 
