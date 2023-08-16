@@ -6,3 +6,4 @@ data/
 *.jpeg
 *.npy
 *.txt
+*.csv
