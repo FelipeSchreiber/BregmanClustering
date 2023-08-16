@@ -32,8 +32,8 @@ def hamming_(X,M):
     return 1-total
 
 def jaccard_(X,M):
-    X = X.astype(np.bool)
-    M = M.astype(np.bool)
+    X = X.astype(bool)
+    M = M.astype(bool)
     intersection = np.logical_and(X, M)
     union = np.logical_or(X, M)
     if union.sum() == 0:
