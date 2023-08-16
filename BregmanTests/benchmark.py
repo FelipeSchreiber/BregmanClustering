@@ -1078,7 +1078,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 weightDistribution = weightSimilarity,
                 attributeDistribution = "gaussian",
                 single_metric=False,
-                use_nystrom=True)
+                use_nystrom=False)
         
         SC5.fit(A,E,Y)
         z_init = fromVectorToMembershipMatrice(SC5.labels_,K)
@@ -1184,7 +1184,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
-
+            if data_name in ["CiteSeer","Cora"]:
+                continue
             K,A,E,Y,z_true = self.preprocess_real_data(data,reduction_method)
             
             if plot_class_dist:
