@@ -113,7 +113,7 @@ def plot_class_dist_(data,dataset_name,num_nodes=0,num_edges=0,net_stats=False):
         props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 
         # place a text box in upper left in axes coords
-        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12,
                 verticalalignment='top', bbox=props)
     plt.title(dataset_name+" class freq")
     plt.show()
