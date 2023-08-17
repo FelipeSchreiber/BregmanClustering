@@ -67,6 +67,7 @@ def euclidean_distance(X,M):
     return np.exp(-total.mean())
 
 dist_to_divergence_dict = {
+        'raw':None,
         'gaussian': euclidean_distance,
         'bernoulli': logistic_loss,
         'multinomial':KL_div,
