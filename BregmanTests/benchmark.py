@@ -1034,10 +1034,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         return K,A,E,attributes.numpy(),z_true
     
-    def real_data_single_run(self,K,A,E,Y,z_true,n_iters,\
-                             edgeSimilarity,\
-                             weightSimilarity,\
-                             attributesSimilarity):
+    def real_data_single_run(self,K,A,E,Y,z_true,n_iters):
         H = np.hstack((A,A.T))
         
         if (H.sum(axis=1) == 0).any():
@@ -1073,7 +1070,6 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         # SC4.fit(A,E,Y)
 
-        print("=========== WS ",weightSimilarity)
         SC5 = BregmanKernelClustering(K, 
                 edgeSimilarity = "gaussian",
                 weightDistribution = "gaussian",
@@ -1166,10 +1162,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
     def run_real_data(self,n_iters=25,
                       reduction_method="KBest",\
                       plot_class_dist=True,\
-                      n_runs=10,
-                      edgeSimilarity="jaccard",
-                      weightSimilarity="gaussian",
-                      attributesSimilarity="hamming"):
+                      n_runs=10):
         datas,data_names = self.get_real_data()
         scores_agg_datasets = {}
 
@@ -1200,10 +1193,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             
             for j in range(n_runs):
                 scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,\
-                                                                  n_iters,\
-                                                                  edgeSimilarity,\
-                                                                  weightSimilarity,
-                                                                  attributesSimilarity)
+                                                                  n_iters=n_iters)
                 for metric_name in metric_names:
                     metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
 
