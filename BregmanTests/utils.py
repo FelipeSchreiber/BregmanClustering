@@ -102,8 +102,19 @@ def make_riemannian_metric(N,n_features,gamma=None,att_dist_=None):
     
     return riemannian_metric
 
-def plot_class_dist_(data,dataset_name):
-    sns.countplot(x=data)
+def plot_class_dist_(data,dataset_name,num_nodes=0,num_edges=0,net_stats=False):
+    ax = sns.countplot(x=data)
+    ax.bar_label(ax.containers[0])
+    if net_stats:
+        textstr = '\n'.join((
+        r'$\|V\|=%d$' % (num_nodes, ),
+        r'$\|E\|=%d$' % (num_edges, )))
+        # these are matplotlib.patch.Patch properties
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+
+        # place a text box in upper left in axes coords
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
+                verticalalignment='top', bbox=props)
     plt.title(dataset_name+" class freq")
     plt.show()
 
