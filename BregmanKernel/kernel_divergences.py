@@ -32,8 +32,8 @@ def hamming_(X,M):
     return 1-total
 
 def jaccard_(X,M):
-    X = X.astype(bool)
-    M = M.astype(bool)
+    X = X.astype(np.bool)
+    M = M.astype(np.bool)
     intersection = np.logical_and(X, M)
     union = np.logical_or(X, M)
     if union.sum() == 0:
@@ -67,7 +67,6 @@ def euclidean_distance(X,M):
     return np.exp(-total.mean())
 
 dist_to_divergence_dict = {
-        "raw": None,
         'gaussian': euclidean_distance,
         'bernoulli': logistic_loss,
         'multinomial':KL_div,

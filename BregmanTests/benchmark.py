@@ -1034,7 +1034,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         return K,A,E,attributes.numpy(),z_true
     
-    def real_data_single_run(self,K,A,E,Y,z_true,n_iters):
+    def real_data_single_run(self,K,A,E,Y,z_true,n_iters,\
+                             edgeSimilarity,\
+                             weightSimilarity,\
+                             attributesSimilarity):
         H = np.hstack((A,A.T))
         
         if (H.sum(axis=1) == 0).any():
@@ -1043,36 +1046,36 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         edge_index = np.nonzero(A)
         # print(index[0].shape,E.shape)
 
-        SC = SpectralClustering(n_clusters=K,\
-                                assign_labels='discretize',random_state=0).fit(H)
+        # SC = SpectralClustering(n_clusters=K,\
+        #                         assign_labels='discretize',random_state=0).fit(H)
 
-        SC2 = BregmanKernelClustering(K, 
-                edgeSimilarity = "jaccard",
-                weightDistribution = "gaussian",
-                attributeDistribution = "gaussian",
-                single_metric=True)
+        # SC2 = BregmanKernelClustering(K, 
+        #         edgeSimilarity = edgeSimilarity,
+        #         weightDistribution = weightSimilarity,
+        #         attributeDistribution = attributesSimilarity,
+        #         single_metric=True)
         
-        SC2.fit(A,E,Y)
+        # SC2.fit(A,E,Y)
 
-        SC3 = BregmanKernelClustering(K, 
-                edgeSimilarity = "jaccard",
-                weightDistribution = "gaussian",
-                attributeDistribution = "gaussian",
-                single_metric=False)
+        # SC3 = BregmanKernelClustering(K, 
+        #         edgeSimilarity = "hamming",
+        #         weightDistribution = weightSimilarity,
+        #         attributeDistribution = attributesSimilarity,
+        #         single_metric=True)
         
-        SC3.fit(A,E,Y)
+        # SC3.fit(A,E,Y)
 
-        SC4 = BregmanKernelClustering(K, 
-                edgeSimilarity = "gaussian",
-                weightDistribution = "gaussian",
-                attributeDistribution = "gaussian",
-                single_metric=True)
+        # SC4 = BregmanKernelClustering(K, 
+        #         edgeSimilarity = "gaussian",
+        #         weightDistribution = weightSimilarity,
+        #         attributeDistribution = "gaussian",
+        #         single_metric=True)
         
-        SC4.fit(A,E,Y)
+        # SC4.fit(A,E,Y)
 
         SC5 = BregmanKernelClustering(K, 
                 edgeSimilarity = "gaussian",
-                weightDistribution = "exponential",
+                weightDistribution = weightSimilarity,
                 attributeDistribution = "gaussian",
                 single_metric=False,
                 use_nystrom=False)
@@ -1080,33 +1083,32 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         SC5.fit(A,E,Y)
         z_init = fromVectorToMembershipMatrice(SC5.labels_,K)
         
-        both_hard = None
-        model_hard = hardBreg(n_clusters=K,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name,\
-                                        initializer=self.initializer,
-                                        use_random_init=False,
-                                        n_iters=n_iters
-                            )
-        both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
-        memberships_from_graph = model_hard.memberships_from_graph
-        memberships_from_attributes = model_hard.memberships_from_attributes
-        both_hard_sc = model_hard.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
+        # both_hard = None
+        # model_hard = hardBreg(n_clusters=K,\
+        #                                 attributeDistribution=self.attributes_distribution_name,\
+        #                                 edgeDistribution=self.edge_distribution_name,\
+        #                                 weightDistribution=self.weight_distribution_name,\
+        #                                 initializer=self.initializer,
+        #                                 use_random_init=False,
+        #                                 n_iters=n_iters
+        #                     )
+        # both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
+        # memberships_from_graph = model_hard.memberships_from_graph
+        # memberships_from_attributes = model_hard.memberships_from_attributes
+        # both_hard_sc = model_hard.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
 
-        both_soft = None
-        model_soft = softBreg(n_clusters=K,\
-                                        attributeDistribution=self.attributes_distribution_name,\
-                                        edgeDistribution=self.edge_distribution_name,\
-                                        weightDistribution=self.weight_distribution_name,\
-                                        initializer=self.initializer,
-                                        use_random_init=False,
-                                        n_iters=n_iters
-                            )
-        both_soft = model_soft.fit(edge_index,E,Y).predict( None, None )
-        both_soft_sc = model_soft.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
-        kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
-        
+        # both_soft = None
+        # model_soft = softBreg(n_clusters=K,\
+        #                                 attributeDistribution=self.attributes_distribution_name,\
+        #                                 edgeDistribution=self.edge_distribution_name,\
+        #                                 weightDistribution=self.weight_distribution_name,\
+        #                                 initializer=self.initializer,
+        #                                 use_random_init=False,
+        #                                 n_iters=n_iters
+        #                     )
+        # both_soft = model_soft.fit(edge_index,E,Y).predict( None, None )
+        # both_soft_sc = model_soft.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
+        # kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
         trial = 0
         path_ = path_to_data+f"real_data/"
         if not os.path.exists(path_):
@@ -1118,46 +1120,45 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
             np.save(g, SC5.labels_+1)
                     
-        # IR_sLS_pred = csbm.iter_csbm(A,Y,z_init,K)                        
+        IR_sLS_pred = csbm.iter_csbm(A,Y,z_init,K)                        
                 
         subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
                                     f'{path_}att_{trial}.npy',\
                                     f'{path_}net_{trial}.npy',\
                                     f'{path_}z_init_{trial}.npy'])
         attSBMPred = np.load("predict.npy")
-        attSBMPred -= 1
+            
         y_preds = [
-                both_hard,
-                both_hard_sc,
-                both_soft,
-                both_soft_sc,
-                attSBMPred,
-                memberships_from_graph,
-                memberships_from_attributes,
-                kmeans.labels_,
-                SC.labels_,
-                SC2.labels_,
-                SC3.labels_,
-                SC4.labels_,
+                # both_hard,
+                # both_hard_sc,
+                # both_soft,
+                # both_soft_sc,
+                # memberships_from_graph,
+                # memberships_from_attributes,
+                # kmeans.labels_,
+                # SC.labels_,
+                # SC2.labels_,
+                # SC4.labels_,
                 SC5.labels_,
-                # IR_sLS_pred,
+                IR_sLS_pred,
+                attSBMPred
+
             ]
 
         algo_names = [
-                "both_hard",
-                "both_hard+SC",
-                "both_soft",
-                "both_soft+SC",
-                "attSBM",
-                "leiden(init)",
-                "GMM(init)",
-                "kmeans",
-                "SC",
-                "SC_jaccard_1",
-                "SC_jaccard_2",
-                "SC_raw_1",
-                "SC_raw_2",
-                # "IR_sLS",
+                # "both_hard",
+                # "both_hard+SC",
+                # "both_soft",
+                # "both_soft+SC",
+                # "leiden(init)",
+                # "GMM(init)",
+                # "kmeans",
+                # "SC",
+                # "SC_jaccard",
+                # "SC_gaussian_1",
+                "SC_gaussian_2",
+                "IR_sLS",
+                "attSBM"
             ]
 
         scores_all = get_metrics_all_preds(z_true, y_preds, algo_names)
@@ -1166,7 +1167,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
     def run_real_data(self,n_iters=25,
                       reduction_method="KBest",\
                       plot_class_dist=True,\
-                      n_runs=10):
+                      n_runs=10,
+                      edgeSimilarity="jaccard",
+                      weightSimilarity="gaussian",
+                      attributesSimilarity="hamming"):
         datas,data_names = self.get_real_data()
         scores_agg_datasets = {}
 
@@ -1182,8 +1186,8 @@ nout = "100"                  # number of vertices in graph that are outliers; o
 
         for data,data_name in zip(datas,data_names):
             print("\nCURRENT DATASET: ",data_name)
-            if data_name in ["CiteSeer","Cora"]:
-                continue
+            # if data_name in ["CiteSeer","Cora"]:
+            #     continue
             K,A,E,Y,z_true = self.preprocess_real_data(data,reduction_method)
             
             if plot_class_dist:
@@ -1192,11 +1196,15 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             metrics_per_run = {}
             algo_names = None
             for metric in metric_names:
-                metrics_per_run[metric] = np.zeros((13,n_runs))
+                metrics_per_run[metric] = np.zeros((2,n_runs))
             # print("INPUTS: ",A.shape,E.shape,Y.shape)
             
             for j in range(n_runs):
-                scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,n_iters)
+                scores_all,algo_names = self.real_data_single_run(K,A,E,Y,z_true,\
+                                                                  n_iters,\
+                                                                  edgeSimilarity,\
+                                                                  weightSimilarity,
+                                                                  attributesSimilarity)
                 for metric_name in metric_names:
                     metrics_per_run[metric_name][:,j] = np.array(scores_all[metric_name])
 
