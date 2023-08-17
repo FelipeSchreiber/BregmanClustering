@@ -1063,7 +1063,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         SC3.fit(A,E,Y)
 
         SC4 = BregmanKernelClustering(K, 
-                edgeSimilarity = "gaussian",
+                edgeSimilarity = "raw",
                 weightDistribution = "gaussian",
                 attributeDistribution = "gaussian",
                 single_metric=True)
@@ -1071,14 +1071,14 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         SC4.fit(A,E,Y)
 
         SC5 = BregmanKernelClustering(K, 
-                edgeSimilarity = "gaussian",
+                edgeSimilarity = "raw",
                 weightDistribution = "gaussian",
                 attributeDistribution = "gaussian",
                 single_metric=False,
                 use_nystrom=False)
         
         SC5.fit(A,E,Y)
-        z_init = fromVectorToMembershipMatrice(SC5.labels_,K)
+        z_init = fromVectorToMembershipMatrice(SC3.labels_,K)
         
         both_hard = None
         model_hard = hardBreg(n_clusters=K,\
