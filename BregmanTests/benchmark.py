@@ -1078,7 +1078,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 use_nystrom=False)
         
         SC5.fit(A,E,Y)
-        z_init = fromVectorToMembershipMatrice(SC3.labels_,K)
+        z_init = fromVectorToMembershipMatrice(SC5.labels_,K)
         
         both_hard = None
         model_hard = hardBreg(n_clusters=K,\
