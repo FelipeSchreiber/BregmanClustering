@@ -1073,9 +1073,10 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         
         # SC4.fit(A,E,Y)
 
+        print("=========== WS ",weightSimilarity)
         SC5 = BregmanKernelClustering(K, 
                 edgeSimilarity = "gaussian",
-                weightDistribution = weightSimilarity,
+                weightDistribution = "gaussian",
                 attributeDistribution = "gaussian",
                 single_metric=False,
                 use_nystrom=False)
