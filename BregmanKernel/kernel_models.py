@@ -40,6 +40,8 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         self.use_nystrom = use_nystrom
 
     def make_single_riemannian_metric(self,att_feats,net_feats,gamma=None):
+        # att_sim_func = self.make_att_riemannian_metric(att_feats,gamma)
+        # net_sim_func = self.make_net_riemannian_metric(net_feats)
         att_sim_func = self.attribute_divergence
         net_sim_func = self.edge_sim
 
@@ -50,6 +52,27 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
             return simmilarity
         
         return riemannian_metric
+    
+    # def make_att_riemannian_metric(self,att_feats,gamma=None):
+    #     if gamma is None:
+    #         gamma = 1.0 / att_feats
+
+    #     def att_riemannian_metric(row1,row2):
+    #         att_d = gamma*self.attribute_divergence(row1,row2)
+    #         simmilarity = np.exp(-att_d) 
+    #         return simmilarity
+        
+    #     return att_riemannian_metric
+    
+    # def make_net_riemannian_metric(self,net_feats,gamma=None):
+    #     # if gamma is None:
+    #     #     gamma = 1.0 / net_feats
+
+    #     def net_riemannian_metric(row1,row2):
+    #         net_d = self.edge_sim(row1,row2) 
+    #         return net_d
+        
+    #     return net_riemannian_metric
     
     def spectralEmbedding(self, X , metric):
         X = pairwise_kernels(X,metric=metric)
@@ -94,36 +117,19 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                                 .fit(data_transformed)
         else:
             data_transformed = None
-            att_metric = self.attribute_divergence
-            net_metric = self.edge_sim
-            net_sim_matrix = None
-
-            if self.edgeSimilarity == "raw":
-                net_sim_matrix = A
-            else:
-                net_sim_matrix = pairwise_kernels(H, metric=net_metric, filter_params=True)
-            
-            att_sim_matrix = pairwise_kernels(Y, metric=att_metric, filter_params=True)
-            
             if self.single_metric:
-                single_sim_matrix = (att_sim_matrix + net_sim_matrix)/2
-                data_transformed = SpectralEmbedding(n_components=self.n_clusters,\
-								affinity="precomputed")\
-								.fit_transform(single_sim_matrix)
-                # self.model = SpectralClustering(n_clusters=self.n_clusters,\
-                #                      affinity=metric,
-                #                     assign_labels='discretize',random_state=0).fit(H_and_att)
+                self.model = SpectralClustering(n_clusters=self.n_clusters,\
+                                     affinity=metric,
+                                    assign_labels='discretize',random_state=0).fit(H_and_att)
 
             else:
-                att_transformed = SpectralEmbedding(n_components=self.n_clusters,\
-								affinity="precomputed")\
-								.fit_transform(att_sim_matrix)
-                net_transformed = SpectralEmbedding(n_components=self.n_clusters,\
-								affinity="precomputed")\
-								.fit_transform(net_sim_matrix)
+                att_metric = self.attribute_divergence
+                net_metric = self.edge_sim
+                att_transformed = self.spectralEmbedding(Y,att_metric)
+                net_transformed = self.spectralEmbedding(H,net_metric)
                 data_transformed = np.hstack([net_transformed,att_transformed])
-            data_transformed = MinMaxScaler().fit_transform(data_transformed)
-            self.model = KMeans(n_clusters=self.n_clusters,\
+                data_transformed = MinMaxScaler().fit_transform(data_transformed)
+                self.model = KMeans(n_clusters=self.n_clusters,\
                                 random_state=0,\
                                 n_init="auto")\
                                 .fit(data_transformed)
