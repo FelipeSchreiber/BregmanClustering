@@ -1083,31 +1083,31 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         SC5.fit(A,E,Y)
         z_init = fromVectorToMembershipMatrice(SC5.labels_,K)
         
-        # both_hard = None
-        # model_hard = hardBreg(n_clusters=K,\
-        #                                 attributeDistribution=self.attributes_distribution_name,\
-        #                                 edgeDistribution=self.edge_distribution_name,\
-        #                                 weightDistribution=self.weight_distribution_name,\
-        #                                 initializer=self.initializer,
-        #                                 use_random_init=False,
-        #                                 n_iters=n_iters
-        #                     )
-        # both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
-        # memberships_from_graph = model_hard.memberships_from_graph
-        # memberships_from_attributes = model_hard.memberships_from_attributes
-        # both_hard_sc = model_hard.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
+        both_hard = None
+        model_hard = hardBreg(n_clusters=K,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        initializer=self.initializer,
+                                        use_random_init=False,
+                                        n_iters=n_iters
+                            )
+        both_hard = model_hard.fit(edge_index,E,Y).predict( None, None )
+        memberships_from_graph = model_hard.memberships_from_graph
+        memberships_from_attributes = model_hard.memberships_from_attributes
+        both_hard_sc = model_hard.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
 
-        # both_soft = None
-        # model_soft = softBreg(n_clusters=K,\
-        #                                 attributeDistribution=self.attributes_distribution_name,\
-        #                                 edgeDistribution=self.edge_distribution_name,\
-        #                                 weightDistribution=self.weight_distribution_name,\
-        #                                 initializer=self.initializer,
-        #                                 use_random_init=False,
-        #                                 n_iters=n_iters
-        #                     )
-        # both_soft = model_soft.fit(edge_index,E,Y).predict( None, None )
-        # both_soft_sc = model_soft.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
+        both_soft = None
+        model_soft = softBreg(n_clusters=K,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        initializer=self.initializer,
+                                        use_random_init=False,
+                                        n_iters=n_iters
+                            )
+        both_soft = model_soft.fit(edge_index,E,Y).predict( None, None )
+        both_soft_sc = model_soft.fit(edge_index,E,Y,Z_init=z_init).predict( None, None )
         # kmeans = KMeans(n_clusters=K, random_state=0, n_init="auto").fit(Y)
         trial = 0
         path_ = path_to_data+f"real_data/"
@@ -1120,44 +1120,42 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         with open(f'{path_}z_init_{trial}.npy', 'wb') as g:
             np.save(g, SC5.labels_+1)
                     
-        IR_sLS_pred = csbm.iter_csbm(A,Y,z_init,K)                        
+        # IR_sLS_pred = csbm.iter_csbm(A,Y,z_init,K)                        
                 
         subprocess.call(["/usr/bin/Rscript","--vanilla",f"{base_path}/run_AttSBM.r",\
                                     f'{path_}att_{trial}.npy',\
                                     f'{path_}net_{trial}.npy',\
                                     f'{path_}z_init_{trial}.npy'])
-        attSBMPred = np.load("predict.npy")
+        attSBMPred = np.load("predict.npy") -1
             
         y_preds = [
-                # both_hard,
-                # both_hard_sc,
-                # both_soft,
-                # both_soft_sc,
-                # memberships_from_graph,
-                # memberships_from_attributes,
+                both_hard,
+                both_hard_sc,
+                both_soft,
+                both_soft_sc,
+                memberships_from_graph,
+                memberships_from_attributes,
                 # kmeans.labels_,
                 # SC.labels_,
                 # SC2.labels_,
                 # SC4.labels_,
                 SC5.labels_,
-                IR_sLS_pred,
                 attSBMPred
 
             ]
 
         algo_names = [
-                # "both_hard",
-                # "both_hard+SC",
-                # "both_soft",
-                # "both_soft+SC",
-                # "leiden(init)",
-                # "GMM(init)",
+                "both_hard",
+                "both_hard+SC",
+                "both_soft",
+                "both_soft+SC",
+                "leiden(init)",
+                "GMM(init)",
                 # "kmeans",
                 # "SC",
                 # "SC_jaccard",
                 # "SC_gaussian_1",
                 "SC_gaussian_2",
-                "IR_sLS",
                 "attSBM"
             ]
 
