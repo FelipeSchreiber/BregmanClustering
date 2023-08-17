@@ -1055,7 +1055,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
         SC2.fit(A,E,Y)
 
         SC3 = BregmanKernelClustering(K, 
-                edgeSimilarity = "jaccard",
+                edgeSimilarity = "gaussian",
                 weightDistribution = "gaussian",
                 attributeDistribution = "gaussian",
                 single_metric=False)
