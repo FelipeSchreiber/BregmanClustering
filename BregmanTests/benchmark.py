@@ -1165,7 +1165,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             K,A,E,Y,z_true = self.preprocess_real_data(data,reduction_method="KBest")
             edge_indexes = np.nonzero(A)
             num_edges = edge_indexes[0].shape[0]
-            plot_class_dist_(z_true,data_name,num_edges=num_edges,num_nodes=Y.shape[0])
+            plot_class_dist_(z_true,data_name,num_edges=num_edges,num_nodes=Y.shape[0],net_stats=True)
 
     def run_real_data(self,n_iters=25,
                       reduction_method="KBest",\
