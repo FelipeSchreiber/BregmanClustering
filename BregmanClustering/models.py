@@ -1540,6 +1540,22 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
             raise ValueError ("att means contains Nan")
         return attribute_means
     
+    def computeEdgeMeansMemEfficient(self,tau):
+        denom = np.zeros(self.n_clusters,self.n_clusters)
+        num = denom.copy()
+        for q in range(self.n_clusters):
+            for l in range(self.n_clusters):
+                if q < l:
+                    for i in range(self.N):
+                        for j in range(self.N):
+                            if(i<j):
+                                denom[q,l] += max(1e-6,tau[i,q]*tau[i,l])
+                                denom[l,q] = denom[q,l]
+                    for i,j in zip(self.edge_index[0],self.edge_index[1]):
+                        num[q,l] += tau[i,q]*tau[j,l] 
+                        num[l,q] = num[q,l]
+        return num/denom
+
     def computeEdgeMeans(self,tau):
         weights = np.tensordot(tau, tau, axes=((), ()))
         """
@@ -1560,6 +1576,22 @@ class BregmanNodeEdgeAttributeGraphClusteringSoft( BaseEstimator, ClusterMixin )
         #     raise ValueError ("edge means contains Nan")
         return edge_means 
     
+    def computeWeightMeansMemEfficient( self, X_, tau):
+        denom = np.zeros(self.n_clusters,self.n_clusters)
+        num = np.zeros(self.n_clusters,self.n_clusters,X_.shape[1])
+        for q in range(self.n_clusters):
+            for l in range(self.n_clusters):
+                if q < l:
+                    for i in range(self.N):
+                        for j in range(self.N):
+                            if(i<j):
+                                denom[q,l] += max(1e-6,tau[i,q]*tau[i,l])
+                                denom[l,q] = denom[q,l]
+                    for i,j,w in zip(self.edge_index[0],self.edge_index[1],X_):
+                        num[q,l,:] += tau[i,q]*tau[j,l]*w
+                        num[l,q,:] = num[q,l,:]
+        return num/denom[:,:,np.newaxis]
+
     def computeWeightMeans( self, X_, Z):
         weights = np.tensordot(Z, Z, axes=((), ()))
         """
