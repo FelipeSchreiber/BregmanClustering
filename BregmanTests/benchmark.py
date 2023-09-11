@@ -300,6 +300,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             aris_attributes_mean = [ ]
             aris_graph_mean = [ ]
             aris_both_mean = [ ]
+            aris_soft_mean = [ ]
             aris_attSBM_mean = [ ]
             aris_IR_sLS_mean = [ ]
             # aris_IR_LS_mean = [ ]
@@ -308,9 +309,9 @@ nout = "100"                  # number of vertices in graph that are outliers; o
             aris_attributes_std = [ ]
             aris_graph_std = [ ]
             aris_both_std = [ ]
+            aris_soft_std = [ ]
             aris_attSBM_std = [ ]
             aris_IR_sLS_std = [ ]
-            aris_IR_LS_std = [ ]
             # aris_both2_std = [ ]
             # aris_oracle_std = [ ]
 
@@ -333,6 +334,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 aris_attributes = [ ]
                 aris_graph = [ ]
                 aris_both = [ ]
+                aris_both_soft = []
                 aris_attSBM = [ ]
                 aris_IR_sLS  = [ ]
                 # aris_IR_LS = [ ]
@@ -361,12 +363,22 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                                         reduce_by=self.reduce_by,
                                         divergence_precomputed=self.divergence_precomputed,
                                         initializer=self.initializer)
+                    
+                    model_soft = softBreg(n_clusters=n_clusters,\
+                                        attributeDistribution=self.attributes_distribution_name,\
+                                        edgeDistribution=self.edge_distribution_name,\
+                                        weightDistribution=self.weight_distribution_name,\
+                                        initializer=self.initializer,
+                                        use_random_init=False,
+                                        n_iters=n_iters
+                            )
                     if binary:
                         X = A
                     E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
                     ## For comparison purposes, the initialization is the same for IR-sLS, IR-LS and ours    
                     model.initialize(edge_index,E,Y)
                     model.assignInitialLabels(None, None)
+
                     z_init = deepcopy(model.predicted_memberships)
                     chernoff_init_graph = model.graph_init
                     chernoff_graph_labels = model.memberships_from_graph
@@ -389,6 +401,7 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     attSBMPred = np.load("predict.npy")
 
                     z_pred_both = model.fit(edge_index,E,Y,z_init).predict( X, Y )
+                    z_pred_soft = model_soft.fit(edge_index,E,Y,z_init).predict( X, Y )
                     z_pred_graph = chernoff_graph_labels
                     z_pred_attributes = chernoff_att_labels
                     
@@ -396,18 +409,21 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                     aris_attributes.append( adjusted_rand_score( z_true, z_pred_attributes ) )
                     aris_graph.append( adjusted_rand_score( z_true, z_pred_graph ) )
                     aris_both.append( adjusted_rand_score( z_true, z_pred_both ) )
+                    aris_both_soft.append( adjusted_rand_score(z_true, z_pred_soft) )
                     aris_attSBM.append( adjusted_rand_score( z_true, attSBMPred ) )
                     aris_IR_sLS.append( adjusted_rand_score( z_true, IR_sLS_pred ) )
                         
                 aris_attributes_mean.append( np.mean( aris_attributes ) )
                 aris_graph_mean.append( np.mean( aris_graph ) )
                 aris_both_mean.append( np.mean( aris_both ) )
+                aris_soft_mean.append( np.mean( aris_both_soft ) )
                 aris_attSBM_mean.append( np.mean( aris_attSBM ) )
                 aris_IR_sLS_mean.append( np.mean( aris_IR_sLS ) )
                 
                 aris_attributes_std.append( np.std( aris_attributes ) )
                 aris_graph_std.append( np.std( aris_graph ) )
                 aris_both_std.append( np.std( aris_both ) )
+                aris_soft_std.append( np.std( aris_both_soft ) )
                 aris_attSBM_std.append( np.std( aris_attSBM ) )
                 aris_IR_sLS_std.append( np.std( aris_IR_sLS ) )
                 
@@ -417,6 +433,13 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 stats["ARI"].append(aris_both_mean[-1])
                 stats["ARI_std"].append(aris_both_std[-1])
                 stats["algorithm"].append("Algo1")
+
+                stats["varying"].append(varying)
+                stats["a"].append(a)
+                stats["r"].append(r)
+                stats["ARI"].append(aris_soft_mean[-1])
+                stats["ARI_std"].append(aris_soft_std[-1])
+                stats["algorithm"].append("Algo2")
 
                 stats["varying"].append(varying)
                 stats["a"].append(a)
@@ -447,12 +470,12 @@ nout = "100"                  # number of vertices in graph that are outliers; o
                 stats["algorithm"].append("attributes")
   
             curves = [ aris_attributes_mean, aris_graph_mean,\
-                    aris_both_mean , aris_attSBM_mean, aris_IR_sLS_mean]
+                    aris_both_mean, aris_soft_mean , aris_attSBM_mean, aris_IR_sLS_mean]
 
             curves_std = [ aris_attributes_std, aris_graph_std,\
-                        aris_both_std , aris_attSBM_std, aris_IR_sLS_std]
+                        aris_both_std , aris_soft_std , aris_attSBM_std, aris_IR_sLS_std]
 
-            labels = [ 'attributes', 'graph', 'ours' , 'attSBM', 'IR_sLS']
+            labels = [ 'attributes', 'graph', 'hardBreg', 'softBreg' , 'attSBM', 'IR_sLS']
             saveFig = True
             if varying == 'graph':    
                 fileName = 'N_' + str(n) + '_K_' + str(n_clusters) + '_b_' + str(b) + '_r_' + str(r) +  '_nAverage' + str(n_average) + '.jpeg'
