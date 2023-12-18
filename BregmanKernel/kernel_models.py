@@ -14,6 +14,7 @@ from sklearn.manifold import SpectralEmbedding
 from sklearn.kernel_approximation import Nystroem
 from sklearn.metrics.pairwise import pairwise_kernels
 from sklearn.preprocessing import MinMaxScaler
+from scipy.sparse import csr_array 
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -58,6 +59,24 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
 								.fit_transform(X)
         return U
     
+    ## only compute the simmilarity for the connected nodes
+    def fit_efficient(self, edge_index, Y):
+        w = []
+        self.N = Y.shape[0]
+        for u,v in zip(edge_index[0],edge_index[1]):
+            w.append(self.attribute_divergence(Y[u,:],Y[v,:]))
+        sim_matrix = csr_array((w, (edge_index[0], edge_index[1])), \
+                               shape=(self.N, self.N))
+        data_transformed = SpectralEmbedding(n_components=self.n_clusters,\
+								affinity="precomputed")\
+								.fit_transform(sim_matrix)
+        data_transformed = MinMaxScaler().fit_transform(data_transformed)
+        self.model = KMeans(n_clusters=self.n_clusters,\
+                                random_state=0,\
+                                n_init="auto")\
+                                .fit(data_transformed)
+        self.labels_ = self.model.labels_
+        
     def fit( self, A, X, Y):
         """
         Training step.
