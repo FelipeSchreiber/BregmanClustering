@@ -61,10 +61,10 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
     
     ## only compute the simmilarity for the connected nodes
     def fit_efficient(self, edge_index, Y):
-        w = []
+        w = np.zeros(len(edge_index[0]))
         self.N = Y.shape[0]
-        for u,v in zip(edge_index[0],edge_index[1]):
-            w.append(self.attribute_divergence(Y[u,:],Y[v,:]))
+        for i, (u,v) in enumerate(zip(edge_index[0],edge_index[1])):
+            w[i] = self.attribute_divergence(Y[u,:],Y[v,:])
         sim_matrix = csr_array((w, (edge_index[0], edge_index[1])), \
                                shape=(self.N, self.N))
         data_transformed = SpectralEmbedding(n_components=self.n_clusters,\
@@ -76,7 +76,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                                 n_init="auto")\
                                 .fit(data_transformed)
         self.labels_ = self.model.labels_
-        
+
     def fit( self, A, X, Y):
         """
         Training step.
