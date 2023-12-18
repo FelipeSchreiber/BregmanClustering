@@ -69,7 +69,7 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
                                shape=(self.N, self.N))
         data_transformed = SpectralEmbedding(n_components=self.n_clusters,\
 								affinity="precomputed")\
-								.fit_transform(sim_matrix.to_numpy_array())
+								.fit_transform(sim_matrix.toarray())
         data_transformed = MinMaxScaler().fit_transform(data_transformed)
         self.model = KMeans(n_clusters=self.n_clusters,\
                                 random_state=0,\
