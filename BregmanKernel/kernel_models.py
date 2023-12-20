@@ -9,6 +9,7 @@ felipesc@cos.ufrj.br
 import numpy as np
 from sklearn.base import BaseEstimator, ClusterMixin
 from .kernel_divergences import *
+from scipy.stats import ks_2samp
 from sklearn.cluster import SpectralClustering, KMeans
 from sklearn.manifold import SpectralEmbedding
 from sklearn.kernel_approximation import Nystroem
@@ -60,11 +61,15 @@ class BregmanKernelClustering( BaseEstimator, ClusterMixin ):
         return U
     
     ## only compute the simmilarity for the connected nodes
-    def fit_efficient(self, edge_index, Y):
+    def fit_efficient(self, A, Y):
+        edge_index = np.nonzero(A)
         w = np.zeros(len(edge_index[0]))
         self.N = Y.shape[0]
         for i, (u,v) in enumerate(zip(edge_index[0],edge_index[1])):
-            w[i] = self.attribute_divergence(Y[u,:],Y[v,:])
+            w[i] = (self.attribute_divergence(Y[u,:],Y[v,:]) +\
+                    1-ks_2samp(A[u,:],A[v,:])## computes Kolmogorov Smirnoff statistic
+                     ## to measure dissimilarities in empirical network connectivity distributions
+                    )/2
         sim_matrix = csr_array((w, (edge_index[0], edge_index[1])), \
                                shape=(self.N, self.N))
         data_transformed = SpectralEmbedding(n_components=self.n_clusters,\

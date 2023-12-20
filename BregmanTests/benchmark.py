@@ -166,6 +166,7 @@ class BregmanBenchmark():
             return X,Y,labels_true,G
         return X,Y,labels_true,None
     
+    ### Config file for ABCD benchmark
     def gen_config_file(self,d_min=5,d_max=50,c_min=50,c_max=1000,t1=3,t2=2):
         cfg_data = f"""seed = "42"                   # RNG seed, use "" for no seeding
 n = "{int(self.num_nodes)}"                   # number of vertices in graph
