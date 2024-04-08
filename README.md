@@ -43,7 +43,7 @@ P = np.array([[0.8, 0.2, 0.3],[0.2, 0.7, 0.4],[0.3, 0.4, 0.6]])
 edge_index = X.nonzero()
 E = X.reshape(n,n,-1)[edge_index[0],edge_index[1],:]
 
-model = hardBreg(n_clusters=n_clusters
+model = hardBreg(n_clusters=n_clusters,
                                         attributeDistribution=attributes_distribution,\
                                         edgeDistribution=edge_distribution,\
                                         weightDistribution=weight_distribution,\
