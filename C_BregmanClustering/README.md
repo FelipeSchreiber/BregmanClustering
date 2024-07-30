@@ -1,1 +1,1 @@
-This is a C programming language implementation of the algorithm
+This is a C++ programming language implementation of the algorithm
