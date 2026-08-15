@@ -1,10 +1,39 @@
 # BregmanClustering
-To install simply type
+
+Bregman-divergence-based clustering for graphs with node attributes and
+(optionally) edge weights. Each node is assigned to a cluster by minimizing a
+combination of an attribute divergence and a graph/edge divergence, both
+drawn from the exponential family (Gaussian, Bernoulli, Poisson, ...).
+
+## Install
 
 ```
 pip install --upgrade --force-reinstall git+https://github.com/FelipeSchreiber/BregmanClustering.git
 ```
-Usage example:
+
+## Which class should I use?
+
+`BregmanClustering/models.py` exposes several estimators; the actively
+maintained ones (used in the examples below and covered by the smoke tests)
+are:
+
+- `BregmanClusteringMemEfficient` — hard clustering, represents the graph as
+  a sparse edge list. Good default choice for large/sparse graphs.
+- `BregmanNodeEdgeAttributeGraphClusteringEfficient` — hard clustering,
+  same sparse representation but with vectorized (tensordot-based) mean
+  computations. Faster than `MemEfficient` for smaller/denser graphs at the
+  cost of more memory.
+- `BregmanNodeEdgeAttributeGraphClusteringSoft` — soft (fuzzy) clustering:
+  every node gets a probability distribution over clusters instead of a
+  hard label.
+
+`BregmanNodeAttributeGraphClustering` and
+`BregmanNodeEdgeAttributeGraphClustering` (dense adjacency-matrix variants)
+and `BregmanHard`/`BregmanGraphPartitioning` (ported from the original
+`bregclus` reference implementation) are kept for reference/backwards
+compatibility but are not the primary, actively exercised code paths.
+
+## Usage example
 ```python
 ##import model
 from BregmanClustering.models import BregmanClusteringMemEfficient as hardBreg
