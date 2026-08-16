@@ -2,3 +2,5 @@ BregmanClusteringTorch/__pycache__/
 BregmanClustering/__pycache__/
 BregmanClusteringSpark/
 __pycache__/
+.venv/
+other_algos_installed.txt

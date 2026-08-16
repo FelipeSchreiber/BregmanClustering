@@ -873,7 +873,8 @@ class BregmanNodeEdgeAttributeGraphClustering( _AttributedClusteringMixin, BaseE
         if self.use_random_init == True:
             Z_init = fromVectorToMembershipMatrice(np.random.randint(self.n_clusters,size=self.N),
                                                                         self.n_clusters)
-        model.initialize(  A, X, Y )
+        X_ = X[self.edge_index[0], self.edge_index[1], :]
+        model.initialize( self.edge_index, X_, Y )
         self.predicted_memberships = model.predicted_memberships
         self.memberships_from_graph = model.memberships_from_graph
         self.memberships_from_attributes = model.memberships_from_attributes
